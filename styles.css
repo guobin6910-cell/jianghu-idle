@@ -536,3 +536,22 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   gap: 8px;
 }
 .tea-actions .btn { width: 100%; }
+
+.btn-mute {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: #1a2216;
+  color: var(--text);
+  border-radius: 8px;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.btn-mute:hover { border-color: var(--accent); color: var(--accent); }
+.currencies { align-items: center; }

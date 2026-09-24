@@ -1,5 +1,20 @@
 (() => {
   const SAVE_KEY = 'jianghu-idle-v1';
+  const Audio = () => (typeof window !== 'undefined' && window.JianghuAudio) || null;
+  function syncMuteBtn() {
+    const btn = document.getElementById('btn-mute');
+    if (!btn || !Audio()) return;
+    const m = Audio().isMuted();
+    btn.textContent = m ? '🔇' : '🔊';
+    btn.setAttribute('aria-pressed', m ? 'true' : 'false');
+    btn.title = m ? '取消靜音' : '靜音';
+  }
+  function persistAudioSettings() {
+    if (!state) return;
+    const A = Audio();
+    if (!A) return;
+    state.settings = A.getSettings();
+  }
 
   const SCHOOLS = [
     { id: 'cangjian', name: '蒼山劍門', desc: '劍意清正，攻高防平', atk: 3, def: 1, spd: 2 },
@@ -636,6 +651,7 @@
       teaDailyCount: 0,
       teaCooldownUntil: 0,
       eventLogSeen: 0,
+      settings: { muted: false, bgmVol: 0.35, sfxVol: 0.5 },
     };
   }
 
@@ -725,6 +741,10 @@
       };
       pushLog('【名號】遇上「' + rival.name + '」！', 'rival');
       pushEventLog('遭遇名號對手「' + rival.name + '」於「' + zone.name + '」', 'rival');
+      if (Audio()) {
+        Audio().sfx('rival');
+        Audio().playBgm('battle');
+      }
       return;
     }
     const base = pick(zone.mobs);
@@ -750,7 +770,10 @@
       state.lv += 1;
       ups += 1;
     }
-    if (ups) pushLog(`升級！目前 Lv.${state.lv}`, 'win');
+    if (ups) {
+      pushLog(`升級！目前 Lv.${state.lv}`, 'win');
+      if (Audio()) Audio().sfx('levelup');
+    }
   }
 
   function grantDropItem(d, tag) {
@@ -758,10 +781,12 @@
       if (d.silver) {
         state.silver += d.silver;
         pushLog('撿到「' + d.name + '」，換得銀兩 ' + d.silver, 'loot');
+        if (Audio()) Audio().sfx('drop');
       }
       if (d.chivalry) {
         state.chivalry += d.chivalry;
         pushLog('悟得「' + d.name + '」，俠義 +' + d.chivalry, 'loot');
+        if (Audio()) Audio().sfx('drop');
       }
       return;
     }
@@ -776,6 +801,7 @@
     };
     state.bag.push(item);
     pushLog((tag || '掉落') + '裝備「' + item.name + '」', 'loot');
+    if (Audio()) Audio().sfx('drop');
   }
 
   function tryDrop(fromRival) {
@@ -810,6 +836,7 @@
     }
     state.chivalry += 5;
     pushLog('名號對手敗退，俠義 +5', 'rival');
+    if (Audio()) Audio().playBgm('world');
   }
 
   function tickCombat() {
@@ -824,11 +851,14 @@
     if (state.combatBuff && state.combatBuff.kind === 'exp') {
       bonusExp += state.combatBuff.pct || 0;
     }
-    const dmg = Math.max(1, stats.atk - mob.def + rand(-1, 2));
+    const hitRoll = rand(-1, 2);
+    const dmg = Math.max(1, stats.atk - mob.def + hitRoll);
+    const isCrit = hitRoll >= 2;
     mob.hp -= dmg;
     const tag = mob.isRival ? '【名號】' : '';
-    pushLog(tag + '你對「' + mob.name + '」造成 ' + dmg + ' 傷害', mob.isRival ? 'rival' : '');
+    pushLog(tag + '你對「' + mob.name + '」造成 ' + dmg + ' 傷害' + (isCrit ? '（暴擊）' : ''), mob.isRival ? 'rival' : '');
     fxHeroAttack(dmg);
+    if (Audio()) Audio().sfx(isCrit ? 'crit' : 'hit');
     renderCombatBars();
 
     if (mob.hp <= 0) {
@@ -840,6 +870,7 @@
       const wasRival = !!mob.isRival;
       if (wasRival) onRivalDefeated(mob);
       pushLog('擊敗「' + mob.name + '」！經驗 +' + gotExp + '，銀兩 +' + sil, wasRival ? 'rival' : 'win');
+      if (Audio()) Audio().sfx('kill');
       tryDrop(wasRival);
       consumeFightBuff();
       fxMobDefeat();
@@ -902,6 +933,7 @@
     if (modalOpen) return;
     const ev = pick(TEAHOUSE_EVENTS);
     modalOpen = true;
+    if (Audio()) Audio().sfx('tea');
     const root = ensureModalRoot();
     root.innerHTML =
       '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
@@ -916,6 +948,7 @@
       '</div></div></div>';
 
     const finish = (side) => {
+      if (Audio()) Audio().sfx('click');
       refreshTeaDay();
       state.teaDailyCount += 1;
       const cdMin = 15 + Math.floor(Math.random() * 6); // 15～20 分
@@ -1011,6 +1044,7 @@
     rollTitleOffer();
     pushLog('取得稱號「' + title + '」', 'loot');
     pushEventLog('俠義換稱號「' + title + '」', 'chivalry');
+    if (Audio()) Audio().sfx('spend');
     renderAll();
     save();
   }
@@ -1035,6 +1069,7 @@
     state.unlockedLore[rival.loreId] = true;
     pushLog('以俠義解鎖傳聞「' + rival.loreTitle + '」', 'loot');
     pushEventLog('俠義解鎖傳聞「' + rival.loreTitle + '」', 'chivalry');
+    if (Audio()) Audio().sfx('spend');
     renderAll();
     save();
   }
@@ -1049,6 +1084,7 @@
     applyCombatBuff({ kind: 'soften', pct: 0.1, fights: 8 });
     pushLog('俠義護身：接下來 8 場受創 -10%', 'loot');
     pushEventLog('俠義軟化：8 場受創-10%', 'chivalry');
+    if (Audio()) Audio().sfx('spend');
     renderAll();
     save();
   }
@@ -1059,6 +1095,12 @@
     if (state.lv < zone.minLv) {
       pushLog(`等級不足，需 Lv.${zone.minLv} 才能掛此處`);
       return;
+    }
+    if (Audio()) {
+      Audio().unlock();
+      Audio().sfx('click');
+      const want = (state.mob && state.mob.isRival) ? 'battle' : 'world';
+      Audio().playBgm(want);
     }
     state.hunting = true;
     ensureMob();
@@ -1083,6 +1125,10 @@
     $('btn-hunt').disabled = false;
     $('btn-stop').disabled = true;
     pushLog('停手歇息。');
+    if (Audio()) {
+      Audio().sfx('click');
+      Audio().playBgm('world');
+    }
     renderAll();
     save();
   }
@@ -1337,6 +1383,7 @@
         const z = ZONES.find((x) => x.id === id);
         if (!z || state.lv < z.minLv) return;
         if (state.hunting) stopHunt();
+        else if (Audio()) Audio().sfx('click');
         state.zoneId = id;
         state.mob = null;
         pushLog('來到「' + z.name + '」');
@@ -1606,6 +1653,7 @@
     ).join('');
     sEl.querySelectorAll('[data-school]').forEach((b) =>
       b.addEventListener('click', () => {
+        if (Audio()) Audio().sfx('click');
         selectedSchool = b.getAttribute('data-school');
         renderChoices();
       })
@@ -1618,6 +1666,7 @@
     ).join('');
     wEl.querySelectorAll('[data-weapon]').forEach((b) =>
       b.addEventListener('click', () => {
+        if (Audio()) Audio().sfx('click');
         selectedWeapon = b.getAttribute('data-weapon');
         renderChoices();
       })
@@ -1631,15 +1680,46 @@
       if (!name) return;
       state = defaultHero(name, selectedSchool, selectedWeapon);
       pushLog(`「${name}」踏入江湖。`);
+      if (Audio()) {
+        Audio().applySettings(state.settings);
+        Audio().unlock();
+        Audio().sfx('click');
+        Audio().playBgm('world');
+      }
+      syncMuteBtn();
       save();
       showGame();
     });
 
     $('btn-hunt').addEventListener('click', startHunt);
     $('btn-stop').addEventListener('click', stopHunt);
+    const muteBtn = $('btn-mute');
+    if (muteBtn) {
+      muteBtn.addEventListener('click', () => {
+        const A = Audio();
+        if (!A) return;
+        A.unlock();
+        A.setMuted(!A.isMuted());
+        persistAudioSettings();
+        syncMuteBtn();
+        save();
+        if (!A.isMuted()) {
+          A.sfx('click');
+          if (!A.getCurrentBgm()) A.playBgm('world');
+        }
+      });
+    }
     $('btn-reset').addEventListener('click', () => {
       if (!confirm('確定重置角色？本機進度會清除。')) return;
-      stopHunt();
+      if (Audio()) Audio().sfx('click');
+      if (state) {
+        state.hunting = false;
+        if (huntTimer) {
+          clearInterval(huntTimer);
+          huntTimer = null;
+        }
+      }
+      if (Audio()) Audio().stopBgm();
       localStorage.removeItem(SAVE_KEY);
       state = null;
       showCreate();
@@ -1647,6 +1727,7 @@
 
     document.querySelectorAll('.tab').forEach((tab) => {
       tab.addEventListener('click', () => {
+        if (Audio()) Audio().sfx('click');
         document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
         tab.classList.add('active');
         const id = tab.getAttribute('data-tab');
@@ -1681,6 +1762,13 @@
     if (typeof saved.teaDayKey !== 'string') saved.teaDayKey = '';
     if (typeof saved.teaDailyCount !== 'number') saved.teaDailyCount = 0;
     if (typeof saved.teaCooldownUntil !== 'number') saved.teaCooldownUntil = 0;
+    if (!saved.settings || typeof saved.settings !== 'object') {
+      saved.settings = { muted: false, bgmVol: 0.35, sfxVol: 0.5 };
+    } else {
+      if (typeof saved.settings.muted !== 'boolean') saved.settings.muted = false;
+      if (typeof saved.settings.bgmVol !== 'number') saved.settings.bgmVol = 0.35;
+      if (typeof saved.settings.sfxVol !== 'number') saved.settings.sfxVol = 0.5;
+    }
     if (typeof saved.lv !== 'number') saved.lv = 1;
     if (typeof saved.exp !== 'number') saved.exp = 0;
     if (typeof saved.silver !== 'number') saved.silver = 20;
@@ -1699,6 +1787,8 @@
     const saved = migrateSave(load());
     if (saved) {
       state = saved;
+      if (Audio() && state.settings) Audio().applySettings(state.settings);
+      syncMuteBtn();
       showGame();
     } else {
       showCreate();
