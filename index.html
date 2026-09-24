@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>江湖閒談錄｜放置打怪</title>
+  <meta name="description" content="金庸／古龍風原創江湖放置：創角、掛機打怪、掉寶升級。致敬武俠，非官方改編。" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <section id="screen-create" class="screen">
+      <header class="hero">
+        <p class="eyebrow">致敬金庸／古龍武俠風格 · 原創江湖</p>
+        <h1>江湖閒談錄</h1>
+        <p class="sub">掛機行走江湖：打怪、掉寶、慢慢變強</p>
+      </header>
+      <form id="create-form" class="card">
+        <label>俠客名號
+          <input id="name-input" maxlength="12" placeholder="例如：沈孤舟" required autocomplete="off" />
+        </label>
+        <fieldset>
+          <legend>門派</legend>
+          <div id="school-list" class="choice-grid"></div>
+        </fieldset>
+        <fieldset>
+          <legend>兵器路數</legend>
+          <div id="weapon-list" class="choice-grid"></div>
+        </fieldset>
+        <p class="hint">屬性依門派微調；之後靠掛機打怪成長。故事為原創江湖閒談，不搬用小說原文。</p>
+        <button type="submit" class="btn primary full">踏入江湖</button>
+      </form>
+      <p class="disclaimer">本作為原創放置小品，僅借用武俠氛圍與門派意象，非金庸／古龍作品官方改編。</p>
+    </section>
+
+    <section id="screen-game" class="screen hidden">
+      <header class="topbar">
+        <div>
+          <strong id="hero-name">—</strong>
+          <span id="hero-meta" class="muted"></span>
+        </div>
+        <div class="currencies">
+          <span>銀 <b id="stat-silver">0</b></span>
+          <span>俠 <b id="stat-chivalry">0</b></span>
+        </div>
+      </header>
+
+      <div class="stats-row">
+        <div>Lv.<b id="stat-lv">1</b></div>
+        <div class="bar-wrap" title="經驗">
+          <div id="bar-exp" class="bar"></div>
+          <span id="stat-exp-label">0 / 0</span>
+        </div>
+        <div>攻 <b id="stat-atk">0</b></div>
+        <div>防 <b id="stat-def">0</b></div>
+        <div>速 <b id="stat-spd">0</b></div>
+      </div>
+
+      <div class="combat card">
+        <div class="combat-head">
+          <div>
+            <div class="zone-title" id="zone-name">—</div>
+            <div class="muted" id="zone-flavor"></div>
+          </div>
+          <div class="hp-block">
+            <div id="mob-name">等待開打</div>
+            <div class="bar-wrap thin">
+              <div id="bar-mob" class="bar danger"></div>
+            </div>
+          </div>
+        </div>
+        <div id="combat-log" class="log" aria-live="polite"></div>
+        <div class="combat-actions">
+          <button type="button" id="btn-hunt" class="btn primary">⚔ 開始掛機</button>
+          <button type="button" id="btn-stop" class="btn" disabled>■ 停手</button>
+        </div>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="zones">地圖</button>
+        <button type="button" class="tab" data-tab="bag">行囊</button>
+        <button type="button" class="tab" data-tab="hero">俠客</button>
+        <button type="button" class="tab" data-tab="lore">閒談</button>
+      </nav>
+
+      <div id="panel-zones" class="panel card"></div>
+      <div id="panel-bag" class="panel card hidden"></div>
+      <div id="panel-hero" class="panel card hidden"></div>
+      <div id="panel-lore" class="panel card hidden"></div>
+
+      <footer class="footer">
+        <button type="button" id="btn-reset" class="btn ghost">重置角色</button>
+        <span class="muted">進度自動存於本機</span>
+      </footer>
+    </section>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
