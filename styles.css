@@ -248,14 +248,14 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  min-height: 240px;
+  min-height: 210px;
   transition: transform 0.12s ease;
 }
 .fighter .shadow {
   position: absolute;
-  bottom: 26px;
-  width: 56px;
-  height: 12px;
+  bottom: 22px;
+  width: 48px;
+  height: 10px;
   border-radius: 50%;
   background: rgba(0,0,0,0.35);
   z-index: 0;
@@ -270,53 +270,30 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
 }
 #fighter-hero .sprite {
-  width: 140px;
-  height: 220px;
+  /* 小全身連招 sprite：約 160～200px 高，勿用大型半身立繪 */
+  width: 116px;
+  height: 180px;
   align-items: end;
-  /* 淺色光暈改由立繪本身 filter，避免雙重陰影過暗 */
   filter: none;
 }
 .hero-art {
-  width: 100%;
-  height: 100%;
-  min-height: 200px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  /* 同一張 7 幀 sheet：idle = 第 0 幀；攻擊由 JS 切 background-position */
+  width: 116px;
+  height: 180px;
+  margin: 0 auto;
   pointer-events: none;
   transform-origin: center bottom;
   position: relative;
   overflow: hidden;
-}
-.hero-art #hero-idle-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-  image-rendering: auto;
-  filter:
-    drop-shadow(0 0 6px rgba(255, 236, 180, 0.85))
-    drop-shadow(0 0 14px rgba(220, 200, 140, 0.55))
-    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
-}
-.hero-art.attacking #hero-idle-img {
-  visibility: hidden;
-  position: absolute;
-}
-.hero-art.attacking {
-  /* 7-frame sheet driven by JS (background-position) */
-  width: 140px;
-  height: 220px;
-  margin: 0 auto;
   background-image: url("assets/hero_attack_sheet_display.png");
   background-repeat: no-repeat;
   background-size: 700% 100%;
-  background-position: 0 center;
+  background-position: 0% center;
+  image-rendering: auto;
   filter:
-    drop-shadow(0 0 6px rgba(255, 236, 180, 0.85))
-    drop-shadow(0 0 14px rgba(220, 200, 140, 0.55))
-    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+    drop-shadow(0 0 5px rgba(255, 236, 180, 0.75))
+    drop-shadow(0 0 12px rgba(220, 200, 140, 0.45))
+    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
 }
 .fighter .figure {
   width: 80px;
@@ -334,7 +311,7 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 }
 .vs-mark {
   align-self: center;
-  margin-bottom: 72px;
+  margin-bottom: 56px;
   font-size: 18px;
   opacity: 0.55;
   color: var(--accent);
@@ -429,8 +406,7 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 .fighter.enemy-side.attacking { animation: lunge-left 0.28s ease; }
 .fighter.hit .sprite { animation: shake-hit 0.28s ease, flash-white 0.28s ease; }
 .fighter.dying .sprite { animation: die-fade 0.4s ease forwards; }
-.fighter.idle .sprite { animation: idle-bob 2.4s ease-in-out infinite; }
-.fighter.hero-side.idle.attacking .sprite,
+.fighter.idle:not(.hero-side) .sprite { animation: idle-bob 2.4s ease-in-out infinite; }
 .fighter.hero-side.attacking .sprite,
 .fighter.hit .sprite { animation: none; }
 .fighter.hero-side.idle .hero-art:not(.attacking) {

@@ -561,19 +561,17 @@
 
   function playHeroAttackAnim() {
     const art = $('hero-art');
-    const idleImg = $('hero-idle-img');
     if (!art) return;
     if (heroAtkTimer) {
       clearInterval(heroAtkTimer);
       heroAtkTimer = null;
     }
     art.classList.add('attacking');
-    if (idleImg) idleImg.setAttribute('aria-hidden', 'true');
     let frame = 0;
-    // pixel shift: each frame is 1/7 of the 700%-wide sheet (= element width)
+    // 7 幀橫向 sheet：background-size 700% 時，第 f 幀用百分比定位
     const applyFrame = (f) => {
-      const w = art.clientWidth || 140;
-      art.style.backgroundPosition = (-f * w) + 'px center';
+      const pct = HERO_ATK_FRAMES <= 1 ? 0 : (f / (HERO_ATK_FRAMES - 1)) * 100;
+      art.style.backgroundPosition = pct + '% center';
     };
     applyFrame(0);
     heroAtkTimer = setInterval(() => {
@@ -582,8 +580,7 @@
         clearInterval(heroAtkTimer);
         heroAtkTimer = null;
         art.classList.remove('attacking');
-        art.style.backgroundPosition = '';
-        if (idleImg) idleImg.removeAttribute('aria-hidden');
+        applyFrame(0); // 回 idle（第 1 幀）
         return;
       }
       applyFrame(frame);
