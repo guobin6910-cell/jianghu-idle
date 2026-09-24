@@ -270,16 +270,19 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
 }
 #fighter-hero .sprite {
-  /* 小全身連招 sprite：約 160～200px 高，勿用大型半身立繪 */
-  width: 116px;
+  /* 小全身連招 sprite：高度約 180px；寬跟著單格比例 328/400 */
+  width: 148px;
   height: 180px;
   align-items: end;
   filter: none;
 }
 .hero-art {
-  /* 同一張 7 幀 sheet：idle = 第 0 幀；攻擊由 JS 切 background-position */
-  width: 116px;
-  height: 180px;
+  /* 7 幀等寬 sheet（單格 328×400）：容器等比 + overflow 只露一格 */
+  --hero-frame-w: 148px;
+  --hero-frame-h: 180px;
+  width: var(--hero-frame-w);
+  height: var(--hero-frame-h);
+  aspect-ratio: 328 / 400;
   margin: 0 auto;
   pointer-events: none;
   transform-origin: center bottom;
@@ -287,13 +290,11 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   overflow: hidden;
   background-image: url("assets/hero_attack_sheet_display.png");
   background-repeat: no-repeat;
-  background-size: 700% 100%;
-  background-position: 0% center;
+  /* 容器寬×7 × 容器高，保證每幀剛好鋪滿視窗 */
+  background-size: calc(var(--hero-frame-w) * 7) var(--hero-frame-h);
+  background-position: 0 0;
   image-rendering: auto;
-  filter:
-    drop-shadow(0 0 5px rgba(255, 236, 180, 0.75))
-    drop-shadow(0 0 12px rgba(220, 200, 140, 0.45))
-    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
 }
 .fighter .figure {
   width: 80px;

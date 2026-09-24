@@ -568,10 +568,12 @@
     }
     art.classList.add('attacking');
     let frame = 0;
-    // 7 幀橫向 sheet：background-size 700% 時，第 f 幀用百分比定位
+    // 等寬 7 格：以容器寬度整數倍偏移，避免百分比對齊吃到隔壁格
     const applyFrame = (f) => {
-      const pct = HERO_ATK_FRAMES <= 1 ? 0 : (f / (HERO_ATK_FRAMES - 1)) * 100;
-      art.style.backgroundPosition = pct + '% center';
+      const w = art.clientWidth || art.offsetWidth || 148;
+      const h = art.clientHeight || art.offsetHeight || 180;
+      art.style.backgroundSize = (w * HERO_ATK_FRAMES) + 'px ' + h + 'px';
+      art.style.backgroundPosition = (-f * w) + 'px 0';
     };
     applyFrame(0);
     heroAtkTimer = setInterval(() => {
