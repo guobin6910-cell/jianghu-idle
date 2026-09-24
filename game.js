@@ -16,13 +16,6 @@
   ];
 
 
-  const WEAPON_GFX = {
-    jian: '<path class="blade" d="M52 18 L56 18 L58 58 L50 58 Z"/><rect class="hilt" x="50" y="58" width="8" height="10"/><rect class="glow" x="51" y="14" width="6" height="5" rx="1"/>',
-    dao: '<path class="blade" d="M48 20 Q62 36 54 62 L46 60 Q52 38 48 22 Z"/><rect class="hilt" x="46" y="58" width="10" height="8"/>',
-    qiang: '<rect class="blade" x="54" y="8" width="3" height="62"/><polygon class="glow" points="52,8 59,8 55.5,2"/>',
-    anqi: '<circle class="glow" cx="56" cy="36" r="4"/><circle class="blade" cx="62" cy="28" r="3"/><circle class="blade" cx="50" cy="44" r="3"/>',
-  };
-
   const ZONE_LOOK = {
     inn: 'bandit', river: 'water', desert: 'sand', bamboo: 'bamboo', cliff: 'cliff',
     nightmarket: 'night', snowpass: 'snow', oldtemple: 'temple', mistisle: 'mist', skyridge: 'sky',
@@ -543,8 +536,6 @@
     stage.className = 'battle-stage zone-' + zone.id + (state.hunting ? ' hunting' : '');
 
     heroF.className = 'fighter hero-side school-' + (state.school || 'cangjian') + (state.hunting ? ' idle' : '');
-    const wEl = $('hero-weapon-gfx');
-    if (wEl) wEl.innerHTML = WEAPON_GFX[state.weaponPath] || WEAPON_GFX.jian;
     const hLabel = $('hero-stage-label');
     if (hLabel) hLabel.textContent = state.name || '俠客';
 
@@ -564,8 +555,42 @@
     }
   }
 
+  const HERO_ATK_FRAMES = 7;
+  const HERO_ATK_FRAME_MS = 55;
+  let heroAtkTimer = null;
+
+  function playHeroAttackAnim() {
+    const art = $('hero-art');
+    if (!art) return;
+    if (heroAtkTimer) {
+      clearInterval(heroAtkTimer);
+      heroAtkTimer = null;
+    }
+    art.classList.add('attacking');
+    let frame = 0;
+    // pixel shift: each frame is 1/7 of the 700%-wide sheet (= element width)
+    const applyFrame = (f) => {
+      const w = art.clientWidth || 130;
+      art.style.backgroundPosition = (-f * w) + 'px center';
+    };
+    applyFrame(0);
+    heroAtkTimer = setInterval(() => {
+      frame += 1;
+      if (frame >= HERO_ATK_FRAMES) {
+        clearInterval(heroAtkTimer);
+        heroAtkTimer = null;
+        art.classList.remove('attacking');
+        art.style.backgroundPosition = '';
+        return;
+      }
+      applyFrame(frame);
+    }, HERO_ATK_FRAME_MS);
+  }
+
   function fxHeroAttack(dmg) {
-    pulseClass($('fighter-hero'), 'attacking', 280);
+    const totalMs = HERO_ATK_FRAMES * HERO_ATK_FRAME_MS;
+    pulseClass($('fighter-hero'), 'attacking', Math.max(280, totalMs));
+    playHeroAttackAnim();
     pulseClass($('fighter-enemy'), 'hit', 280);
     spawnFloat('-' + dmg, '');
   }
