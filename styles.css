@@ -196,3 +196,13 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   .stats-row { grid-template-columns: auto 1fr; }
   .choice-grid { grid-template-columns: 1fr; }
 }
+
+/* 地圖變長時可捲動，避免把頁面撐太高 */
+#panel-zones {
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+}
+.zone-item .muted {
+  font-size: 11px;
+  line-height: 1.4;
+}

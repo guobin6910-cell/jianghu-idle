@@ -24,10 +24,12 @@
       mobs: [
         { name: '醉拳混混', hp: 28, atk: 4, def: 1, exp: 6, silver: [3, 7] },
         { name: '馬賊探子', hp: 34, atk: 5, def: 1, exp: 8, silver: [4, 9] },
+        { name: '賭坊打手', hp: 32, atk: 5, def: 2, exp: 7, silver: [5, 10] },
       ],
       drops: [
-        { id: 'cloth', name: '粗布勁裝', slot: 'armor', def: 1, rare: 0.35 },
-        { id: 'wine', name: '燒刀子', type: 'junk', silver: 5, rare: 0.4 },
+        { id: 'cloth', name: '粗布勁裝', slot: 'armor', def: 1, rare: 0.32 },
+        { id: 'wine', name: '燒刀子', type: 'junk', silver: 5, rare: 0.38 },
+        { id: 'dice', name: '缺角骰子', type: 'junk', silver: 4, rare: 0.28 },
       ],
     },
     {
@@ -38,10 +40,12 @@
       mobs: [
         { name: '水盜刀客', hp: 55, atk: 8, def: 2, exp: 14, silver: [8, 14] },
         { name: '黑衣追踪者', hp: 62, atk: 9, def: 2, exp: 16, silver: [9, 16] },
+        { name: '碼頭鏢師', hp: 58, atk: 8, def: 3, exp: 15, silver: [10, 15] },
       ],
       drops: [
-        { id: 'boots', name: '軟底快靴', slot: 'boots', spd: 1, rare: 0.3 },
-        { id: 'pearl', name: '雨打珠', type: 'junk', silver: 12, rare: 0.25 },
+        { id: 'boots', name: '軟底快靴', slot: 'boots', spd: 1, rare: 0.28 },
+        { id: 'pearl', name: '雨打珠', type: 'junk', silver: 12, rare: 0.24 },
+        { id: 'rope', name: '浸水麻繩', type: 'junk', silver: 8, rare: 0.3 },
       ],
     },
     {
@@ -52,10 +56,12 @@
       mobs: [
         { name: '沙盜頭目', hp: 95, atk: 13, def: 4, exp: 28, silver: [16, 26] },
         { name: '駝鈴刺客', hp: 88, atk: 15, def: 3, exp: 30, silver: [18, 28] },
+        { name: '狂沙刀客', hp: 102, atk: 14, def: 4, exp: 32, silver: [20, 30] },
       ],
       drops: [
         { id: 'scarf', name: '沙紋披風', slot: 'armor', def: 3, atk: 1, rare: 0.22 },
         { id: 'jade', name: '殘缺玉佩', type: 'junk', silver: 22, rare: 0.2 },
+        { id: 'sand_blade', name: '黃沙短刃', slot: 'weapon', atk: 3, rare: 0.16 },
       ],
     },
     {
@@ -66,10 +72,12 @@
       mobs: [
         { name: '竹林伏兵', hp: 140, atk: 20, def: 6, exp: 45, silver: [28, 40] },
         { name: '白衣劍客', hp: 155, atk: 22, def: 5, exp: 50, silver: [30, 45] },
+        { name: '青衣鏢客', hp: 148, atk: 21, def: 7, exp: 48, silver: [32, 42] },
       ],
       drops: [
         { id: 'bamboo_sword', name: '青筠劍', slot: 'weapon', atk: 5, spd: 1, rare: 0.18 },
         { id: 'manual', name: '殘頁劍譜', type: 'junk', chivalry: 2, rare: 0.15 },
+        { id: 'bamboo_ring', name: '竹節戒', slot: 'ring', atk: 1, spd: 1, rare: 0.14 },
       ],
     },
     {
@@ -80,10 +88,99 @@
       mobs: [
         { name: '崖魔護法', hp: 220, atk: 30, def: 9, exp: 75, silver: [45, 65] },
         { name: '無名老怪', hp: 260, atk: 34, def: 10, exp: 90, silver: [55, 80] },
+        { name: '風聲劍侍', hp: 240, atk: 32, def: 8, exp: 82, silver: [50, 72] },
       ],
       drops: [
         { id: 'ring', name: '斷雲戒', slot: 'ring', atk: 3, def: 2, rare: 0.12 },
         { id: 'scroll', name: '絕壁殘簡', type: 'junk', chivalry: 5, rare: 0.1 },
+        { id: 'cliff_boots', name: '踏雲履', slot: 'boots', spd: 2, def: 1, rare: 0.11 },
+      ],
+    },
+    {
+      id: 'nightmarket',
+      name: '夜雨長街',
+      flavor: '燈火未滅，人影已換。傘下藏刀，傘外賣茶。',
+      minLv: 18,
+      mobs: [
+        { name: '夜行刀客', hp: 300, atk: 40, def: 12, exp: 110, silver: [70, 95] },
+        { name: '傘下刺客', hp: 280, atk: 44, def: 10, exp: 118, silver: [75, 100] },
+        { name: '茶攤眼線', hp: 265, atk: 38, def: 11, exp: 105, silver: [65, 90] },
+      ],
+      drops: [
+        { id: 'lantern_cloak', name: '雨巷披氅', slot: 'armor', def: 5, spd: 1, rare: 0.14 },
+        { id: 'night_dagger', name: '燈影匕首', slot: 'weapon', atk: 7, spd: 1, rare: 0.12 },
+        { id: 'tea_token', name: '半盞茶籌', type: 'junk', silver: 40, rare: 0.22 },
+        { id: 'street_note', name: '街巷密箋', type: 'junk', chivalry: 4, rare: 0.12 },
+      ],
+    },
+    {
+      id: 'snowpass',
+      name: '寒關雪徑',
+      flavor: '雪埋舊路，蹄聲猶在。誰先出關，誰先低頭。',
+      minLv: 22,
+      mobs: [
+        { name: '雪原騎客', hp: 380, atk: 52, def: 15, exp: 150, silver: [95, 130] },
+        { name: '白刃戍衛', hp: 410, atk: 50, def: 17, exp: 160, silver: [100, 140] },
+        { name: '凍傷隱士', hp: 360, atk: 56, def: 13, exp: 155, silver: [98, 135] },
+      ],
+      drops: [
+        { id: 'frost_blade', name: '霜痕長刀', slot: 'weapon', atk: 9, def: 1, rare: 0.11 },
+        { id: 'snow_boots', name: '踏雪靴', slot: 'boots', spd: 3, def: 2, rare: 0.12 },
+        { id: 'ice_jade', name: '寒玉碎片', type: 'junk', silver: 55, rare: 0.18 },
+        { id: 'pass_seal', name: '關隘舊印', type: 'junk', chivalry: 6, rare: 0.1 },
+      ],
+    },
+    {
+      id: 'oldtemple',
+      name: '殘鐘古寺',
+      flavor: '鐘不響，心卻響。香灰未冷，刀劍先涼。',
+      minLv: 28,
+      mobs: [
+        { name: '守殿棍僧', hp: 520, atk: 68, def: 22, exp: 210, silver: [140, 185] },
+        { name: '破戒刀僧', hp: 490, atk: 74, def: 18, exp: 220, silver: [145, 195] },
+        { name: '影廊行者', hp: 540, atk: 70, def: 20, exp: 230, silver: [150, 200] },
+      ],
+      drops: [
+        { id: 'temple_armor', name: '灰袍戎衣', slot: 'armor', def: 8, atk: 2, rare: 0.1 },
+        { id: 'bell_ring', name: '殘鐘戒', slot: 'ring', atk: 4, def: 3, rare: 0.09 },
+        { id: 'incense', name: '斷香一炷', type: 'junk', silver: 70, rare: 0.16 },
+        { id: 'sutra_scrap', name: '經頁殘角', type: 'junk', chivalry: 8, rare: 0.09 },
+      ],
+    },
+    {
+      id: 'mistisle',
+      name: '霧隱孤嶼',
+      flavor: '潮退見礁，霧起見人。島上無路標，只有歸與不歸。',
+      minLv: 35,
+      mobs: [
+        { name: '潮汐劍客', hp: 680, atk: 88, def: 26, exp: 300, silver: [200, 270] },
+        { name: '霧中刀影', hp: 650, atk: 94, def: 24, exp: 315, silver: [210, 280] },
+        { name: '孤嶼船主', hp: 720, atk: 90, def: 28, exp: 330, silver: [220, 300] },
+      ],
+      drops: [
+        { id: 'tide_sword', name: '汐聲劍', slot: 'weapon', atk: 12, spd: 2, rare: 0.09 },
+        { id: 'mist_cloak', name: '霧隱氅', slot: 'armor', def: 10, spd: 2, rare: 0.08 },
+        { id: 'pearl_ring', name: '潮珠戒', slot: 'ring', atk: 5, spd: 2, rare: 0.08 },
+        { id: 'isle_map', name: '半張島圖', type: 'junk', silver: 95, rare: 0.14 },
+        { id: 'wave_letter', name: '浪邊書簡', type: 'junk', chivalry: 10, rare: 0.08 },
+      ],
+    },
+    {
+      id: 'skyridge',
+      name: '天脊雲棧',
+      flavor: '棧道臨空，一步一雲。上頭有人笑，下頭無回聲。',
+      minLv: 42,
+      mobs: [
+        { name: '雲棧護法', hp: 900, atk: 112, def: 34, exp: 420, silver: [280, 360] },
+        { name: '絕嶺瞎子', hp: 860, atk: 120, def: 30, exp: 440, silver: [290, 380] },
+        { name: '天風老叟', hp: 980, atk: 118, def: 36, exp: 460, silver: [310, 400] },
+      ],
+      drops: [
+        { id: 'sky_boots', name: '雲步履', slot: 'boots', spd: 5, def: 3, rare: 0.08 },
+        { id: 'ridge_blade', name: '脊骨刀', slot: 'weapon', atk: 15, def: 2, rare: 0.07 },
+        { id: 'cloud_armor', name: '天風甲', slot: 'armor', def: 12, atk: 3, rare: 0.07 },
+        { id: 'sky_jade', name: '雲紋玉', type: 'junk', silver: 130, rare: 0.12 },
+        { id: 'ridge_note', name: '棧上殘札', type: 'junk', chivalry: 14, rare: 0.07 },
       ],
     },
   ];
@@ -105,6 +202,22 @@
       title: '金庸意',
       body: '家國、師門、情義纏在一塊，打的不只是招式。掛機打怪只管熟手勁；俠客二字，還得自己認。',
     },
+    {
+      title: '夜雨長街',
+      body: '長街上賣茶的未必賣茶，撐傘的未必怕雨。過客若聽得見傘骨輕響，便該換條巷子走。',
+    },
+    {
+      title: '寒關舊事',
+      body: '出關的人多，回關的人少。雪會蓋住蹄印，卻蓋不住刀痕——關吏說，那是給後來人看的路標。',
+    },
+    {
+      title: '古寺鐘聲',
+      body: '鐘碎了，僧還在。有人來求佛，有人來求刀；佛不答，刀倒常答。香火錢與兵器錢，原是同一櫃。',
+    },
+    {
+      title: '孤嶼與雲棧',
+      body: '島外是霧，棧上是雲。兩處都像沒路，卻都有人住——住得久了，便分不清自己是過客還是看守。',
+    },
   ];
 
   let state = null;
@@ -114,8 +227,9 @@
 
   const $ = (id) => document.getElementById(id);
 
+  /** 微調：中後期略快於舊版，早期接近，舊存檔仍可用 */
   function expToNext(lv) {
-    return Math.floor(40 + lv * lv * 18);
+    return Math.floor(36 + lv * lv * 16 + lv * 10);
   }
 
   function rand(a, b) {
@@ -484,7 +598,7 @@
       <div class="row"><span>等級</span><span>Lv.${state.lv}</span></div>
       <div class="row"><span>戰績</span><span>擊敗 ${state.kills} 人</span></div>
       <div class="row"><span>綜合</span><span>攻${stats.atk}／防${stats.def}／速${stats.spd}</span></div>
-      <p class="muted" style="margin-top:10px">掛機時依速度加快出手；裝備可再堆屬性。</p>`;
+      <p class="muted" style="margin-top:10px">掛機時依速度加快出手；裝備可再堆屬性。地圖共 ${ZONES.length} 處，高區需更高等級。</p>`;
   }
 
   function renderLore() {
@@ -569,13 +683,32 @@
     });
   }
 
+  function migrateSave(saved) {
+    if (!saved || typeof saved !== 'object') return null;
+    if (!saved.name) return null;
+    if (!saved.equip || typeof saved.equip !== 'object') {
+      saved.equip = { weapon: null, armor: null, boots: null, ring: null };
+    }
+    if (!Array.isArray(saved.bag)) saved.bag = [];
+    if (!Array.isArray(saved.log)) saved.log = [];
+    if (typeof saved.lv !== 'number') saved.lv = 1;
+    if (typeof saved.exp !== 'number') saved.exp = 0;
+    if (typeof saved.silver !== 'number') saved.silver = 20;
+    if (typeof saved.chivalry !== 'number') saved.chivalry = 0;
+    if (typeof saved.kills !== 'number') saved.kills = 0;
+    const zoneOk = ZONES.some((z) => z.id === saved.zoneId);
+    if (!zoneOk) saved.zoneId = 'inn';
+    saved.hunting = false;
+    saved.mob = null;
+    return saved;
+  }
+
   function boot() {
     renderChoices();
     bind();
-    const saved = load();
-    if (saved && saved.name) {
+    const saved = migrateSave(load());
+    if (saved) {
       state = saved;
-      state.hunting = false;
       showGame();
     } else {
       showCreate();
