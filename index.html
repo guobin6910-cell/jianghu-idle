@@ -69,6 +69,33 @@
             </div>
           </div>
         </div>
+
+        <div id="battle-stage" class="battle-stage zone-inn" aria-hidden="false">
+          <div class="stage-ground"></div>
+          <div class="stage-fx" id="stage-fx"></div>
+          <div class="fighter hero-side" id="fighter-hero">
+            <div class="shadow"></div>
+            <div class="sprite" id="hero-sprite">
+              <svg viewBox="0 0 80 110" class="figure" aria-hidden="true">
+                <ellipse class="hair" cx="40" cy="22" rx="16" ry="14"/>
+                <circle class="face" cx="40" cy="28" r="12"/>
+                <path class="robe" d="M22 42 Q40 38 58 42 L64 92 Q40 100 16 92 Z"/>
+                <rect class="sash" x="28" y="58" width="24" height="6" rx="2"/>
+                <g class="weapon-slot" id="hero-weapon-gfx"></g>
+              </svg>
+            </div>
+            <div class="fighter-label" id="hero-stage-label">俠客</div>
+          </div>
+          <div class="vs-mark">⚔</div>
+          <div class="fighter enemy-side" id="fighter-enemy">
+            <div class="shadow"></div>
+            <div class="sprite" id="enemy-sprite">
+              <div class="enemy-glyph" id="enemy-glyph">？</div>
+            </div>
+            <div class="fighter-label" id="enemy-stage-label">等待開打</div>
+          </div>
+        </div>
+
         <div id="combat-log" class="log" aria-live="polite"></div>
         <div class="combat-actions">
           <button type="button" id="btn-hunt" class="btn primary">⚔ 開始掛機</button>

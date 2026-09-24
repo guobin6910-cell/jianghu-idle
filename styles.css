@@ -133,7 +133,7 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 .combat-head { display: grid; gap: 10px; margin-bottom: 8px; }
 .zone-title { font-size: 1.05rem; font-weight: 700; color: var(--accent); }
 .log {
-  height: 120px;
+  height: 96px;
   overflow: auto;
   background: #12180f;
   border-radius: 10px;
@@ -206,3 +206,205 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   font-size: 11px;
   line-height: 1.4;
 }
+
+/* —— 戰鬥舞台 —— */
+.battle-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 4px;
+  min-height: 168px;
+  margin: 0 0 10px;
+  padding: 12px 10px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(20,28,18,0.2) 0%, rgba(10,14,10,0.55) 100%),
+    radial-gradient(ellipse at 50% 120%, #3a4a30 0%, transparent 55%);
+}
+.battle-stage .stage-ground {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 18px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.45), transparent 70%);
+  pointer-events: none;
+}
+.battle-stage .stage-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+.fighter {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 140px;
+  transition: transform 0.12s ease;
+}
+.fighter .shadow {
+  position: absolute;
+  bottom: 22px;
+  width: 48px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.35);
+  z-index: 0;
+}
+.fighter .sprite {
+  position: relative;
+  z-index: 1;
+  width: 88px;
+  height: 118px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
+}
+.fighter .figure {
+  width: 80px;
+  height: 110px;
+}
+.fighter-label {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--accent);
+  text-align: center;
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vs-mark {
+  align-self: center;
+  margin-bottom: 48px;
+  font-size: 18px;
+  opacity: 0.55;
+  color: var(--accent);
+  z-index: 1;
+}
+
+/* 門派配色（CSS 變數由 JS 設在 #fighter-hero） */
+#fighter-hero .face { fill: #e8c9a0; }
+#fighter-hero .hair { fill: #2a2218; }
+#fighter-hero .robe { fill: var(--robe, #4a6b8a); stroke: var(--robe-edge, #2a4058); stroke-width: 1.5; }
+#fighter-hero .sash { fill: var(--sash, #c4a35a); }
+#fighter-hero.school-cangjian { --robe: #3d6a9a; --robe-edge: #1e3a58; --sash: #d4b56a; }
+#fighter-hero.school-tiandao { --robe: #8a3a2e; --robe-edge: #4a1e18; --sash: #c4a35a; }
+#fighter-hero.school-wuzong { --robe: #3a3a4a; --robe-edge: #1a1a28; --sash: #7a8aaa; }
+#fighter-hero.school-chanwu { --robe: #5a6a48; --robe-edge: #2a3820; --sash: #c9b070; }
+
+.weapon-slot .blade { fill: #d8dde8; stroke: #8a90a0; stroke-width: 0.8; }
+.weapon-slot .hilt { fill: #6b4a2a; }
+.weapon-slot .glow { fill: #e2c780; opacity: 0.7; }
+
+.enemy-glyph {
+  width: 78px;
+  height: 100px;
+  display: grid;
+  place-items: center;
+  font-size: 52px;
+  line-height: 1;
+  border-radius: 14px 14px 18px 18px;
+  background: linear-gradient(180deg, var(--mob-top, #4a3830), var(--mob-bot, #2a2018));
+  border: 2px solid var(--mob-edge, #7a5a40);
+  box-shadow: inset 0 -8px 16px rgba(0,0,0,0.25);
+  user-select: none;
+}
+#fighter-enemy.look-bandit { --mob-top: #5a4030; --mob-bot: #2e2018; --mob-edge: #8a6040; }
+#fighter-enemy.look-water { --mob-top: #2a4860; --mob-bot: #142838; --mob-edge: #4a7a9a; }
+#fighter-enemy.look-sand { --mob-top: #8a6a30; --mob-bot: #4a3818; --mob-edge: #c4a35a; }
+#fighter-enemy.look-bamboo { --mob-top: #3a6a40; --mob-bot: #1a3820; --mob-edge: #6dbf8a; }
+#fighter-enemy.look-cliff { --mob-top: #4a4a58; --mob-bot: #222230; --mob-edge: #8a8aaa; }
+#fighter-enemy.look-night { --mob-top: #2a2848; --mob-bot: #12101f; --mob-edge: #6a5a9a; }
+#fighter-enemy.look-snow { --mob-top: #7a8a9a; --mob-bot: #3a4858; --mob-edge: #c8d4e0; }
+#fighter-enemy.look-temple { --mob-top: #5a4830; --mob-bot: #2a2010; --mob-edge: #a08050; }
+#fighter-enemy.look-mist { --mob-top: #3a5868; --mob-bot: #1a2830; --mob-edge: #7a9aaa; }
+#fighter-enemy.look-sky { --mob-top: #4a6080; --mob-bot: #1a2840; --mob-edge: #90b0d0; }
+
+/* 區域背景 */
+.battle-stage.zone-inn { background-image: linear-gradient(180deg,#2a3220,#1a2014); }
+.battle-stage.zone-river { background-image: linear-gradient(180deg,#1e3040,#121820); }
+.battle-stage.zone-desert { background-image: linear-gradient(180deg,#4a3a20,#2a2010); }
+.battle-stage.zone-bamboo { background-image: linear-gradient(180deg,#243828,#121a12); }
+.battle-stage.zone-cliff { background-image: linear-gradient(180deg,#2a2e38,#14161c); }
+.battle-stage.zone-nightmarket { background-image: linear-gradient(180deg,#1a1830,#0e0c18); }
+.battle-stage.zone-snowpass { background-image: linear-gradient(180deg,#3a4858,#1a222c); }
+.battle-stage.zone-oldtemple { background-image: linear-gradient(180deg,#3a3020,#1a160e); }
+.battle-stage.zone-mistisle { background-image: linear-gradient(180deg,#284048,#121c22); }
+.battle-stage.zone-skyridge { background-image: linear-gradient(180deg,#304868,#142030); }
+
+/* 動畫 */
+@keyframes lunge-right {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(18px); }
+  100% { transform: translateX(0); }
+}
+@keyframes lunge-left {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(-16px); }
+  100% { transform: translateX(0); }
+}
+@keyframes shake-hit {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px) rotate(-2deg); }
+  50% { transform: translateX(5px) rotate(2deg); }
+  75% { transform: translateX(-3px); }
+}
+@keyframes flash-white {
+  0%, 100% { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35)) brightness(1); }
+  30% { filter: drop-shadow(0 0 12px #fff) brightness(1.8); }
+}
+@keyframes float-up {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -48px) scale(1.15); }
+}
+@keyframes idle-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes die-fade {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.7) translateY(12px); }
+}
+
+.fighter.hero-side.attacking { animation: lunge-right 0.28s ease; }
+.fighter.enemy-side.attacking { animation: lunge-left 0.28s ease; }
+.fighter.hit .sprite { animation: shake-hit 0.28s ease, flash-white 0.28s ease; }
+.fighter.dying .sprite { animation: die-fade 0.4s ease forwards; }
+.fighter.idle .sprite { animation: idle-bob 2.4s ease-in-out infinite; }
+.fighter.hero-side.idle.attacking .sprite,
+.fighter.hit .sprite { animation: none; }
+
+.dmg-float {
+  position: absolute;
+  left: 72%;
+  top: 28%;
+  transform: translateX(-50%);
+  font-weight: 800;
+  font-size: 18px;
+  color: #ffe08a;
+  text-shadow: 0 1px 0 #000, 0 0 8px rgba(255,180,60,0.8);
+  animation: float-up 0.7s ease-out forwards;
+  pointer-events: none;
+  z-index: 6;
+}
+.dmg-float.enemy-hit {
+  left: 28%;
+  color: #ff9a8a;
+}
+.dmg-float.miss {
+  color: #9aab90;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.battle-stage.hunting .vs-mark { opacity: 0.9; }

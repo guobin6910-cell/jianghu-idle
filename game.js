@@ -15,6 +15,38 @@
     { id: 'anqi', name: '暗器', atk: 1, spd: 3 },
   ];
 
+
+  const WEAPON_GFX = {
+    jian: '<path class="blade" d="M52 18 L56 18 L58 58 L50 58 Z"/><rect class="hilt" x="50" y="58" width="8" height="10"/><rect class="glow" x="51" y="14" width="6" height="5" rx="1"/>',
+    dao: '<path class="blade" d="M48 20 Q62 36 54 62 L46 60 Q52 38 48 22 Z"/><rect class="hilt" x="46" y="58" width="10" height="8"/>',
+    qiang: '<rect class="blade" x="54" y="8" width="3" height="62"/><polygon class="glow" points="52,8 59,8 55.5,2"/>',
+    anqi: '<circle class="glow" cx="56" cy="36" r="4"/><circle class="blade" cx="62" cy="28" r="3"/><circle class="blade" cx="50" cy="44" r="3"/>',
+  };
+
+  const ZONE_LOOK = {
+    inn: 'bandit', river: 'water', desert: 'sand', bamboo: 'bamboo', cliff: 'cliff',
+    nightmarket: 'night', snowpass: 'snow', oldtemple: 'temple', mistisle: 'mist', skyridge: 'sky',
+  };
+
+  const MOB_GLYPH = [
+    [/醉|賭|混/, '🥴'], [/馬賊|沙盜|盜/, '🗡️'], [/水|潮|船|碼頭/, '🌊'],
+    [/黑衣|刺客|影|追踪/, '🥷'], [/劍/, '⚔️'], [/刀/, '🔪'], [/僧|寺|禪/, '🥋'],
+    [/雪|寒|凍/, '❄️'], [/崖|絕|風|雲|天/, '🦅'], [/傘|夜|街/, '🌂'],
+    [/老怪|老叟|瞎子/, '🧙'], [/護法|戍|衛/, '🛡️'], [/騎/, '🐴'],
+  ];
+
+  function mobGlyph(name) {
+    for (const [re, g] of MOB_GLYPH) if (re.test(name)) return g;
+    return '👤';
+  }
+
+  function mobLook(zoneId, name) {
+    if (/僧|寺/.test(name)) return 'temple';
+    if (/雪|寒|凍/.test(name)) return 'snow';
+    if (/水|潮|船/.test(name)) return 'water';
+    return ZONE_LOOK[zoneId] || 'bandit';
+  }
+
   const ZONES = [
     {
       id: 'inn',
@@ -327,6 +359,8 @@
       def: base.def,
       exp: Math.floor(base.exp * scale),
       silver: base.silver,
+      glyph: mobGlyph(base.name),
+      look: mobLook(zone.id, base.name),
     };
   }
 
@@ -379,6 +413,8 @@
     const dmg = Math.max(1, stats.atk - mob.def + rand(-1, 2));
     mob.hp -= dmg;
     pushLog(`你對「${mob.name}」造成 ${dmg} 傷害`);
+    fxHeroAttack(dmg);
+    renderCombatBars();
 
     if (mob.hp <= 0) {
       const sil = rand(mob.silver[0], mob.silver[1]);
@@ -387,10 +423,14 @@
       gainExp(mob.exp);
       pushLog(`擊敗「${mob.name}」！經驗 +${mob.exp}，銀兩 +${sil}`, 'win');
       tryDrop();
+      fxMobDefeat();
       state.mob = null;
-      ensureMob();
-      renderAll();
-      save();
+      setTimeout(() => {
+        if (!state || !state.hunting) return;
+        ensureMob();
+        renderAll();
+        save();
+      }, 280);
       return;
     }
 
@@ -401,13 +441,15 @@
         const lose = Math.min(state.silver, rand(1, 3));
         state.silver -= lose;
         pushLog(`「${mob.name}」狠狠一擊，銀兩散落 -${lose}`);
+        setTimeout(() => fxEnemyAttack('heavy'), 160);
       } else {
         pushLog(`「${mob.name}」攻來，你側身化解`);
+        setTimeout(() => fxEnemyAttack('block'), 160);
       }
     } else {
       pushLog(`你身法一閃，避過「${mob.name}」`);
+      setTimeout(() => fxEnemyAttack('miss'), 160);
     }
-    renderCombatBars();
     save();
   }
 
@@ -471,6 +513,78 @@
     save();
   }
 
+
+  function pulseClass(el, cls, ms) {
+    if (!el) return;
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+    setTimeout(() => el.classList.remove(cls), ms || 300);
+  }
+
+  function spawnFloat(text, kind) {
+    const fx = $('stage-fx');
+    if (!fx) return;
+    const el = document.createElement('div');
+    el.className = 'dmg-float' + (kind ? ' ' + kind : '');
+    el.textContent = text;
+    fx.appendChild(el);
+    setTimeout(() => el.remove(), 750);
+  }
+
+  function renderStage() {
+    if (!state) return;
+    const stage = $('battle-stage');
+    const heroF = $('fighter-hero');
+    const enemyF = $('fighter-enemy');
+    if (!stage || !heroF || !enemyF) return;
+
+    const zone = currentZone();
+    stage.className = 'battle-stage zone-' + zone.id + (state.hunting ? ' hunting' : '');
+
+    heroF.className = 'fighter hero-side school-' + (state.school || 'cangjian') + (state.hunting ? ' idle' : '');
+    const wEl = $('hero-weapon-gfx');
+    if (wEl) wEl.innerHTML = WEAPON_GFX[state.weaponPath] || WEAPON_GFX.jian;
+    const hLabel = $('hero-stage-label');
+    if (hLabel) hLabel.textContent = state.name || '俠客';
+
+    const mob = state.mob;
+    if (mob) {
+      enemyF.className = 'fighter enemy-side look-' + (mob.look || 'bandit') + (state.hunting ? ' idle' : '');
+      const g = $('enemy-glyph');
+      if (g) g.textContent = mob.glyph || '👤';
+      const eLabel = $('enemy-stage-label');
+      if (eLabel) eLabel.textContent = mob.name;
+    } else {
+      enemyF.className = 'fighter enemy-side look-bandit';
+      const g = $('enemy-glyph');
+      if (g) g.textContent = '？';
+      const eLabel = $('enemy-stage-label');
+      if (eLabel) eLabel.textContent = '等待開打';
+    }
+  }
+
+  function fxHeroAttack(dmg) {
+    pulseClass($('fighter-hero'), 'attacking', 280);
+    pulseClass($('fighter-enemy'), 'hit', 280);
+    spawnFloat('-' + dmg, '');
+  }
+
+  function fxEnemyAttack(kind) {
+    pulseClass($('fighter-enemy'), 'attacking', 280);
+    pulseClass($('fighter-hero'), 'hit', 280);
+    if (kind === 'miss') spawnFloat('閃', 'miss enemy-hit');
+    else if (kind === 'block') spawnFloat('化', 'miss enemy-hit');
+    else spawnFloat('！', 'enemy-hit');
+  }
+
+  function fxMobDefeat() {
+    const enemyF = $('fighter-enemy');
+    if (!enemyF) return;
+    enemyF.classList.add('dying');
+    setTimeout(() => enemyF.classList.remove('dying'), 420);
+  }
+
   function renderCombatBars() {
     if (!state) return;
     const mob = state.mob;
@@ -503,6 +617,7 @@
     $('zone-name').textContent = zone.name;
     $('zone-flavor').textContent = zone.flavor;
     renderCombatBars();
+    renderStage();
     renderLog();
     renderZones();
     renderBag();
