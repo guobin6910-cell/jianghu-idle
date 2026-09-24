@@ -561,16 +561,18 @@
 
   function playHeroAttackAnim() {
     const art = $('hero-art');
+    const idleImg = $('hero-idle-img');
     if (!art) return;
     if (heroAtkTimer) {
       clearInterval(heroAtkTimer);
       heroAtkTimer = null;
     }
     art.classList.add('attacking');
+    if (idleImg) idleImg.setAttribute('aria-hidden', 'true');
     let frame = 0;
     // pixel shift: each frame is 1/7 of the 700%-wide sheet (= element width)
     const applyFrame = (f) => {
-      const w = art.clientWidth || 130;
+      const w = art.clientWidth || 140;
       art.style.backgroundPosition = (-f * w) + 'px center';
     };
     applyFrame(0);
@@ -581,6 +583,7 @@
         heroAtkTimer = null;
         art.classList.remove('attacking');
         art.style.backgroundPosition = '';
+        if (idleImg) idleImg.removeAttribute('aria-hidden');
         return;
       }
       applyFrame(frame);
