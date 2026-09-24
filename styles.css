@@ -438,3 +438,101 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 }
 
 .battle-stage.hunting .vs-mark { opacity: 0.9; }
+
+/* —— 名號對手／俠義／茶樓 —— */
+.log .rival { color: #e8b86a; font-weight: 600; }
+.log .event { color: #9ec4e8; }
+#mob-name.rival-name {
+  color: #e8b86a;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(232, 184, 106, 0.35);
+}
+.fighter.named-rival .sprite {
+  box-shadow: 0 0 0 2px #e8b86a, 0 0 14px rgba(232, 184, 106, 0.45);
+  border-radius: 12px;
+}
+.fighter.named-rival .fighter-label {
+  color: #e8b86a;
+  font-weight: 700;
+}
+.rival-line {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--accent);
+  line-height: 1.4;
+}
+.badge {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.badge.beaten {
+  background: rgba(109, 191, 138, 0.25);
+  color: var(--accent2);
+  border: 1px solid rgba(109, 191, 138, 0.5);
+}
+.badge.pending {
+  background: rgba(212, 100, 90, 0.18);
+  color: #e8a09a;
+  border: 1px solid rgba(212, 100, 90, 0.4);
+}
+.lore-locked { opacity: 0.72; }
+.spend-block {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.title-grid, .lore-buy-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+.title-grid .btn, .lore-buy-grid .btn {
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+}
+.event-line {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  line-height: 1.45;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 8, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+.modal-card {
+  width: min(420px, 100%);
+  background: linear-gradient(180deg, #2a3526, #1c2418);
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+}
+.modal-card h3 {
+  margin: 0 0 8px;
+  color: var(--accent);
+}
+.tea-body {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 10px 0 14px;
+}
+.tea-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tea-actions .btn { width: 100%; }

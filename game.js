@@ -245,6 +245,203 @@
     },
   ];
 
+  const ZONE_RIVALS = {
+    inn: {
+      id: 'rival_inn',
+      name: '醉裡抽刀·馬三刀',
+      desc: '酒氣紅臉、斷刀背肩',
+      mult: { hp: 2.4, atk: 1.55, def: 1.35, exp: 2.8, silver: 2.2 },
+      bestDrop: { id: 'broken_inn_blade', name: '斷刃客棧刀', slot: 'weapon', atk: 4, rare: 0.72 },
+      loreId: 'rival_inn',
+      loreTitle: '客棧後院的交易',
+      loreBody: '後院燈未熄，銀兩與刀鞘同時換手。有人說那不是買賣，是約——約好了誰先出聲，誰就先死。',
+      glyph: '🍺',
+    },
+    river: {
+      id: 'rival_river',
+      name: '濕衣不乾·柳七',
+      desc: '蓑衣遮臉、袖藏短刺',
+      mult: { hp: 2.3, atk: 1.6, def: 1.3, exp: 2.7, silver: 2.1 },
+      bestDrop: { id: 'tide_soft_armor', name: '潮痕軟甲', slot: 'armor', def: 4, spd: 1, rare: 0.7 },
+      loreId: 'rival_river',
+      loreTitle: '雨夜運過什麼貨',
+      loreBody: '雨大得像幕，船卻偏偏不泊碼頭。艙裡響過一聲輕咔，像鎖，又像牙——第二天潮退，岸上只剩半截濕繩。',
+      glyph: '🌧️',
+    },
+    desert: {
+      id: 'rival_desert',
+      name: '駝鈴聲斷·沙滿倉',
+      desc: '黃巾裹頭、駝鈴腰墜',
+      mult: { hp: 2.35, atk: 1.58, def: 1.4, exp: 2.75, silver: 2.15 },
+      bestDrop: { id: 'sandstorm_cloak', name: '狂沙披風', slot: 'armor', def: 5, atk: 1, rare: 0.68 },
+      loreId: 'rival_desert',
+      loreTitle: '驛道失蹤的鏢車',
+      loreBody: '駝鈴忽然齊啞，沙丘換了一個形狀。鏢旗還在，車轍沒有；有人說貨進了風裡，有人說風進了貨裡。',
+      glyph: '🐪',
+    },
+    bamboo: {
+      id: 'rival_bamboo',
+      name: '一葉蔽目·青娘',
+      desc: '白衣青帶、竹葉遮半臉',
+      mult: { hp: 2.25, atk: 1.65, def: 1.25, exp: 2.8, silver: 2.1 },
+      bestDrop: { id: 'bamboo_slim_sword', name: '竹海細劍', slot: 'weapon', atk: 6, spd: 2, rare: 0.65 },
+      loreId: 'rival_bamboo',
+      loreTitle: '竹海裡誰在練刀',
+      loreBody: '竹響三聲後還有第四聲，更輕，更準。葉落處不見人影，只見一道青痕貼地而過，像有人把風也練進刀裡。',
+      glyph: '🍃',
+    },
+    cliff: {
+      id: 'rival_cliff',
+      name: '崖邊無影·無名',
+      desc: '灰袍無徽、腳步無聲',
+      mult: { hp: 2.5, atk: 1.6, def: 1.45, exp: 2.9, silver: 2.3 },
+      bestDrop: { id: 'cliff_rope_hook', name: '斷雲繩鉤', slot: 'boots', spd: 3, def: 1, rare: 0.62 },
+      loreId: 'rival_cliff',
+      loreTitle: '絕壁上的舊盟約',
+      loreBody: '碑陰另有一行小字，被風雨啃得只剩半句。有人對過誓言，有人對過刀；到後來，誓言與刀都成了風聲。',
+      glyph: '🌑',
+    },
+    nightmarket: {
+      id: 'rival_night',
+      name: '傘下無聲·阿雨',
+      desc: '黑傘半開、靴底無泥',
+      mult: { hp: 2.3, atk: 1.7, def: 1.3, exp: 2.85, silver: 2.2 },
+      bestDrop: { id: 'umbrella_bone_spike', name: '夜雨傘骨刺', slot: 'weapon', atk: 8, spd: 2, rare: 0.6 },
+      loreId: 'rival_night',
+      loreTitle: '長街第三盞燈',
+      loreBody: '前兩盞照路，第三盞照人。燈油將盡時，傘骨會輕輕一顫——懂的人換巷，不懂的人換命。',
+      glyph: '🌂',
+    },
+    snowpass: {
+      id: 'rival_snow',
+      name: '白刃不凍·關北',
+      desc: '鐵盔結霜、刀上不掛雪',
+      mult: { hp: 2.4, atk: 1.62, def: 1.5, exp: 2.9, silver: 2.25 },
+      bestDrop: { id: 'frost_pass_armor', name: '寒關戍甲', slot: 'armor', def: 9, atk: 2, rare: 0.58 },
+      loreId: 'rival_snow',
+      loreTitle: '誰守過這道關',
+      loreBody: '名冊上最後一個名字被雪蓋住。關吏換過三任，刀卻還是那把——刃上不掛雪的人，心裡未必不掛事。',
+      glyph: '⚔️',
+    },
+    oldtemple: {
+      id: 'rival_temple',
+      name: '鐘響無人·空戒',
+      desc: '破袈裟、棍纏舊鈴',
+      mult: { hp: 2.45, atk: 1.58, def: 1.55, exp: 3.0, silver: 2.3 },
+      bestDrop: { id: 'broken_bell_beads', name: '殘鐘念珠', slot: 'ring', atk: 4, def: 4, rare: 0.55 },
+      loreId: 'rival_temple',
+      loreTitle: '古寺半夜為什麼響鐘',
+      loreBody: '鐘樓無人，鐘繩卻動。有的僧說是風，有的僧說是債；債若會走路，多半穿破袈裟。',
+      glyph: '🔔',
+    },
+    mistisle: {
+      id: 'rival_mist',
+      name: '潮來即走·島主阿嵐',
+      desc: '斗笠遮眼、袖有鹽花',
+      mult: { hp: 2.4, atk: 1.68, def: 1.4, exp: 3.0, silver: 2.35 },
+      bestDrop: { id: 'isle_tide_blade', name: '孤嶼潮刃', slot: 'weapon', atk: 13, spd: 2, rare: 0.52 },
+      loreId: 'rival_mist',
+      loreTitle: '霧裡那艘不靠岸的船',
+      loreBody: '船影在霧裡停了很久，始終不落錨。岸上有人招手，船上有人搖頭——潮一漲，雙方都成了傳聞。',
+      glyph: '⛵',
+    },
+    skyridge: {
+      id: 'rival_sky',
+      name: '雲上獨行·老叟',
+      desc: '白鬚、杖當劍',
+      mult: { hp: 2.55, atk: 1.72, def: 1.5, exp: 3.2, silver: 2.5 },
+      bestDrop: { id: 'skywind_cloak', name: '天風披氅', slot: 'armor', def: 12, atk: 3, spd: 1, rare: 0.5 },
+      loreId: 'rival_sky',
+      loreTitle: '雲棧盡頭有沒有路',
+      loreBody: '棧盡處雲厚如牆。有人退了，有人笑著進去；出來的人少，帶話回來的更少——只說：路在腳下，也在回頭。',
+      glyph: '🧙',
+    },
+  };
+
+  const TITLE_POOL = [
+    '邊城過客', '雨巷聽聲', '沙上留名', '竹海一葉', '崖邊無名',
+    '傘下行人', '關外白刃', '鐘前立者', '霧中來客', '雲棧行腳',
+  ];
+
+  const CHIVALRY_COST = { title: 80, lore: 50, soften: 30 };
+
+  const TEAHOUSE_EVENTS = [
+    {
+      id: 'T01',
+      theme: '聽謠',
+      left: { label: '湊近細聽', text: '你把謠言記在心裡，走路更謹慎。', buff: { kind: 'def', pct: 0.08, fights: 6 } },
+      right: { label: '掩耳離去', text: '少聽少煩。你腳步輕了些。', buff: { kind: 'spd', pct: 0.08, fights: 6 } },
+    },
+    {
+      id: 'T02',
+      theme: '烈酒',
+      left: { label: '乾了這碗', text: '酒勁上湧，出手更狠，也更疏忽。', buff: { kind: 'atk', pct: 0.12, fights: 5, vuln: 0.06 } },
+      right: { label: '淺嘗即止', text: '留半分清醒，銀兩也省一點。', buff: { kind: 'silver', flat: 8 } },
+    },
+    {
+      id: 'T03',
+      theme: '口信',
+      left: { label: '代為傳話', text: '成人之美，俠義微增。', buff: { kind: 'chivalry', flat: 3 } },
+      right: { label: '假裝沒聽見', text: '少惹是非，今晚掛機略安穩。', buff: { kind: 'soften', pct: 0.08, fights: 5 } },
+    },
+    {
+      id: 'T04',
+      theme: '盯梢',
+      left: { label: '反盯回去', text: '你先下手為強，攻勢凌厲。', buff: { kind: 'atk', pct: 0.1, fights: 6 } },
+      right: { label: '換巷甩掉', text: '身法一閃，連茶錢都省了緊張。', buff: { kind: 'spd', pct: 0.1, fights: 6 } },
+    },
+    {
+      id: 'T05',
+      theme: '水路',
+      left: { label: '買舟快走', text: '船資不便宜，但你到得早。', buff: { kind: 'silver', flat: -12, spd: 0.1, fights: 5 } },
+      right: { label: '沿岸步行', text: '腳程慢，卻撿到一點散銀。', buff: { kind: 'silver', flat: 10 } },
+    },
+    {
+      id: 'T06',
+      theme: '口角',
+      left: { label: '據理力爭', text: '爭贏了面子，也惹毛了旁人。', buff: { kind: 'atk', pct: 0.08, fights: 5, vuln: 0.05 } },
+      right: { label: '一笑置之', text: '退一步，心定，防也穩。', buff: { kind: 'def', pct: 0.1, fights: 6 } },
+    },
+    {
+      id: 'T07',
+      theme: '傷藥',
+      left: { label: '買下傷藥', text: '藥味苦，接下來幾場疼得輕些。', buff: { kind: 'soften', pct: 0.12, fights: 8, silver: -15 } },
+      right: { label: '婉拒離去', text: '不破財，也不依賴藥。', buff: { kind: 'chivalry', flat: 1 } },
+    },
+    {
+      id: 'T08',
+      theme: '說書',
+      left: { label: '扔個賞錢', text: '說書人多講兩句，你悟到一點俠義。', buff: { kind: 'chivalry', flat: 4, silver: -10 } },
+      right: { label: '白聽半場', text: '聽個熱鬧，出手略勤。', buff: { kind: 'atk', pct: 0.06, fights: 4 } },
+    },
+    {
+      id: 'T09',
+      theme: '借傘',
+      left: { label: '把傘借出', text: '傘去人留情，俠義+，身法也輕。', buff: { kind: 'chivalry', flat: 2, spd: 0.06, fights: 5 } },
+      right: { label: '自己撐走', text: '雨打傘骨，你防得更密。', buff: { kind: 'def', pct: 0.08, fights: 5 } },
+    },
+    {
+      id: 'T10',
+      theme: '賭坊',
+      left: { label: '小賭怡情', text: '骰子一響，銀兩增減難料。', buff: { kind: 'gamble' } },
+      right: { label: '站遠旁觀', text: '不進場，反而看清路——速度微升。', buff: { kind: 'spd', pct: 0.07, fights: 5 } },
+    },
+    {
+      id: 'T11',
+      theme: '符',
+      left: { label: '請一道符', text: '符紙灼手，下一陣受創略減。', buff: { kind: 'soften', pct: 0.1, fights: 7, silver: -18 } },
+      right: { label: '不信這個', text: '全靠自己，攻勢更乾脆。', buff: { kind: 'atk', pct: 0.09, fights: 5 } },
+    },
+    {
+      id: 'T12',
+      theme: '指路',
+      left: { label: '為人指路', text: '指完路，心裡亮堂，俠義微增。', buff: { kind: 'chivalry', flat: 3 } },
+      right: { label: '反問捷徑', text: '對方隨口一指，你少走了彎路。', buff: { kind: 'exp', pct: 0.15, fights: 5 } },
+    },
+  ];
+
+
+
   let state = null;
   let huntTimer = null;
   let selectedSchool = SCHOOLS[0].id;
@@ -264,6 +461,126 @@
   function pick(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
+
+  function dayKey(ts) {
+    const d = new Date(ts || Date.now());
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+
+  function pushEventLog(msg, kind) {
+    if (!state) return;
+    state.eventLog.unshift({ t: Date.now(), msg, kind: kind || 'event' });
+    state.eventLog = state.eventLog.slice(0, 60);
+  }
+
+  function refreshRivalDay() {
+    const k = dayKey();
+    if (state.rivalDayKey !== k) {
+      state.rivalDayKey = k;
+      state.rivalDaily = {};
+    }
+  }
+
+  function refreshTeaDay() {
+    const k = dayKey();
+    if (state.teaDayKey !== k) {
+      state.teaDayKey = k;
+      state.teaDailyCount = 0;
+    }
+  }
+
+  function rivalDailyUsed(zoneId) {
+    refreshRivalDay();
+    return state.rivalDaily[zoneId] || 0;
+  }
+
+  function canSpawnRival(zoneId, now) {
+    refreshRivalDay();
+    if ((state.rivalDaily[zoneId] || 0) >= 1) return false;
+    const until = state.rivalCooldownUntil[zoneId] || 0;
+    if (now < until) return false;
+    return true;
+  }
+
+  function rivalCooldownLeft(zoneId, now) {
+    const until = state.rivalCooldownUntil[zoneId] || 0;
+    return Math.max(0, until - now);
+  }
+
+  function formatDuration(ms) {
+    if (ms <= 0) return '可遇';
+    const m = Math.ceil(ms / 60000);
+    if (m >= 60) return Math.ceil(m / 60) + '時後';
+    return m + '分後';
+  }
+
+  let modalOpen = false;
+
+  function applyCombatBuff(buff) {
+    if (!buff) return;
+    // 軟化類與茶樓 soften 不疊加，取較新
+    if (buff.kind === 'soften') {
+      state.softenPct = buff.pct || 0.1;
+      state.softenLeft = buff.fights || 8;
+      state.combatBuff = {
+        kind: 'soften',
+        at: Date.now(),
+        remaining: state.softenLeft,
+        pct: state.softenPct,
+        label: '受創減免',
+      };
+      return;
+    }
+    const fights = buff.fights || 0;
+    state.combatBuff = {
+      kind: buff.kind,
+      at: Date.now(),
+      remaining: fights,
+      pct: buff.pct || 0,
+      flat: buff.flat || 0,
+      vuln: buff.vuln || 0,
+      spd: buff.spd || 0,
+      label: buff.label || buff.kind,
+    };
+  }
+
+  function consumeFightBuff() {
+    if (state.softenLeft > 0) {
+      state.softenLeft -= 1;
+      if (state.combatBuff && state.combatBuff.kind === 'soften') {
+        state.combatBuff.remaining = state.softenLeft;
+        if (state.softenLeft <= 0) {
+          state.softenPct = 0;
+          state.combatBuff = null;
+        }
+      }
+    } else if (state.combatBuff && state.combatBuff.kind !== 'soften') {
+      if (typeof state.combatBuff.remaining === 'number') {
+        state.combatBuff.remaining -= 1;
+        if (state.combatBuff.remaining <= 0) state.combatBuff = null;
+      }
+    }
+  }
+
+  function buffedStats(base) {
+    const s = { ...base };
+    const b = state.combatBuff;
+    if (!b || b.kind === 'soften') return s;
+    if (b.kind === 'atk') s.atk = Math.floor(s.atk * (1 + (b.pct || 0)));
+    if (b.kind === 'def') s.def = Math.floor(s.def * (1 + (b.pct || 0)));
+    if (b.kind === 'spd') s.spd = Math.floor(s.spd * (1 + (b.pct || 0)));
+    if (b.spd) s.spd = Math.floor(s.spd * (1 + b.spd));
+    return s;
+  }
+
+  function incomingDmgFactor() {
+    let f = 1;
+    if (state.softenLeft > 0 && state.softenPct > 0) f *= 1 - state.softenPct;
+    const b = state.combatBuff;
+    if (b && b.vuln) f *= 1 + b.vuln;
+    return f;
+  }
+
 
   function escapeHtml(s) {
     return String(s)
@@ -296,12 +613,29 @@
       exp: 0,
       silver: 20,
       chivalry: 0,
+      chivalrySpent: 0,
       zoneId: 'inn',
       hunting: false,
       bag: [],
       equip: { weapon: null, armor: null, boots: null, ring: null },
       kills: 0,
       log: [],
+      eventLog: [],
+      zoneBossFlags: {},
+      unlockedLore: {},
+      rivalCooldownUntil: {},
+      rivalDaily: {},
+      rivalDayKey: '',
+      titlesOwned: [],
+      activeTitle: '',
+      titleOffer: [],
+      softenLeft: 0,
+      softenPct: 0,
+      combatBuff: null,
+      teaDayKey: '',
+      teaDailyCount: 0,
+      teaCooldownUntil: 0,
+      eventLogSeen: 0,
     };
   }
 
@@ -342,8 +676,58 @@
   function ensureMob() {
     if (state.mob && state.mob.hp > 0) return;
     const zone = currentZone();
-    const base = pick(zone.mobs);
     const scale = 1 + Math.max(0, state.lv - zone.minLv) * 0.05;
+    const now = Date.now();
+    const rival = ZONE_RIVALS[zone.id];
+    let spawnRival = false;
+    if (rival && canSpawnRival(zone.id, now)) {
+      const chance = 0.03 + Math.random() * 0.02; // 3%～5%
+      if (Math.random() < chance) spawnRival = true;
+    }
+    if (spawnRival && rival) {
+      const avg = zone.mobs.reduce(
+        (a, m) => ({
+          hp: a.hp + m.hp,
+          atk: a.atk + m.atk,
+          def: a.def + m.def,
+          exp: a.exp + m.exp,
+          s0: a.s0 + m.silver[0],
+          s1: a.s1 + m.silver[1],
+        }),
+        { hp: 0, atk: 0, def: 0, exp: 0, s0: 0, s1: 0 }
+      );
+      const n = zone.mobs.length;
+      const m = rival.mult;
+      const hp = Math.floor((avg.hp / n) * scale * m.hp);
+      const atk = Math.floor((avg.atk / n) * scale * m.atk);
+      const def = Math.floor((avg.def / n) * m.def);
+      const exp = Math.floor((avg.exp / n) * scale * m.exp);
+      const silver = [
+        Math.floor((avg.s0 / n) * m.silver),
+        Math.floor((avg.s1 / n) * m.silver),
+      ];
+      state.mob = {
+        name: rival.name,
+        maxHp: hp,
+        hp,
+        atk,
+        def,
+        exp,
+        silver,
+        glyph: rival.glyph || mobGlyph(rival.name),
+        look: mobLook(zone.id, rival.name),
+        isRival: true,
+        rivalId: rival.id,
+        zoneId: zone.id,
+        desc: rival.desc,
+        bestDrop: rival.bestDrop,
+        loreId: rival.loreId,
+      };
+      pushLog('【名號】遇上「' + rival.name + '」！', 'rival');
+      pushEventLog('遭遇名號對手「' + rival.name + '」於「' + zone.name + '」', 'rival');
+      return;
+    }
+    const base = pick(zone.mobs);
     state.mob = {
       name: base.name,
       maxHp: Math.floor(base.hp * scale),
@@ -354,6 +738,7 @@
       silver: base.silver,
       glyph: mobGlyph(base.name),
       look: mobLook(zone.id, base.name),
+      isRival: false,
     };
   }
 
@@ -368,44 +753,81 @@
     if (ups) pushLog(`升級！目前 Lv.${state.lv}`, 'win');
   }
 
-  function tryDrop() {
+  function grantDropItem(d, tag) {
+    if (d.type === 'junk') {
+      if (d.silver) {
+        state.silver += d.silver;
+        pushLog('撿到「' + d.name + '」，換得銀兩 ' + d.silver, 'loot');
+      }
+      if (d.chivalry) {
+        state.chivalry += d.chivalry;
+        pushLog('悟得「' + d.name + '」，俠義 +' + d.chivalry, 'loot');
+      }
+      return;
+    }
+    const item = {
+      uid: d.id + '-' + Date.now() + '-' + Math.random().toString(16).slice(2, 6),
+      id: d.id,
+      name: d.name,
+      slot: d.slot,
+      atk: d.atk || 0,
+      def: d.def || 0,
+      spd: d.spd || 0,
+    };
+    state.bag.push(item);
+    pushLog((tag || '掉落') + '裝備「' + item.name + '」', 'loot');
+  }
+
+  function tryDrop(fromRival) {
+    if (fromRival && state._lastRivalDrop) {
+      const d = state._lastRivalDrop;
+      if (Math.random() < (d.rare == null ? 0.7 : d.rare)) {
+        grantDropItem(d, '名號最佳掉落');
+        state._lastRivalDrop = null;
+        return;
+      }
+      state._lastRivalDrop = null;
+    }
     const zone = currentZone();
     for (const d of zone.drops) {
       if (Math.random() > d.rare) continue;
-      if (d.type === 'junk') {
-        if (d.silver) {
-          state.silver += d.silver;
-          pushLog(`撿到「${d.name}」，換得銀兩 ${d.silver}`, 'loot');
-        }
-        if (d.chivalry) {
-          state.chivalry += d.chivalry;
-          pushLog(`悟得「${d.name}」，俠義 +${d.chivalry}`, 'loot');
-        }
-        return;
-      }
-      const item = {
-        uid: `${d.id}-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
-        id: d.id,
-        name: d.name,
-        slot: d.slot,
-        atk: d.atk || 0,
-        def: d.def || 0,
-        spd: d.spd || 0,
-      };
-      state.bag.push(item);
-      pushLog(`掉落裝備「${item.name}」`, 'loot');
+      grantDropItem(d, '掉落');
       return;
     }
   }
 
+  function onRivalDefeated(mob) {
+    const zid = mob.zoneId || state.zoneId;
+    const rival = ZONE_RIVALS[zid];
+    state.zoneBossFlags[zid] = true;
+    refreshRivalDay();
+    state.rivalDaily[zid] = (state.rivalDaily[zid] || 0) + 1;
+    state.rivalCooldownUntil[zid] = Date.now() + 4 * 60 * 60 * 1000;
+    if (rival) {
+      state._lastRivalDrop = rival.bestDrop;
+      pushLog('名號已破！可於俠客頁花俠義解鎖傳聞「' + rival.loreTitle + '」', 'rival');
+      pushEventLog('擊敗名號「' + rival.name + '」（' + (ZONES.find((z) => z.id === zid) || {}).name + '）', 'rival');
+    }
+    state.chivalry += 5;
+    pushLog('名號對手敗退，俠義 +5', 'rival');
+  }
+
   function tickCombat() {
     if (!state || !state.hunting) return;
+    if (modalOpen) return;
+    tryTriggerEvent(Date.now());
+    if (modalOpen) return;
     ensureMob();
-    const stats = calcStats(state);
+    const stats = buffedStats(calcStats(state));
     const mob = state.mob;
+    let bonusExp = 1;
+    if (state.combatBuff && state.combatBuff.kind === 'exp') {
+      bonusExp += state.combatBuff.pct || 0;
+    }
     const dmg = Math.max(1, stats.atk - mob.def + rand(-1, 2));
     mob.hp -= dmg;
-    pushLog(`你對「${mob.name}」造成 ${dmg} 傷害`);
+    const tag = mob.isRival ? '【名號】' : '';
+    pushLog(tag + '你對「' + mob.name + '」造成 ' + dmg + ' 傷害', mob.isRival ? 'rival' : '');
     fxHeroAttack(dmg);
     renderCombatBars();
 
@@ -413,9 +835,13 @@
       const sil = rand(mob.silver[0], mob.silver[1]);
       state.silver += sil;
       state.kills += 1;
-      gainExp(mob.exp);
-      pushLog(`擊敗「${mob.name}」！經驗 +${mob.exp}，銀兩 +${sil}`, 'win');
-      tryDrop();
+      const gotExp = Math.floor(mob.exp * bonusExp);
+      gainExp(gotExp);
+      const wasRival = !!mob.isRival;
+      if (wasRival) onRivalDefeated(mob);
+      pushLog('擊敗「' + mob.name + '」！經驗 +' + gotExp + '，銀兩 +' + sil, wasRival ? 'rival' : 'win');
+      tryDrop(wasRival);
+      consumeFightBuff();
       fxMobDefeat();
       state.mob = null;
       setTimeout(() => {
@@ -429,20 +855,201 @@
 
     const hitChance = Math.max(0.35, 0.85 - (stats.spd - 5) * 0.02);
     if (Math.random() < hitChance) {
-      const mdmg = Math.max(1, mob.atk - stats.def + rand(-1, 1));
+      let mdmg = Math.max(1, mob.atk - stats.def + rand(-1, 1));
+      mdmg = Math.max(1, Math.floor(mdmg * incomingDmgFactor()));
       if (mdmg >= stats.def + 6 && Math.random() < 0.15) {
         const lose = Math.min(state.silver, rand(1, 3));
         state.silver -= lose;
-        pushLog(`「${mob.name}」狠狠一擊，銀兩散落 -${lose}`);
+        pushLog('「' + mob.name + '」狠狠一擊，銀兩散落 -' + lose);
         setTimeout(() => fxEnemyAttack('heavy'), 160);
       } else {
-        pushLog(`「${mob.name}」攻來，你側身化解`);
+        pushLog('「' + mob.name + '」攻來，你側身化解');
         setTimeout(() => fxEnemyAttack('block'), 160);
       }
     } else {
-      pushLog(`你身法一閃，避過「${mob.name}」`);
+      pushLog('你身法一閃，避過「' + mob.name + '」');
       setTimeout(() => fxEnemyAttack('miss'), 160);
     }
+    save();
+  }
+
+  function tryTriggerEvent(now) {
+    if (!state || !state.hunting || modalOpen) return;
+    refreshTeaDay();
+    if (state.teaDailyCount >= 6) return;
+    if (now < (state.teaCooldownUntil || 0)) return;
+    // 低機率；掛機中段觸發
+    if (Math.random() > 0.045) return;
+    openTeahouseModal();
+  }
+
+  function ensureModalRoot() {
+    let root = document.getElementById('modal-root');
+    if (root) return root;
+    root = document.createElement('div');
+    root.id = 'modal-root';
+    document.body.appendChild(root);
+    return root;
+  }
+
+  function closeModal() {
+    modalOpen = false;
+    const root = document.getElementById('modal-root');
+    if (root) root.innerHTML = '';
+  }
+
+  function openTeahouseModal() {
+    if (modalOpen) return;
+    const ev = pick(TEAHOUSE_EVENTS);
+    modalOpen = true;
+    const root = ensureModalRoot();
+    root.innerHTML =
+      '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
+      '<div class="modal-card">' +
+      '<h3>茶樓一敘</h3>' +
+      '<p class="muted">茶博士低聲提起——「' + escapeHtml(ev.theme) + '」</p>' +
+      '<p class="tea-body">過客在茶桌兩側各執一詞，你要聽哪邊？</p>' +
+      '<div class="tea-actions">' +
+      '<button type="button" class="btn primary" data-tea="left">選左邊</button>' +
+      '<button type="button" class="btn primary" data-tea="right">選右邊</button>' +
+      '<button type="button" class="btn" data-tea="skip">先掛著（跳過）</button>' +
+      '</div></div></div>';
+
+    const finish = (side) => {
+      refreshTeaDay();
+      state.teaDailyCount += 1;
+      const cdMin = 15 + Math.floor(Math.random() * 6); // 15～20 分
+      state.teaCooldownUntil = Date.now() + cdMin * 60 * 1000;
+      if (side === 'skip') {
+        pushLog('茶樓一敘：你先掛著，過耳不留。', 'event');
+        pushEventLog('茶樓「' + ev.theme + '」：跳過', 'tea');
+      } else {
+        const choice = side === 'left' ? ev.left : ev.right;
+        applyTeaChoice(ev, choice);
+        pushLog('茶樓一敘（' + ev.theme + '）·' + choice.label + '：' + choice.text, 'event');
+        pushEventLog('茶樓「' + ev.theme + '」→' + choice.label, 'tea');
+      }
+      closeModal();
+      renderAll();
+      save();
+    };
+    root.querySelector('[data-tea="left"]').onclick = () => finish('left');
+    root.querySelector('[data-tea="right"]').onclick = () => finish('right');
+    root.querySelector('[data-tea="skip"]').onclick = () => finish('skip');
+  }
+
+  function applyTeaChoice(ev, choice) {
+    const b = choice.buff || {};
+    if (b.silver) state.silver = Math.max(0, state.silver + b.silver);
+    if (b.kind === 'silver' && b.flat) state.silver = Math.max(0, state.silver + b.flat);
+    if (b.kind === 'chivalry' && b.flat) state.chivalry += b.flat;
+    if (b.kind === 'gamble') {
+      const win = Math.random() < 0.45;
+      const n = rand(8, 28);
+      if (win) {
+        state.silver += n;
+        pushLog('賭坊小試：贏了 ' + n + ' 銀', 'loot');
+      } else {
+        const lose = Math.min(state.silver, n);
+        state.silver -= lose;
+        pushLog('賭坊小試：輸了 ' + lose + ' 銀');
+      }
+      return;
+    }
+    if (b.kind === 'soften') {
+      applyCombatBuff({ kind: 'soften', pct: b.pct || 0.1, fights: b.fights || 8 });
+      return;
+    }
+    if (b.kind === 'atk' || b.kind === 'def' || b.kind === 'spd' || b.kind === 'exp') {
+      applyCombatBuff({
+        kind: b.kind,
+        pct: b.pct || 0,
+        fights: b.fights || 5,
+        vuln: b.vuln || 0,
+        spd: b.spd || 0,
+        label: ev.theme,
+      });
+      return;
+    }
+    if (b.spd && b.fights) {
+      applyCombatBuff({ kind: 'spd', pct: b.spd, fights: b.fights, label: ev.theme });
+    }
+  }
+
+  function rollTitleOffer() {
+    const owned = new Set(state.titlesOwned || []);
+    const left = TITLE_POOL.filter((t) => !owned.has(t));
+    const pool = left.length ? left : TITLE_POOL.slice();
+    const offer = [];
+    const copy = pool.slice();
+    while (offer.length < 3 && copy.length) {
+      const i = Math.floor(Math.random() * copy.length);
+      offer.push(copy.splice(i, 1)[0]);
+    }
+    // 若不足 3，從全池補（但仍不可買已擁有）
+    while (offer.length < 3) {
+      const t = TITLE_POOL[offer.length % TITLE_POOL.length];
+      if (!offer.includes(t)) offer.push(t);
+      else break;
+    }
+    state.titleOffer = offer;
+  }
+
+  function spendChivalryTitle(title) {
+    if ((state.titlesOwned || []).includes(title)) {
+      pushLog('此稱號已擁有，不可重複購買');
+      return;
+    }
+    if (state.chivalry < CHIVALRY_COST.title) {
+      pushLog('俠義不足（需 ' + CHIVALRY_COST.title + '）');
+      return;
+    }
+    state.chivalry -= CHIVALRY_COST.title;
+    state.chivalrySpent += CHIVALRY_COST.title;
+    state.titlesOwned.push(title);
+    state.activeTitle = title;
+    rollTitleOffer();
+    pushLog('取得稱號「' + title + '」', 'loot');
+    pushEventLog('俠義換稱號「' + title + '」', 'chivalry');
+    renderAll();
+    save();
+  }
+
+  function spendChivalryLore(zoneId) {
+    const rival = ZONE_RIVALS[zoneId];
+    if (!rival) return;
+    if (!state.zoneBossFlags[zoneId]) {
+      pushLog('須先擊敗該區名號對手');
+      return;
+    }
+    if (state.unlockedLore[rival.loreId]) {
+      pushLog('此則傳聞已解鎖');
+      return;
+    }
+    if (state.chivalry < CHIVALRY_COST.lore) {
+      pushLog('俠義不足（需 ' + CHIVALRY_COST.lore + '）');
+      return;
+    }
+    state.chivalry -= CHIVALRY_COST.lore;
+    state.chivalrySpent += CHIVALRY_COST.lore;
+    state.unlockedLore[rival.loreId] = true;
+    pushLog('以俠義解鎖傳聞「' + rival.loreTitle + '」', 'loot');
+    pushEventLog('俠義解鎖傳聞「' + rival.loreTitle + '」', 'chivalry');
+    renderAll();
+    save();
+  }
+
+  function spendChivalrySoften() {
+    if (state.chivalry < CHIVALRY_COST.soften) {
+      pushLog('俠義不足（需 ' + CHIVALRY_COST.soften + '）');
+      return;
+    }
+    state.chivalry -= CHIVALRY_COST.soften;
+    state.chivalrySpent += CHIVALRY_COST.soften;
+    applyCombatBuff({ kind: 'soften', pct: 0.1, fights: 8 });
+    pushLog('俠義護身：接下來 8 場受創 -10%', 'loot');
+    pushEventLog('俠義軟化：8 場受創-10%', 'chivalry');
+    renderAll();
     save();
   }
 
@@ -541,11 +1148,15 @@
 
     const mob = state.mob;
     if (mob) {
-      enemyF.className = 'fighter enemy-side look-' + (mob.look || 'bandit') + (state.hunting ? ' idle' : '');
+      enemyF.className =
+        'fighter enemy-side look-' +
+        (mob.look || 'bandit') +
+        (state.hunting ? ' idle' : '') +
+        (mob.isRival ? ' named-rival' : '');
       const g = $('enemy-glyph');
       if (g) g.textContent = mob.glyph || '👤';
       const eLabel = $('enemy-stage-label');
-      if (eLabel) eLabel.textContent = mob.name;
+      if (eLabel) eLabel.textContent = (mob.isRival ? '名號·' : '') + mob.name;
     } else {
       enemyF.className = 'fighter enemy-side look-bandit';
       const g = $('enemy-glyph');
@@ -615,11 +1226,18 @@
   function renderCombatBars() {
     if (!state) return;
     const mob = state.mob;
+    const nameEl = $('mob-name');
     if (mob) {
-      $('mob-name').textContent = `${mob.name}  ${Math.max(0, mob.hp)}/${mob.maxHp}`;
+      const label = (mob.isRival ? '【名號】' : '') + mob.name + '  ' + Math.max(0, mob.hp) + '/' + mob.maxHp;
+      nameEl.textContent = label;
+      nameEl.classList.toggle('rival-name', !!mob.isRival);
+      if (mob.isRival && mob.desc) nameEl.title = mob.desc;
+      else nameEl.title = '';
       $('bar-mob').style.width = Math.max(0, (mob.hp / mob.maxHp) * 100) + '%';
     } else {
-      $('mob-name').textContent = '等待開打';
+      nameEl.textContent = '等待開打';
+      nameEl.classList.remove('rival-name');
+      nameEl.title = '';
       $('bar-mob').style.width = '0%';
     }
   }
@@ -629,8 +1247,9 @@
     const school = SCHOOLS.find((s) => s.id === state.school);
     const stats = calcStats(state);
     const need = expToNext(state.lv);
-    $('hero-name').textContent = state.name;
-    $('hero-meta').textContent = ` · ${school ? school.name : ''} · Lv.${state.lv}`;
+    const titleBit = state.activeTitle ? '「' + state.activeTitle + '」' : '';
+    $('hero-name').textContent = titleBit + state.name;
+    $('hero-meta').textContent = ' · ' + (school ? school.name : '') + ' · Lv.' + state.lv;
     $('stat-silver').textContent = String(state.silver);
     $('stat-chivalry').textContent = String(state.chivalry);
     $('stat-lv').textContent = String(state.lv);
@@ -657,20 +1276,60 @@
 
   function renderZones() {
     const el = $('panel-zones');
+    const now = Date.now();
+    refreshRivalDay();
     el.innerHTML =
-      `<h3>行走地圖</h3>` +
+      '<h3>行走地圖</h3>' +
       ZONES.map((z) => {
         const locked = state.lv < z.minLv;
         const active = state.zoneId === z.id;
-        return `<div class="zone-item ${active ? 'active' : ''}">
-        <div>
-          <strong>${escapeHtml(z.name)}</strong>
-          <div class="muted">需 Lv.${z.minLv} · ${escapeHtml(z.flavor)}</div>
-        </div>
-        <button type="button" class="btn" data-zone="${z.id}" ${locked ? 'disabled' : ''}>${
-          active ? '目前' : locked ? '未開' : '前往'
-        }</button>
-      </div>`;
+        const rival = ZONE_RIVALS[z.id];
+        const beaten = !!(state.zoneBossFlags && state.zoneBossFlags[z.id]);
+        const used = rivalDailyUsed(z.id);
+        const cd = rivalCooldownLeft(z.id, now);
+        let rivalLine = '';
+        if (rival) {
+          const status = beaten
+            ? '<span class="badge beaten">已破</span>'
+            : '<span class="badge pending">未破</span>';
+          let avail;
+          if (locked) avail = '區未開';
+          else if (used >= 1) avail = '今日已遇';
+          else if (cd > 0) avail = formatDuration(cd);
+          else avail = '今日可遇';
+          rivalLine =
+            '<div class="rival-line">名號：' +
+            escapeHtml(rival.name) +
+            ' ' +
+            status +
+            ' · ' +
+            avail +
+            '</div>';
+        }
+        return (
+          '<div class="zone-item ' +
+          (active ? 'active' : '') +
+          (beaten ? ' boss-cleared' : '') +
+          '">' +
+          '<div>' +
+          '<strong>' +
+          escapeHtml(z.name) +
+          '</strong>' +
+          '<div class="muted">需 Lv.' +
+          z.minLv +
+          ' · ' +
+          escapeHtml(z.flavor) +
+          '</div>' +
+          rivalLine +
+          '</div>' +
+          '<button type="button" class="btn" data-zone="' +
+          z.id +
+          '" ' +
+          (locked ? 'disabled' : '') +
+          '>' +
+          (active ? '目前' : locked ? '未開' : '前往') +
+          '</button></div>'
+        );
       }).join('');
     el.querySelectorAll('[data-zone]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -680,7 +1339,7 @@
         if (state.hunting) stopHunt();
         state.zoneId = id;
         state.mob = null;
-        pushLog(`來到「${z.name}」`);
+        pushLog('來到「' + z.name + '」');
         renderAll();
         save();
       });
@@ -732,23 +1391,196 @@
     const el = $('panel-hero');
     const school = SCHOOLS.find((s) => s.id === state.school);
     const weapon = WEAPONS.find((w) => w.id === state.weaponPath);
-    const stats = calcStats(state);
-    el.innerHTML = `<h3>俠客檔案</h3>
-      <div class="row"><span>名號</span><strong>${escapeHtml(state.name)}</strong></div>
-      <div class="row"><span>門派</span><span>${school ? school.name : ''}</span></div>
-      <div class="row"><span>路數</span><span>${weapon ? weapon.name : ''}</span></div>
-      <div class="row"><span>等級</span><span>Lv.${state.lv}</span></div>
-      <div class="row"><span>戰績</span><span>擊敗 ${state.kills} 人</span></div>
-      <div class="row"><span>綜合</span><span>攻${stats.atk}／防${stats.def}／速${stats.spd}</span></div>
-      <p class="muted" style="margin-top:10px">掛機時依速度加快出手；裝備可再堆屬性。地圖共 ${ZONES.length} 處，高區需更高等級。</p>`;
+    const stats = buffedStats(calcStats(state));
+    if (!state.titleOffer || state.titleOffer.length < 3) rollTitleOffer();
+    const owned = state.titlesOwned || [];
+    const titleRows = (state.titleOffer || [])
+      .map((t) => {
+        const has = owned.includes(t);
+        return (
+          '<button type="button" class="btn title-pick" data-title="' +
+          escapeHtml(t) +
+          '" ' +
+          (has || state.chivalry < CHIVALRY_COST.title ? 'disabled' : '') +
+          '>' +
+          (has ? '已有·' : '') +
+          escapeHtml(t) +
+          '（' +
+          CHIVALRY_COST.title +
+          '俠）</button>'
+        );
+      })
+      .join('');
+
+    const loreBtns = ZONES.map((z) => {
+      const rival = ZONE_RIVALS[z.id];
+      if (!rival) return '';
+      const beaten = !!state.zoneBossFlags[z.id];
+      const unlocked = !!state.unlockedLore[rival.loreId];
+      let label;
+      let disabled = true;
+      if (!beaten) {
+        label = '先遇上名號對手';
+      } else if (unlocked) {
+        label = '已聞·' + rival.loreTitle;
+      } else if (state.chivalry < CHIVALRY_COST.lore) {
+        label = '解鎖「' + rival.loreTitle + '」（俠不足）';
+      } else {
+        label = '解鎖「' + rival.loreTitle + '」（' + CHIVALRY_COST.lore + '俠）';
+        disabled = false;
+      }
+      return (
+        '<button type="button" class="btn lore-buy" data-lore-zone="' +
+        z.id +
+        '" ' +
+        (disabled ? 'disabled' : '') +
+        '>' +
+        escapeHtml(label) +
+        '</button>'
+      );
+    }).join('');
+
+    const softDisabled = state.chivalry < CHIVALRY_COST.soften;
+    const buffLine = state.combatBuff
+      ? '當前buff：' +
+        (state.combatBuff.label || state.combatBuff.kind) +
+        (state.combatBuff.remaining != null ? '（餘' + state.combatBuff.remaining + '場）' : '')
+      : state.softenLeft > 0
+        ? '軟化中：受創-' + Math.round(state.softenPct * 100) + '%（餘' + state.softenLeft + '場）'
+        : '無戰鬥buff';
+
+    el.innerHTML =
+      '<h3>俠客檔案</h3>' +
+      '<div class="row"><span>名號</span><strong>' +
+      escapeHtml(state.name) +
+      '</strong></div>' +
+      '<div class="row"><span>稱號</span><span>' +
+      (state.activeTitle ? escapeHtml(state.activeTitle) : '（無）') +
+      '</span></div>' +
+      '<div class="row"><span>門派</span><span>' +
+      (school ? school.name : '') +
+      '</span></div>' +
+      '<div class="row"><span>路數</span><span>' +
+      (weapon ? weapon.name : '') +
+      '</span></div>' +
+      '<div class="row"><span>等級</span><span>Lv.' +
+      state.lv +
+      '</span></div>' +
+      '<div class="row"><span>戰績</span><span>擊敗 ' +
+      state.kills +
+      ' 人</span></div>' +
+      '<div class="row"><span>綜合</span><span>攻' +
+      stats.atk +
+      '／防' +
+      stats.def +
+      '／速' +
+      stats.spd +
+      '</span></div>' +
+      '<div class="row"><span>俠義已花</span><span>' +
+      state.chivalrySpent +
+      '</span></div>' +
+      '<p class="muted" style="margin-top:8px">' +
+      escapeHtml(buffLine) +
+      '</p>' +
+      '<h3 style="margin-top:12px">俠義可花</h3>' +
+      '<p class="muted">稱號 ' +
+      CHIVALRY_COST.title +
+      '／解鎖傳聞 ' +
+      CHIVALRY_COST.lore +
+      '／軟化 ' +
+      CHIVALRY_COST.soften +
+      '（不賣戰力）</p>' +
+      '<div class="spend-block"><div class="muted">A. 換稱號（三選一輪換）</div><div class="title-grid">' +
+      titleRows +
+      '</div>' +
+      '<button type="button" class="btn ghost" id="btn-reroll-titles">換一批候選</button></div>' +
+      '<div class="spend-block"><div class="muted">B. 解鎖傳聞（需該區已破名號）</div><div class="lore-buy-grid">' +
+      loreBtns +
+      '</div></div>' +
+      '<div class="spend-block"><div class="muted">C. 軟化：接下來 8 場受創 -10%</div>' +
+      '<button type="button" class="btn" id="btn-soften" ' +
+      (softDisabled ? 'disabled' : '') +
+      '>消耗 ' +
+      CHIVALRY_COST.soften +
+      ' 俠義</button></div>' +
+      '<p class="muted" style="margin-top:10px">掛機依速度加快出手。地圖 ' +
+      ZONES.length +
+      ' 區；名號對手日限 1、同區冷卻 4 時。</p>';
+
+    el.querySelectorAll('[data-title]').forEach((b) =>
+      b.addEventListener('click', () => spendChivalryTitle(b.getAttribute('data-title')))
+    );
+    const reroll = el.querySelector('#btn-reroll-titles');
+    if (reroll)
+      reroll.addEventListener('click', () => {
+        rollTitleOffer();
+        renderAll();
+        save();
+      });
+    el.querySelectorAll('[data-lore-zone]').forEach((b) =>
+      b.addEventListener('click', () => spendChivalryLore(b.getAttribute('data-lore-zone')))
+    );
+    const soft = el.querySelector('#btn-soften');
+    if (soft) soft.addEventListener('click', spendChivalrySoften);
   }
 
   function renderLore() {
     const el = $('panel-lore');
+    const rivalLore = ZONES.map((z) => {
+      const rival = ZONE_RIVALS[z.id];
+      if (!rival) return '';
+      const open = !!(state.unlockedLore && state.unlockedLore[rival.loreId]);
+      if (open) {
+        return (
+          '<p><strong>' +
+          escapeHtml(rival.loreTitle) +
+          '</strong><br/>' +
+          escapeHtml(rival.loreBody) +
+          '<br/><span class="muted">——擊敗「' +
+          escapeHtml(rival.name) +
+          '」後聞得</span></p>'
+        );
+      }
+      const beaten = !!state.zoneBossFlags[z.id];
+      const hint = beaten
+        ? '名號已破，請至俠客頁花俠義解鎖'
+        : '？？？（先擊敗「' + escapeHtml(z.name) + '」名號對手）';
+      return (
+        '<p class="lore-locked"><strong>' +
+        escapeHtml(rival.loreTitle) +
+        '</strong><br/>' +
+        hint +
+        '</p>'
+      );
+    }).join('');
+
+    const events = (state.eventLog || [])
+      .slice(0, 12)
+      .map((x) => {
+        const d = new Date(x.t);
+        const t =
+          d.getMonth() +
+          1 +
+          '/' +
+          d.getDate() +
+          ' ' +
+          String(d.getHours()).padStart(2, '0') +
+          ':' +
+          String(d.getMinutes()).padStart(2, '0');
+        return '<div class="event-line"><span class="muted">' + t + '</span> ' + escapeHtml(x.msg) + '</div>';
+      })
+      .join('');
+
     el.innerHTML =
-      `<h3>江湖閒談</h3><div class="lore">` +
-      LORE.map((x) => `<p><strong>${escapeHtml(x.title)}</strong><br/>${escapeHtml(x.body)}</p>`).join('') +
-      `<p class="muted">內容為原創閑話，向金庸的家國情義與古龍的刀光酒氣致敬，不引用小說原文。</p></div>`;
+      '<h3>江湖閒談</h3><div class="lore">' +
+      LORE.map(
+        (x) => '<p><strong>' + escapeHtml(x.title) + '</strong><br/>' + escapeHtml(x.body) + '</p>'
+      ).join('') +
+      '<h3 style="margin-top:12px">名號傳聞</h3>' +
+      rivalLore +
+      '<h3 style="margin-top:12px">閒談日誌</h3>' +
+      (events || '<p class="muted">尚無事件紀錄。</p>') +
+      '<p class="muted">內容為原創閑話，致敬武俠氛圍，不引用小說原文。</p></div>';
   }
 
   function showGame() {
@@ -833,6 +1665,22 @@
     }
     if (!Array.isArray(saved.bag)) saved.bag = [];
     if (!Array.isArray(saved.log)) saved.log = [];
+    if (!Array.isArray(saved.eventLog)) saved.eventLog = [];
+    if (!saved.zoneBossFlags || typeof saved.zoneBossFlags !== 'object') saved.zoneBossFlags = {};
+    if (!saved.unlockedLore || typeof saved.unlockedLore !== 'object') saved.unlockedLore = {};
+    if (!saved.rivalCooldownUntil || typeof saved.rivalCooldownUntil !== 'object') saved.rivalCooldownUntil = {};
+    if (!saved.rivalDaily || typeof saved.rivalDaily !== 'object') saved.rivalDaily = {};
+    if (typeof saved.rivalDayKey !== 'string') saved.rivalDayKey = '';
+    if (!Array.isArray(saved.titlesOwned)) saved.titlesOwned = [];
+    if (typeof saved.activeTitle !== 'string') saved.activeTitle = '';
+    if (!Array.isArray(saved.titleOffer)) saved.titleOffer = [];
+    if (typeof saved.chivalrySpent !== 'number') saved.chivalrySpent = 0;
+    if (typeof saved.softenLeft !== 'number') saved.softenLeft = 0;
+    if (typeof saved.softenPct !== 'number') saved.softenPct = 0;
+    if (!saved.combatBuff || typeof saved.combatBuff !== 'object') saved.combatBuff = null;
+    if (typeof saved.teaDayKey !== 'string') saved.teaDayKey = '';
+    if (typeof saved.teaDailyCount !== 'number') saved.teaDailyCount = 0;
+    if (typeof saved.teaCooldownUntil !== 'number') saved.teaCooldownUntil = 0;
     if (typeof saved.lv !== 'number') saved.lv = 1;
     if (typeof saved.exp !== 'number') saved.exp = 0;
     if (typeof saved.silver !== 'number') saved.silver = 20;
