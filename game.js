@@ -305,18 +305,18 @@
   const ZONE_RIVALS = {
     inn: {
       id: 'rival_inn',
-      name: '醉裡抽刀·馬三刀',
+      name: '「醉裡抽刀」馬三刀',
       desc: '酒氣紅臉、斷刀背肩',
       mult: { hp: 2.4, atk: 1.55, def: 1.35, exp: 2.8, silver: 2.2 },
       bestDrop: { id: 'broken_inn_blade', name: '斷刃客棧刀', slot: 'weapon', atk: 4, rare: 0.72 },
       loreId: 'rival_inn',
       loreTitle: '客棧後院的交易',
-      loreBody: '後院燈未熄，銀兩與刀鞘同時換手。有人說那不是買賣，是約——約好了誰先出聲，誰就先死。',
+      loreBody: '後院燈火未熄，銀兩與刀鞘同時換手。有人說那不是買賣，是約——約好了誰先出聲，誰就先死。',
       glyph: '🍺',
     },
     river: {
       id: 'rival_river',
-      name: '濕衣不乾·柳七',
+      name: '「濕衣不乾」柳七',
       desc: '蓑衣遮臉、袖藏短刺',
       mult: { hp: 2.3, atk: 1.6, def: 1.3, exp: 2.7, silver: 2.1 },
       bestDrop: { id: 'tide_soft_armor', name: '潮痕軟甲', slot: 'armor', def: 4, spd: 1, rare: 0.7 },
@@ -327,7 +327,7 @@
     },
     desert: {
       id: 'rival_desert',
-      name: '駝鈴聲斷·沙滿倉',
+      name: '「駝鈴聲斷」沙滿倉',
       desc: '黃巾裹頭、駝鈴腰墜',
       mult: { hp: 2.35, atk: 1.58, def: 1.4, exp: 2.75, silver: 2.15 },
       bestDrop: { id: 'sandstorm_cloak', name: '狂沙披風', slot: 'armor', def: 5, atk: 1, rare: 0.68 },
@@ -338,8 +338,8 @@
     },
     bamboo: {
       id: 'rival_bamboo',
-      name: '一葉蔽目·青娘',
-      desc: '白衣青帶、竹葉遮半臉',
+      name: '「一葉蔽目」青娘',
+      desc: '白衣青帶、竹葉半臉',
       mult: { hp: 2.25, atk: 1.65, def: 1.25, exp: 2.8, silver: 2.1 },
       bestDrop: { id: 'bamboo_slim_sword', name: '竹海細劍', slot: 'weapon', atk: 6, spd: 2, rare: 0.65 },
       loreId: 'rival_bamboo',
@@ -349,7 +349,7 @@
     },
     cliff: {
       id: 'rival_cliff',
-      name: '崖邊無影·無名',
+      name: '「崖邊無影」無名',
       desc: '灰袍無徽、腳步無聲',
       mult: { hp: 2.5, atk: 1.6, def: 1.45, exp: 2.9, silver: 2.3 },
       bestDrop: { id: 'cliff_rope_hook', name: '斷雲繩鉤', slot: 'boots', spd: 3, def: 1, rare: 0.62 },
@@ -360,7 +360,7 @@
     },
     nightmarket: {
       id: 'rival_night',
-      name: '傘下無聲·阿雨',
+      name: '「傘下無聲」阿雨',
       desc: '黑傘半開、靴底無泥',
       mult: { hp: 2.3, atk: 1.7, def: 1.3, exp: 2.85, silver: 2.2 },
       bestDrop: { id: 'umbrella_bone_spike', name: '夜雨傘骨刺', slot: 'weapon', atk: 8, spd: 2, rare: 0.6 },
@@ -371,8 +371,8 @@
     },
     snowpass: {
       id: 'rival_snow',
-      name: '白刃不凍·關北',
-      desc: '鐵盔結霜、刀上不掛雪',
+      name: '「白刃不凍」關北',
+      desc: '鐵盔結霜、刀上無雪',
       mult: { hp: 2.4, atk: 1.62, def: 1.5, exp: 2.9, silver: 2.25 },
       bestDrop: { id: 'frost_pass_armor', name: '寒關戍甲', slot: 'armor', def: 9, atk: 2, rare: 0.58 },
       loreId: 'rival_snow',
@@ -382,7 +382,7 @@
     },
     oldtemple: {
       id: 'rival_temple',
-      name: '鐘響無人·空戒',
+      name: '「鐘響無人」空戒',
       desc: '破袈裟、棍纏舊鈴',
       mult: { hp: 2.45, atk: 1.58, def: 1.55, exp: 3.0, silver: 2.3 },
       bestDrop: { id: 'broken_bell_beads', name: '殘鐘念珠', slot: 'ring', atk: 4, def: 4, rare: 0.55 },
@@ -393,7 +393,7 @@
     },
     mistisle: {
       id: 'rival_mist',
-      name: '潮來即走·島主阿嵐',
+      name: '「潮來即走」島主阿嵐',
       desc: '斗笠遮眼、袖有鹽花',
       mult: { hp: 2.4, atk: 1.68, def: 1.4, exp: 3.0, silver: 2.35 },
       bestDrop: { id: 'isle_tide_blade', name: '孤嶼潮刃', slot: 'weapon', atk: 13, spd: 2, rare: 0.52 },
@@ -404,7 +404,7 @@
     },
     skyridge: {
       id: 'rival_sky',
-      name: '雲上獨行·老叟',
+      name: '「雲上獨行」老叟',
       desc: '白鬚、杖當劍',
       mult: { hp: 2.55, atk: 1.72, def: 1.5, exp: 3.2, silver: 2.5 },
       bestDrop: { id: 'skywind_cloak', name: '天風披氅', slot: 'armor', def: 12, atk: 3, spd: 1, rare: 0.5 },
@@ -414,6 +414,7 @@
       glyph: '🧙',
     },
   };
+
 
   const TITLE_POOL = [
     '邊城過客', '雨巷聽聲', '沙上留名', '竹海一葉', '崖邊無名',
@@ -425,77 +426,78 @@
   const TEAHOUSE_EVENTS = [
     {
       id: 'T01',
-      theme: '聽謠',
-      left: { label: '湊近細聽', text: '你把謠言記在心裡，走路更謹慎。', buff: { kind: 'def', pct: 0.08, fights: 6 } },
-      right: { label: '掩耳離去', text: '少聽少煩。你腳步輕了些。', buff: { kind: 'spd', pct: 0.08, fights: 6 } },
+      theme: '多聽江湖謠',
+      left: { label: '聽', text: '謠傳入耳，俠義微增；下一場掉落也略豐。', buff: { kind: 'chivalry', flat: 5, drop: 0.05, fights: 1 } },
+      right: { label: '不聽', text: '耳根清淨，過耳不留。', buff: {} },
     },
     {
       id: 'T02',
       theme: '烈酒',
-      left: { label: '乾了這碗', text: '酒勁上湧，出手更狠，也更疏忽。', buff: { kind: 'atk', pct: 0.12, fights: 5, vuln: 0.06 } },
-      right: { label: '淺嘗即止', text: '留半分清醒，銀兩也省一點。', buff: { kind: 'silver', flat: 8 } },
+      left: { label: '接', text: '酒勁上湧，出手更狠，也更疏忽。', buff: { kind: 'atk', pct: 0.08, fights: 2, vuln: 0.05 } },
+      right: { label: '拒', text: '留半分清醒，明日再說。', buff: {} },
     },
     {
       id: 'T03',
       theme: '口信',
-      left: { label: '代為傳話', text: '成人之美，俠義微增。', buff: { kind: 'chivalry', flat: 3 } },
-      right: { label: '假裝沒聽見', text: '少惹是非，今晚掛機略安穩。', buff: { kind: 'soften', pct: 0.08, fights: 5 } },
+      left: { label: '帶', text: '成人之美，銀兩與俠義都有著落。', buff: { kind: 'chivalry', flat: 3, silver: 12 } },
+      right: { label: '不帶', text: '少惹是非，袖手旁觀。', buff: {} },
     },
     {
       id: 'T04',
       theme: '盯梢',
-      left: { label: '反盯回去', text: '你先下手為強，攻勢凌厲。', buff: { kind: 'atk', pct: 0.1, fights: 6 } },
-      right: { label: '換巷甩掉', text: '身法一閃，連茶錢都省了緊張。', buff: { kind: 'spd', pct: 0.1, fights: 6 } },
+      left: { label: '換座', text: '換了位子，接下來幾場遇敵略稀。', buff: { kind: 'encounter', pct: -0.1, fights: 3 } },
+      right: { label: '不理', text: '由他盯去，你自喝茶。', buff: {} },
     },
     {
       id: 'T05',
       theme: '水路',
-      left: { label: '買舟快走', text: '船資不便宜，但你到得早。', buff: { kind: 'silver', flat: -12, spd: 0.1, fights: 5 } },
-      right: { label: '沿岸步行', text: '腳程慢，卻撿到一點散銀。', buff: { kind: 'silver', flat: 10 } },
+      left: { label: '會一點', text: '水路熟些，今日本區銀兩略豐。', buff: { kind: 'zoneSilver', pct: 0.1, hours: 24 } },
+      right: { label: '不會', text: '陸路也走得通。', buff: {} },
     },
     {
       id: 'T06',
       theme: '口角',
-      left: { label: '據理力爭', text: '爭贏了面子，也惹毛了旁人。', buff: { kind: 'atk', pct: 0.08, fights: 5, vuln: 0.05 } },
-      right: { label: '一笑置之', text: '退一步，心定，防也穩。', buff: { kind: 'def', pct: 0.1, fights: 6 } },
+      left: { label: '勸和', text: '一場口角平息，俠義＋8。', buff: { kind: 'chivalry', flat: 8 } },
+      right: { label: '走開', text: '事不關己，喝茶去。', buff: {} },
     },
     {
       id: 'T07',
       theme: '傷藥',
-      left: { label: '買下傷藥', text: '藥味苦，接下來幾場疼得輕些。', buff: { kind: 'soften', pct: 0.12, fights: 8, silver: -15 } },
-      right: { label: '婉拒離去', text: '不破財，也不依賴藥。', buff: { kind: 'chivalry', flat: 1 } },
+      left: { label: '收', text: '藥味苦，下一場疼得輕些。', buff: { kind: 'soften', pct: 0.15, fights: 1 } },
+      right: { label: '婉拒', text: '不破財，也不依賴藥。', buff: {} },
     },
     {
       id: 'T08',
-      theme: '說書',
-      left: { label: '扔個賞錢', text: '說書人多講兩句，你悟到一點俠義。', buff: { kind: 'chivalry', flat: 4, silver: -10 } },
-      right: { label: '白聽半場', text: '聽個熱鬧，出手略勤。', buff: { kind: 'atk', pct: 0.06, fights: 4 } },
+      theme: '說書收尾',
+      left: { label: '補', text: '你補了一句收尾——說書人笑了。', buff: { kind: 'flavor', line: '說書人補白：刀未出鞘，勝負已在茶香裡。' } },
+      right: { label: '搖頭', text: '故事到此為止也好。', buff: {} },
     },
     {
       id: 'T09',
       theme: '借傘',
-      left: { label: '把傘借出', text: '傘去人留情，俠義+，身法也輕。', buff: { kind: 'chivalry', flat: 2, spd: 0.06, fights: 5 } },
-      right: { label: '自己撐走', text: '雨打傘骨，你防得更密。', buff: { kind: 'def', pct: 0.08, fights: 5 } },
+      left: { label: '借', text: '傘去人留情，俠義＋5。', buff: { kind: 'chivalry', flat: 5 } },
+      right: { label: '不借', text: '雨大，自己也要用。', buff: {} },
     },
     {
       id: 'T10',
       theme: '賭坊',
-      left: { label: '小賭怡情', text: '骰子一響，銀兩增減難料。', buff: { kind: 'gamble' } },
-      right: { label: '站遠旁觀', text: '不進場，反而看清路——速度微升。', buff: { kind: 'spd', pct: 0.07, fights: 5 } },
+      left: { label: '勸收手', text: '勸人收手，俠義＋6。', buff: { kind: 'chivalry', flat: 6 } },
+      right: { label: '裝沒看見', text: '骰聲自去，你喝茶自醉。', buff: {} },
     },
     {
       id: 'T11',
-      theme: '符',
-      left: { label: '請一道符', text: '符紙灼手，下一陣受創略減。', buff: { kind: 'soften', pct: 0.1, fights: 7, silver: -18 } },
-      right: { label: '不信這個', text: '全靠自己，攻勢更乾脆。', buff: { kind: 'atk', pct: 0.09, fights: 5 } },
+      theme: '避刀符',
+      left: { label: '買', text: '符紙灼手，接下來幾場受創略減。', buff: { kind: 'soften', pct: 0.05, fights: 5, silver: -18 } },
+      right: { label: '不買', text: '全靠自己，不信這個。', buff: {} },
     },
     {
       id: 'T12',
-      theme: '指路',
-      left: { label: '為人指路', text: '指完路，心裡亮堂，俠義微增。', buff: { kind: 'chivalry', flat: 3 } },
-      right: { label: '反問捷徑', text: '對方隨口一指，你少走了彎路。', buff: { kind: 'exp', pct: 0.15, fights: 5 } },
+      theme: '往北或往南',
+      left: { label: '指北', text: '往北的人多問名號——一時之間，本區名號更易遇上。', buff: { kind: 'rivalChance', pct: 0.01, hours: 1 } },
+      right: { label: '指南', text: '往南亦然；路標一指，機緣相同。', buff: { kind: 'rivalChance', pct: 0.01, hours: 1 } },
     },
   ];
+
 
 
 
@@ -691,6 +693,12 @@
       softenLeft: 0,
       softenPct: 0,
       combatBuff: null,
+      dropBonusPct: 0,
+      dropBonusLeft: 0,
+      encounterReducePct: 0,
+      encounterReduceLeft: 0,
+      zoneSilverBonus: null,
+      rivalChanceBonus: null,
       teaDayKey: '',
       teaDailyCount: 0,
       teaCooldownUntil: 0,
@@ -741,10 +749,26 @@
     const zone = currentZone();
     const scale = 1 + Math.max(0, state.lv - zone.minLv) * 0.05;
     const now = Date.now();
+    // 茶樓「換座」：接下來幾次生成有機率空過（遇敵略稀）
+    if (state.encounterReduceLeft > 0) {
+      const pct = state.encounterReducePct || 0.1;
+      state.encounterReduceLeft -= 1;
+      if (state.encounterReduceLeft <= 0) state.encounterReducePct = 0;
+      if (Math.random() < pct) {
+        pushLog('這一路安靜，暫未遇敵。', 'event');
+        return;
+      }
+    }
     const rival = ZONE_RIVALS[zone.id];
     let spawnRival = false;
     if (rival && canSpawnRival(zone.id, now)) {
-      const chance = 0.03 + Math.random() * 0.02; // 3%～5%
+      let chance = 0.03 + Math.random() * 0.02; // 3%～5%
+      const rcb = state.rivalChanceBonus;
+      if (rcb && rcb.zoneId === state.zoneId && now < (rcb.until || 0)) {
+        chance += rcb.pct || 0.01;
+      } else if (rcb && now >= (rcb.until || 0)) {
+        state.rivalChanceBonus = null;
+      }
       if (Math.random() < chance) spawnRival = true;
     }
     if (spawnRival && rival) {
@@ -872,8 +896,15 @@
       state._lastRivalDrop = null;
     }
     const zone = currentZone();
+    let dropBonus = 0;
+    if (state.dropBonusLeft > 0 && state.dropBonusPct) {
+      dropBonus = state.dropBonusPct;
+      state.dropBonusLeft -= 1;
+      if (state.dropBonusLeft <= 0) state.dropBonusPct = 0;
+    }
     for (const d of zone.drops) {
-      if (Math.random() > d.rare) continue;
+      const rare = Math.min(0.95, (d.rare || 0) + dropBonus);
+      if (Math.random() > rare) continue;
       const loot = grantDropItem(d, '掉落');
       if (loot) got.push(loot);
       return got;
@@ -961,7 +992,13 @@
   }
 
   function finishMobKill(mob, bonusExp) {
-    const sil = rand(mob.silver[0], mob.silver[1]);
+    let sil = rand(mob.silver[0], mob.silver[1]);
+    const zsb = state.zoneSilverBonus;
+    if (zsb && zsb.zoneId === state.zoneId && Date.now() < (zsb.until || 0)) {
+      sil = Math.floor(sil * (1 + (zsb.pct || 0)));
+    } else if (zsb && Date.now() >= (zsb.until || 0)) {
+      state.zoneSilverBonus = null;
+    }
     state.silver += sil;
     state.kills += 1;
     const gotExp = Math.floor(mob.exp * bonusExp);
@@ -1062,7 +1099,7 @@
     refreshTeaDay();
     if (state.teaDailyCount >= 6) return;
     if (now < (state.teaCooldownUntil || 0)) return;
-    // 低機率；掛機中段觸發
+    // 低機率；掛機中段觸發（彈窗開啟時略過，避免堆佇列）
     if (Math.random() > 0.045) return;
     openTeahouseModal();
   }
@@ -1157,45 +1194,50 @@
   }
 
   function openTeahouseModal() {
-    if (modalOpen) return;
-    const ev = pick(TEAHOUSE_EVENTS);
-    modalOpen = true;
-    if (Audio()) Audio().sfx('tea');
-    const root = ensureModalRoot();
-    root.innerHTML =
-      '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
-      '<div class="modal-card">' +
-      '<h3>茶樓一敘</h3>' +
-      '<p class="muted">茶博士低聲提起——「' + escapeHtml(ev.theme) + '」</p>' +
-      '<p class="tea-body">過客在茶桌兩側各執一詞，你要聽哪邊？</p>' +
-      '<div class="tea-actions">' +
-      '<button type="button" class="btn primary" data-tea="left">選左邊</button>' +
-      '<button type="button" class="btn primary" data-tea="right">選右邊</button>' +
-      '<button type="button" class="btn" data-tea="skip">先掛著（跳過）</button>' +
-      '</div></div></div>';
-
-    const finish = (side) => {
-      if (Audio()) Audio().sfx('click');
-      refreshTeaDay();
-      state.teaDailyCount += 1;
-      const cdMin = 15 + Math.floor(Math.random() * 6); // 15～20 分
-      state.teaCooldownUntil = Date.now() + cdMin * 60 * 1000;
-      if (side === 'skip') {
-        pushLog('茶樓一敘：你先掛著，過耳不留。', 'event');
-        pushEventLog('茶樓「' + ev.theme + '」：跳過', 'tea');
-      } else {
-        const choice = side === 'left' ? ev.left : ev.right;
-        applyTeaChoice(ev, choice);
-        pushLog('茶樓一敘（' + ev.theme + '）·' + choice.label + '：' + choice.text, 'event');
-        pushEventLog('茶樓「' + ev.theme + '」→' + choice.label, 'tea');
+    enqueueModal(() => {
+      if (modalOpen) {
+        modalQueue.push(() => openTeahouseModal());
+        return;
       }
-      closeModal();
-      renderAll();
-      save();
-    };
-    root.querySelector('[data-tea="left"]').onclick = () => finish('left');
-    root.querySelector('[data-tea="right"]').onclick = () => finish('right');
-    root.querySelector('[data-tea="skip"]').onclick = () => finish('skip');
+      const ev = pick(TEAHOUSE_EVENTS);
+      modalOpen = true;
+      if (Audio()) Audio().sfx('tea');
+      const root = ensureModalRoot();
+      root.innerHTML =
+        '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
+        '<div class="modal-card">' +
+        '<h3>茶樓一敘</h3>' +
+        '<p class="muted">茶博士低聲提起——「' + escapeHtml(ev.theme) + '」</p>' +
+        '<p class="tea-body">過客在茶桌兩側各執一詞，你要聽哪邊？</p>' +
+        '<div class="tea-actions">' +
+        '<button type="button" class="btn primary" data-tea="left">' + escapeHtml(ev.left.label) + '</button>' +
+        '<button type="button" class="btn primary" data-tea="right">' + escapeHtml(ev.right.label) + '</button>' +
+        '<button type="button" class="btn" data-tea="skip">先掛著（跳過）</button>' +
+        '</div></div></div>';
+
+      const finish = (side) => {
+        if (Audio()) Audio().sfx('click');
+        refreshTeaDay();
+        state.teaDailyCount += 1;
+        const cdMin = 15 + Math.floor(Math.random() * 6); // 15～20 分
+        state.teaCooldownUntil = Date.now() + cdMin * 60 * 1000;
+        if (side === 'skip') {
+          pushLog('茶樓一敘：你先掛著，過耳不留。', 'event');
+          pushEventLog('茶樓「' + ev.theme + '」：跳過', 'tea');
+        } else {
+          const choice = side === 'left' ? ev.left : ev.right;
+          applyTeaChoice(ev, choice);
+          pushLog('茶樓一敘（' + ev.theme + '）·' + choice.label + '：' + choice.text, 'event');
+          pushEventLog('茶樓「' + ev.theme + '」→' + choice.label, 'tea');
+        }
+        closeModal();
+        renderAll();
+        save();
+      };
+      root.querySelector('[data-tea="left"]').onclick = () => finish('left');
+      root.querySelector('[data-tea="right"]').onclick = () => finish('right');
+      root.querySelector('[data-tea="skip"]').onclick = () => finish('skip');
+    });
   }
 
   function applyTeaChoice(ev, choice) {
@@ -1203,6 +1245,32 @@
     if (b.silver) state.silver = Math.max(0, state.silver + b.silver);
     if (b.kind === 'silver' && b.flat) state.silver = Math.max(0, state.silver + b.flat);
     if (b.kind === 'chivalry' && b.flat) state.chivalry += b.flat;
+    if (b.drop) {
+      state.dropBonusPct = b.drop;
+      state.dropBonusLeft = b.fights || 1;
+    }
+    if (b.kind === 'encounter') {
+      state.encounterReducePct = Math.abs(b.pct || 0.1);
+      state.encounterReduceLeft = b.fights || 3;
+    }
+    if (b.kind === 'zoneSilver') {
+      state.zoneSilverBonus = {
+        zoneId: state.zoneId,
+        pct: b.pct || 0.1,
+        until: Date.now() + (b.hours || 24) * 3600 * 1000,
+      };
+    }
+    if (b.kind === 'rivalChance') {
+      state.rivalChanceBonus = {
+        zoneId: state.zoneId,
+        pct: b.pct || 0.01,
+        until: Date.now() + (b.hours || 1) * 3600 * 1000,
+      };
+    }
+    if (b.kind === 'flavor' && b.line) {
+      pushLog(b.line, 'event');
+      pushEventLog(b.line, 'tea');
+    }
     if (b.kind === 'gamble') {
       const win = Math.random() < 0.45;
       const n = rand(8, 28);
@@ -2125,6 +2193,12 @@
     if (typeof saved.softenLeft !== 'number') saved.softenLeft = 0;
     if (typeof saved.softenPct !== 'number') saved.softenPct = 0;
     if (!saved.combatBuff || typeof saved.combatBuff !== 'object') saved.combatBuff = null;
+    if (typeof saved.dropBonusPct !== 'number') saved.dropBonusPct = 0;
+    if (typeof saved.dropBonusLeft !== 'number') saved.dropBonusLeft = 0;
+    if (typeof saved.encounterReducePct !== 'number') saved.encounterReducePct = 0;
+    if (typeof saved.encounterReduceLeft !== 'number') saved.encounterReduceLeft = 0;
+    if (!saved.zoneSilverBonus || typeof saved.zoneSilverBonus !== 'object') saved.zoneSilverBonus = null;
+    if (!saved.rivalChanceBonus || typeof saved.rivalChanceBonus !== 'object') saved.rivalChanceBonus = null;
     if (typeof saved.teaDayKey !== 'string') saved.teaDayKey = '';
     if (typeof saved.teaDailyCount !== 'number') saved.teaDailyCount = 0;
     if (typeof saved.teaCooldownUntil !== 'number') saved.teaCooldownUntil = 0;
