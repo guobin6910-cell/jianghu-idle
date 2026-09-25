@@ -651,7 +651,7 @@
       teaDailyCount: 0,
       teaCooldownUntil: 0,
       eventLogSeen: 0,
-      settings: { muted: false, bgmVol: 0.35, sfxVol: 0.5 },
+      settings: { muted: false, bgmVol: 0.28, sfxVol: 0.55 },
     };
   }
 
@@ -1763,11 +1763,11 @@
     if (typeof saved.teaDailyCount !== 'number') saved.teaDailyCount = 0;
     if (typeof saved.teaCooldownUntil !== 'number') saved.teaCooldownUntil = 0;
     if (!saved.settings || typeof saved.settings !== 'object') {
-      saved.settings = { muted: false, bgmVol: 0.35, sfxVol: 0.5 };
+      saved.settings = { muted: false, bgmVol: 0.28, sfxVol: 0.55 };
     } else {
       if (typeof saved.settings.muted !== 'boolean') saved.settings.muted = false;
-      if (typeof saved.settings.bgmVol !== 'number') saved.settings.bgmVol = 0.35;
-      if (typeof saved.settings.sfxVol !== 'number') saved.settings.sfxVol = 0.5;
+      if (typeof saved.settings.bgmVol !== 'number') saved.settings.bgmVol = 0.28;
+      if (typeof saved.settings.sfxVol !== 'number') saved.settings.sfxVol = 0.55;
     }
     if (typeof saved.lv !== 'number') saved.lv = 1;
     if (typeof saved.exp !== 'number') saved.exp = 0;

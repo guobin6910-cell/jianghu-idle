@@ -1,9 +1,10 @@
 /* 江湖閒談錄｜音訊模組（HTMLAudioElement） */
 (function (global) {
   const BASE = 'assets/audio/';
+  // ogg 優先；部分舊瀏覽器可回退 mp3（僅 BGM）
   const BGM_SRC = {
-    world: BASE + 'bgm_world.ogg',
-    battle: BASE + 'bgm_battle.ogg',
+    world: [BASE + 'bgm_world.ogg', BASE + 'bgm_world.mp3'],
+    battle: [BASE + 'bgm_battle.ogg', BASE + 'bgm_battle.mp3'],
   };
   const SFX_SRC = {
     hit: BASE + 'sfx_hit.ogg',
@@ -18,13 +19,31 @@
   };
 
   let muted = false;
-  let bgmVol = 0.35;
-  let sfxVol = 0.5;
+  let bgmVol = 0.28;
+  let sfxVol = 0.55;
   let unlocked = false;
   let currentBgmId = null;
   let bgmEl = null;
   let fadeTimer = null;
   const sfxPool = {};
+
+  function pickSrc(candidates) {
+    if (typeof candidates === 'string') return candidates;
+    if (!candidates || !candidates.length) return '';
+    const a = document.createElement('audio');
+    for (let i = 0; i < candidates.length; i++) {
+      const src = candidates[i];
+      const ext = (src.split('.').pop() || '').toLowerCase();
+      const type =
+        ext === 'ogg'
+          ? 'audio/ogg; codecs="vorbis"'
+          : ext === 'mp3'
+            ? 'audio/mpeg'
+            : '';
+      if (!type || a.canPlayType(type)) return src;
+    }
+    return candidates[0];
+  }
 
   function makeAudio(src, loop) {
     const a = new Audio(src);
@@ -81,7 +100,6 @@
   function unlock() {
     if (unlocked) return;
     unlocked = true;
-    // 輕觸解鎖：播極短靜音再停
     try {
       const a = ensureBgmEl();
       a.muted = true;
@@ -110,7 +128,7 @@
       el.volume = effectiveBgmVol();
       return;
     }
-    const src = BGM_SRC[id];
+    const src = pickSrc(BGM_SRC[id]);
     const switchTo = () => {
       currentBgmId = id;
       el.src = src;
@@ -208,7 +226,6 @@
     return currentBgmId;
   }
 
-  // 預載
   Object.keys(SFX_SRC).forEach((k) => {
     const a = makeAudio(SFX_SRC[k], false);
     sfxPool[k] = [a];
