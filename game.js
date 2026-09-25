@@ -31,6 +31,42 @@
   ];
 
 
+
+  const SCHOOL_SKILLS = {
+    cangjian: [
+      { id: 'pokong', name: '破空', cd: 4500, mult: 1.35 },
+      { id: 'lianzhan', name: '連斬', cd: 6500, mult: 0.85, hits: 2 },
+      { id: 'yujian', name: '御劍', cd: 8000, mult: 1.7 },
+      { id: 'ningqi', name: '凝氣', cd: 10000, kind: 'buff' },
+    ],
+    tiandao: [
+      { id: 'liefeng', name: '裂風', cd: 4500, mult: 1.4 },
+      { id: 'bengshan', name: '崩山', cd: 7000, mult: 1.85 },
+      { id: 'xueren', name: '血刃', cd: 8000, mult: 1.55 },
+      { id: 'ningqi', name: '凝氣', cd: 10000, kind: 'buff' },
+    ],
+    wuzong: [
+      { id: 'yingxi', name: '影襲', cd: 4000, mult: 1.25 },
+      { id: 'lianhuan', name: '連環', cd: 6000, mult: 0.75, hits: 3 },
+      { id: 'dunying', name: '遁影', cd: 7500, mult: 1.5 },
+      { id: 'ningqi', name: '凝氣', cd: 10000, kind: 'buff' },
+    ],
+    chanwu: [
+      { id: 'tiebi', name: '鐵壁', cd: 5000, mult: 1.2 },
+      { id: 'chanzhang', name: '禪掌', cd: 6500, mult: 1.6 },
+      { id: 'dingxin', name: '定心', cd: 8000, mult: 1.45 },
+      { id: 'ningqi', name: '凝氣', cd: 10000, kind: 'buff' },
+    ],
+  };
+
+  function getSchoolSkills(schoolId) {
+    return SCHOOL_SKILLS[schoolId] || SCHOOL_SKILLS.cangjian;
+  }
+
+  function calcPower(stats) {
+    return Math.floor((stats.atk || 0) * 2 + (stats.def || 0) + (stats.spd || 0) * 3);
+  }
+
   const ZONE_LOOK = {
     inn: 'bandit', river: 'water', desert: 'sand', bamboo: 'bamboo', cliff: 'cliff',
     nightmarket: 'night', snowpass: 'snow', oldtemple: 'temple', mistisle: 'mist', skyridge: 'sky',
@@ -652,6 +688,9 @@
       teaCooldownUntil: 0,
       eventLogSeen: 0,
       settings: { muted: false, bgmVol: 0.28, sfxVol: 0.55 },
+      skillCd: [0, 0, 0, 0],
+      nextAtkBonus: 0,
+      skillSoftLeft: 0,
     };
   }
 
@@ -680,7 +719,7 @@
     const el = $('combat-log');
     if (!el || !state) return;
     el.innerHTML = state.log
-      .slice(0, 12)
+      .slice(0, 4)
       .map((x) => `<div class="${x.cls || ''}">${escapeHtml(x.msg)}</div>`)
       .join('');
   }
@@ -852,35 +891,27 @@
       bonusExp += state.combatBuff.pct || 0;
     }
     const hitRoll = rand(-1, 2);
-    const dmg = Math.max(1, stats.atk - mob.def + hitRoll);
+    let dmg = Math.max(1, stats.atk - mob.def + hitRoll);
+    if (state.nextAtkBonus > 0) {
+      dmg = Math.max(1, Math.floor(dmg * (1 + state.nextAtkBonus)));
+      state.nextAtkBonus = 0;
+    }
     const isCrit = hitRoll >= 2;
     mob.hp -= dmg;
     const tag = mob.isRival ? '【名號】' : '';
     pushLog(tag + '你對「' + mob.name + '」造成 ' + dmg + ' 傷害' + (isCrit ? '（暴擊）' : ''), mob.isRival ? 'rival' : '');
-    fxHeroAttack(dmg);
+    fxHeroAttack(dmg, isCrit);
     if (Audio()) Audio().sfx(isCrit ? 'crit' : 'hit');
     renderCombatBars();
 
+    if (mob.hp > 0) {
+      tryAutoSkills(stats);
+    }
+
+    // 技能可能已結算擊殺（state.mob 清空）
+    if (!state.mob) return;
     if (mob.hp <= 0) {
-      const sil = rand(mob.silver[0], mob.silver[1]);
-      state.silver += sil;
-      state.kills += 1;
-      const gotExp = Math.floor(mob.exp * bonusExp);
-      gainExp(gotExp);
-      const wasRival = !!mob.isRival;
-      if (wasRival) onRivalDefeated(mob);
-      pushLog('擊敗「' + mob.name + '」！經驗 +' + gotExp + '，銀兩 +' + sil, wasRival ? 'rival' : 'win');
-      if (Audio()) Audio().sfx('kill');
-      tryDrop(wasRival);
-      consumeFightBuff();
-      fxMobDefeat();
-      state.mob = null;
-      setTimeout(() => {
-        if (!state || !state.hunting) return;
-        ensureMob();
-        renderAll();
-        save();
-      }, 280);
+      finishMobKill(mob, bonusExp);
       return;
     }
 
@@ -888,6 +919,10 @@
     if (Math.random() < hitChance) {
       let mdmg = Math.max(1, mob.atk - stats.def + rand(-1, 1));
       mdmg = Math.max(1, Math.floor(mdmg * incomingDmgFactor()));
+      if (state.skillSoftLeft > 0) {
+        mdmg = Math.max(1, Math.floor(mdmg * 0.7));
+        state.skillSoftLeft -= 1;
+      }
       if (mdmg >= stats.def + 6 && Math.random() < 0.15) {
         const lose = Math.min(state.silver, rand(1, 3));
         state.silver -= lose;
@@ -901,7 +936,104 @@
       pushLog('你身法一閃，避過「' + mob.name + '」');
       setTimeout(() => fxEnemyAttack('miss'), 160);
     }
+    renderSkillBar();
     save();
+  }
+
+  function finishMobKill(mob, bonusExp) {
+    const sil = rand(mob.silver[0], mob.silver[1]);
+    state.silver += sil;
+    state.kills += 1;
+    const gotExp = Math.floor(mob.exp * bonusExp);
+    gainExp(gotExp);
+    const wasRival = !!mob.isRival;
+    if (wasRival) onRivalDefeated(mob);
+    pushLog('擊敗「' + mob.name + '」！經驗 +' + gotExp + '，銀兩 +' + sil, wasRival ? 'rival' : 'win');
+    if (Audio()) Audio().sfx('kill');
+    tryDrop(wasRival);
+    consumeFightBuff();
+    fxMobDefeat();
+    state.mob = null;
+    setTimeout(() => {
+      if (!state || !state.hunting) return;
+      ensureMob();
+      renderAll();
+      save();
+    }, 280);
+  }
+
+  function skillReady(idx) {
+    if (!state || !Array.isArray(state.skillCd)) return true;
+    return Date.now() >= (state.skillCd[idx] || 0);
+  }
+
+  function setSkillCd(idx, ms) {
+    if (!state.skillCd) state.skillCd = [0, 0, 0, 0];
+    state.skillCd[idx] = Date.now() + ms;
+  }
+
+  function castSkill(idx, opts) {
+    opts = opts || {};
+    if (!state || !state.hunting) return false;
+    if (modalOpen) return false;
+    ensureMob();
+    const mob = state.mob;
+    if (!mob || mob.hp <= 0) return false;
+    if (!skillReady(idx)) return false;
+    const skills = getSchoolSkills(state.school);
+    const sk = skills[idx];
+    if (!sk) return false;
+
+    setSkillCd(idx, sk.cd || 5000);
+    spawnFloat(sk.name, 'skill-name');
+    pulseClass(document.querySelector('.skill-slot[data-skill="' + idx + '"]'), 'flash', 280);
+
+    if (sk.kind === 'buff') {
+      state.nextAtkBonus = 0.35;
+      state.skillSoftLeft = Math.max(state.skillSoftLeft || 0, 2);
+      spawnFloat('運功', 'heal');
+      pushLog('施展「' + sk.name + '」：下招威力↑，短暫護體', 'loot');
+      if (Audio()) Audio().sfx('click');
+      renderSkillBar();
+      save();
+      return true;
+    }
+
+    const stats = buffedStats(calcStats(state));
+    const hits = sk.hits || 1;
+    let total = 0;
+    for (let i = 0; i < hits; i++) {
+      const roll = rand(0, 2);
+      let dmg = Math.max(1, Math.floor((stats.atk - mob.def + roll) * (sk.mult || 1.3)));
+      total += dmg;
+      mob.hp -= dmg;
+    }
+    const isCrit = (sk.mult || 1) >= 1.6 || hits >= 3;
+    pushLog('「' + sk.name + '」對「' + mob.name + '」額外 -' + total, 'loot');
+    spawnFloat('-' + total, isCrit ? 'crit skill' : 'skill');
+    spawnSlash(!!isCrit, true);
+    pulseClass($('fighter-enemy'), 'hit', 280);
+    if (Audio()) Audio().sfx(isCrit ? 'crit' : 'hit');
+    renderCombatBars();
+    renderSkillBar();
+
+    if (mob.hp <= 0) {
+      let bonusExp = 1;
+      if (state.combatBuff && state.combatBuff.kind === 'exp') bonusExp += state.combatBuff.pct || 0;
+      finishMobKill(mob, bonusExp);
+    }
+    save();
+    return true;
+  }
+
+  function tryAutoSkills(stats) {
+    // 前 3 格掛機自動施放（冷卻好就放，每次 tick 最多一招）
+    for (let i = 0; i < 3; i++) {
+      if (skillReady(i)) {
+        castSkill(i, { auto: true });
+        return;
+      }
+    }
   }
 
   function tryTriggerEvent(now) {
@@ -1111,6 +1243,11 @@
     const stats = calcStats(state);
     const ms = Math.max(650, 1400 - stats.spd * 40);
     huntTimer = setInterval(tickCombat, ms);
+    if (!window.__skillCdUiTimer) {
+      window.__skillCdUiTimer = setInterval(() => {
+        if (state) renderSkillBar();
+      }, 250);
+    }
     renderAll();
     save();
   }
@@ -1172,10 +1309,38 @@
     const fx = $('stage-fx');
     if (!fx) return;
     const el = document.createElement('div');
-    el.className = 'dmg-float' + (kind ? ' ' + kind : '');
+    const kinds = (kind || '').trim();
+    el.className = 'dmg-float' + (kinds ? ' ' + kinds : '');
     el.textContent = text;
+    const enemySide = /enemy-hit|heal/.test(kinds);
+    const baseLeft = enemySide ? 28 : 70;
+    const jitterX = rand(-10, 12);
+    const jitterY = rand(-8, 14);
+    el.style.left = (baseLeft + jitterX) + '%';
+    el.style.top = (28 + jitterY) + '%';
     fx.appendChild(el);
-    setTimeout(() => el.remove(), 750);
+    setTimeout(() => el.remove(), 900);
+  }
+
+  function spawnSlash(isCrit, isSkill) {
+    const fx = $('stage-fx');
+    if (!fx) return;
+    const mk = (extra) => {
+      const el = document.createElement('div');
+      el.className = 'fx-slash' + (isCrit ? ' crit' : '') + (isSkill ? ' skill' : '') + (extra ? ' ' + extra : '');
+      el.style.left = (66 + rand(-4, 6)) + '%';
+      el.style.top = (38 + rand(-6, 8)) + '%';
+      fx.appendChild(el);
+      setTimeout(() => el.remove(), 360);
+    };
+    mk('');
+    if (isCrit) mk('twin');
+    const spark = document.createElement('div');
+    spark.className = 'fx-spark';
+    spark.style.left = (68 + rand(-3, 5)) + '%';
+    spark.style.top = (40 + rand(-4, 6)) + '%';
+    fx.appendChild(spark);
+    setTimeout(() => spark.remove(), 240);
   }
 
   function renderStage() {
@@ -1246,12 +1411,13 @@
     }, HERO_ATK_FRAME_MS);
   }
 
-  function fxHeroAttack(dmg) {
+  function fxHeroAttack(dmg, isCrit) {
     const totalMs = HERO_ATK_FRAMES * HERO_ATK_FRAME_MS;
     pulseClass($('fighter-hero'), 'attacking', Math.max(280, totalMs));
     playHeroAttackAnim();
     pulseClass($('fighter-enemy'), 'hit', 280);
-    spawnFloat('-' + dmg, '');
+    spawnFloat('-' + dmg, isCrit ? 'crit' : '');
+    spawnSlash(!!isCrit, false);
   }
 
   function fxEnemyAttack(kind) {
@@ -1259,13 +1425,14 @@
     pulseClass($('fighter-hero'), 'hit', 280);
     if (kind === 'miss') spawnFloat('閃', 'miss enemy-hit');
     else if (kind === 'block') spawnFloat('化', 'miss enemy-hit');
-    else spawnFloat('！', 'enemy-hit');
+    else spawnFloat('-!', 'enemy-hit');
   }
 
   function fxMobDefeat() {
     const enemyF = $('fighter-enemy');
     if (!enemyF) return;
     enemyF.classList.add('dying');
+    spawnFloat('破！', 'kill');
     setTimeout(() => enemyF.classList.remove('dying'), 420);
   }
 
@@ -1295,7 +1462,16 @@
     const need = expToNext(state.lv);
     const titleBit = state.activeTitle ? '「' + state.activeTitle + '」' : '';
     $('hero-name').textContent = titleBit + state.name;
-    $('hero-meta').textContent = ' · ' + (school ? school.name : '') + ' · Lv.' + state.lv;
+    const lvEl = $('hero-lv');
+    if (lvEl) lvEl.textContent = 'Lv.' + state.lv;
+    $('hero-meta').textContent = school ? school.name : '';
+    const powerEl = $('stat-power');
+    if (powerEl) powerEl.textContent = String(calcPower(stats));
+    const av = $('hud-avatar');
+    if (av) {
+      av.className = 'hud-avatar school-' + (state.school || 'cangjian');
+      av.textContent = (state.name || '俠').charAt(0);
+    }
     $('stat-silver').textContent = String(state.silver);
     $('stat-chivalry').textContent = String(state.chivalry);
     $('stat-lv').textContent = String(state.lv);
@@ -1311,6 +1487,8 @@
     renderCombatBars();
     renderStage();
     renderLog();
+    renderSkillBar();
+    syncAutoBtn();
     renderZones();
     renderBag();
     renderHero();
@@ -1318,6 +1496,74 @@
 
     $('btn-hunt').disabled = !!state.hunting;
     $('btn-stop').disabled = !state.hunting;
+  }
+
+  function syncAutoBtn() {
+    const btn = $('btn-auto');
+    if (!btn || !state) return;
+    btn.setAttribute('aria-pressed', state.hunting ? 'true' : 'false');
+  }
+
+  function renderSkillBar() {
+    const wrap = $('skill-slots');
+    if (!wrap || !state) return;
+    const skills = getSchoolSkills(state.school);
+    const now = Date.now();
+    if (!state.skillCd) state.skillCd = [0, 0, 0, 0];
+    // 初次建立按鈕
+    if (!wrap.dataset.bound || wrap.dataset.school !== state.school) {
+      wrap.dataset.bound = '1';
+      wrap.dataset.school = state.school || '';
+      wrap.innerHTML = skills
+        .map((sk, i) => {
+          return (
+            '<button type="button" class="skill-slot" data-skill="' +
+            i +
+            '" title="' +
+            escapeHtml(sk.name) +
+            '">' +
+            '<span class="sk-name">' +
+            escapeHtml(sk.name) +
+            '</span>' +
+            '<span class="cd-mask"></span>' +
+            '<span class="cd-text"></span>' +
+            '</button>'
+          );
+        })
+        .join('');
+      wrap.querySelectorAll('[data-skill]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.getAttribute('data-skill'));
+          if (Audio()) Audio().sfx('click');
+          if (!state.hunting) {
+            pushLog('先開始掛機或開啟「自動」再施招');
+            return;
+          }
+          if (!skillReady(idx)) return;
+          castSkill(idx);
+        });
+      });
+    }
+    wrap.querySelectorAll('[data-skill]').forEach((btn) => {
+      const idx = Number(btn.getAttribute('data-skill'));
+      const until = state.skillCd[idx] || 0;
+      const left = Math.max(0, until - now);
+      const sk = skills[idx];
+      const cdMs = (sk && sk.cd) || 5000;
+      const mask = btn.querySelector('.cd-mask');
+      const cdText = btn.querySelector('.cd-text');
+      if (left > 0) {
+        btn.classList.add('on-cd');
+        btn.disabled = true;
+        if (mask) mask.style.height = Math.min(100, (left / cdMs) * 100) + '%';
+        if (cdText) cdText.textContent = Math.ceil(left / 1000);
+      } else {
+        btn.classList.remove('on-cd');
+        btn.disabled = !state.hunting;
+        if (mask) mask.style.height = '0%';
+        if (cdText) cdText.textContent = '';
+      }
+    });
   }
 
   function renderZones() {
@@ -1693,6 +1939,14 @@
 
     $('btn-hunt').addEventListener('click', startHunt);
     $('btn-stop').addEventListener('click', stopHunt);
+    const autoBtn = $('btn-auto');
+    if (autoBtn) {
+      autoBtn.addEventListener('click', () => {
+        if (!state) return;
+        if (state.hunting) stopHunt();
+        else startHunt();
+      });
+    }
     const muteBtn = $('btn-mute');
     if (muteBtn) {
       muteBtn.addEventListener('click', () => {
@@ -1778,6 +2032,11 @@
     if (!zoneOk) saved.zoneId = 'inn';
     saved.hunting = false;
     saved.mob = null;
+    if (!Array.isArray(saved.skillCd) || saved.skillCd.length !== 4) {
+      saved.skillCd = [0, 0, 0, 0];
+    }
+    if (typeof saved.nextAtkBonus !== 'number') saved.nextAtkBonus = 0;
+    if (typeof saved.skillSoftLeft !== 'number') saved.skillSoftLeft = 0;
     return saved;
   }
 

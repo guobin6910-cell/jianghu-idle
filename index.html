@@ -34,44 +34,54 @@
     </section>
 
     <section id="screen-game" class="screen hidden">
-      <header class="topbar">
-        <div>
-          <strong id="hero-name">—</strong>
-          <span id="hero-meta" class="muted"></span>
+      <header class="topbar hud-bar">
+        <div class="hud-left">
+          <div class="hud-avatar school-cangjian" id="hud-avatar" aria-hidden="true">俠</div>
+          <div class="hud-identity">
+            <div class="hud-name-row">
+              <strong id="hero-name">—</strong>
+              <span class="hud-lv" id="hero-lv">Lv.1</span>
+            </div>
+            <div class="hud-subrow">
+              <span id="hero-meta" class="muted"></span>
+              <span class="hud-power">戰力 <b id="stat-power">0</b></span>
+            </div>
+          </div>
         </div>
         <div class="currencies">
-          <span>銀 <b id="stat-silver">0</b></span>
-          <span>俠 <b id="stat-chivalry">0</b></span>
+          <span class="cur-pill">銀 <b id="stat-silver">0</b></span>
+          <span class="cur-pill">俠 <b id="stat-chivalry">0</b></span>
           <button type="button" id="btn-mute" class="btn-mute" title="靜音切換" aria-label="靜音切換">🔊</button>
         </div>
       </header>
 
-      <div class="stats-row">
-        <div>Lv.<b id="stat-lv">1</b></div>
-        <div class="bar-wrap" title="經驗">
+      <div class="hud-exp-row">
+        <div class="bar-wrap thin exp-bar" title="經驗">
           <div id="bar-exp" class="bar"></div>
           <span id="stat-exp-label">0 / 0</span>
         </div>
-        <div>攻 <b id="stat-atk">0</b></div>
-        <div>防 <b id="stat-def">0</b></div>
-        <div>速 <b id="stat-spd">0</b></div>
+        <div class="hud-stats-mini">
+          <span>攻 <b id="stat-atk">0</b></span>
+          <span>防 <b id="stat-def">0</b></span>
+          <span>速 <b id="stat-spd">0</b></span>
+          <span class="hidden">Lv.<b id="stat-lv">1</b></span>
+        </div>
       </div>
 
-      <div class="combat card">
-        <div class="combat-head">
-          <div>
-            <div class="zone-title" id="zone-name">—</div>
-            <div class="muted" id="zone-flavor"></div>
-          </div>
-          <div class="hp-block">
-            <div id="mob-name">等待開打</div>
-            <div class="bar-wrap thin">
-              <div id="bar-mob" class="bar danger"></div>
+      <div class="combat card combat-frame">
+        <div id="battle-stage" class="battle-stage zone-inn" aria-hidden="false">
+          <div class="stage-overlay-top">
+            <div class="zone-chip">
+              <div class="zone-title" id="zone-name">—</div>
+              <div class="muted zone-flavor" id="zone-flavor"></div>
+            </div>
+            <div class="hp-block">
+              <div id="mob-name">等待開打</div>
+              <div class="bar-wrap thin">
+                <div id="bar-mob" class="bar danger"></div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div id="battle-stage" class="battle-stage zone-inn" aria-hidden="false">
           <div class="stage-ground"></div>
           <div class="stage-fx" id="stage-fx"></div>
           <div class="fighter hero-side" id="fighter-hero">
@@ -89,10 +99,18 @@
             </div>
             <div class="fighter-label" id="enemy-stage-label">等待開打</div>
           </div>
+          <div id="combat-log" class="log stage-log" aria-live="polite"></div>
         </div>
 
-        <div id="combat-log" class="log" aria-live="polite"></div>
-        <div class="combat-actions">
+        <div class="skill-bar" id="skill-bar">
+          <button type="button" id="btn-auto" class="skill-auto" aria-pressed="false" title="自動掛機">
+            <span class="auto-dot"></span>
+            <span class="auto-label">自動</span>
+          </button>
+          <div class="skill-slots" id="skill-slots"></div>
+        </div>
+
+        <div class="combat-actions compact">
           <button type="button" id="btn-hunt" class="btn primary">⚔ 開始掛機</button>
           <button type="button" id="btn-stop" class="btn" disabled>■ 停手</button>
         </div>
