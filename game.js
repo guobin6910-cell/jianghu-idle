@@ -20,6 +20,7 @@
       bgmVol: audio.bgmVol,
       sfxVol: audio.sfxVol,
       autoSell: prev.autoSell || 'fan',
+      bulkSell: prev.bulkSell === 'fan_liang' ? 'fan_liang' : 'fan',
     };
   }
 
@@ -792,7 +793,7 @@
       teaDailyCount: 0,
       teaCooldownUntil: 0,
       eventLogSeen: 0,
-      settings: { muted: false, bgmVol: 0.28, sfxVol: 0.55, autoSell: 'fan' },
+      settings: { muted: false, bgmVol: 0.28, sfxVol: 0.55, autoSell: 'fan', bulkSell: 'fan' },
       skillCd: [0, 0, 0, 0],
       nextAtkBonus: 0,
       skillSoftLeft: 0,
@@ -1685,6 +1686,63 @@
     save();
   }
 
+  function getBulkSellMode() {
+    const m = state && state.settings && state.settings.bulkSell;
+    if (m === 'fan' || m === 'fan_liang') return m;
+    return 'fan';
+  }
+
+  function setBulkSellMode(mode) {
+    if (!state) return;
+    if (mode !== 'fan' && mode !== 'fan_liang') return;
+    if (!state.settings) state.settings = { muted: false, bgmVol: 0.28, sfxVol: 0.55, autoSell: 'fan', bulkSell: 'fan' };
+    state.settings.bulkSell = mode;
+    renderBag();
+    save();
+  }
+
+  /** 一鍵販售：只賣行囊內勾選品質；名號／珍／絕不進；不動已裝備。 */
+  function canBulkSellItem(item) {
+    if (!item) return false;
+    if (item.keep || item.fromRival) return false;
+    const q = item.quality || 'fan';
+    if (q === 'zhen' || q === 'jue') return false;
+    if (isItemEquipped(item.uid)) return false;
+    const mode = getBulkSellMode();
+    if (mode === 'fan') return q === 'fan';
+    if (mode === 'fan_liang') return q === 'fan' || q === 'liang';
+    return false;
+  }
+
+  function oneClickSellBag() {
+    if (!state || !Array.isArray(state.bag)) return;
+    const mode = getBulkSellMode();
+    const keep = [];
+    let sold = 0;
+    let silverGain = 0;
+    for (const item of state.bag) {
+      if (canBulkSellItem(item)) {
+        const price = qualitySellPrice(item);
+        silverGain += price;
+        sold += 1;
+      } else {
+        keep.push(item);
+      }
+    }
+    if (!sold) {
+      pushLog('一鍵販售：沒有符合條件的物品（名號／珍絕／已裝備不會賣）。');
+      renderBag();
+      return;
+    }
+    state.bag = keep;
+    state.silver += silverGain;
+    const label = mode === 'fan_liang' ? '凡＋良' : '凡';
+    pushLog('一鍵販售（' + label + '）出 ' + sold + ' 件，＋' + silverGain + ' 銀', 'loot');
+    if (Audio()) Audio().sfx('drop');
+    renderAll();
+    save();
+  }
+
   function setAutoSell(mode) {
     if (!state) return;
     if (mode !== 'off' && mode !== 'fan' && mode !== 'fan_liang') return;
@@ -2116,6 +2174,7 @@
     const el = $('panel-bag');
     const eq = state.equip;
     const mode = getAutoSellMode();
+    const bulkMode = getBulkSellMode();
     const asBar =
       '<div class="autosell-bar">' +
       '<span class="label">自動售出</span>' +
@@ -2123,6 +2182,13 @@
       '<button type="button" class="as-btn' + (mode === 'fan' ? ' active' : '') + '" data-autosell="fan">只賣凡</button>' +
       '<button type="button" class="as-btn' + (mode === 'fan_liang' ? ' active' : '') + '" data-autosell="fan_liang">凡＋良</button>' +
       '<span class="autosell-hint">只處理新掉落；行囊內既有物品不會被自動賣掉。</span>' +
+      '</div>' +
+      '<div class="bulksell-bar">' +
+      '<span class="label">一鍵販售</span>' +
+      '<button type="button" class="as-btn' + (bulkMode === 'fan' ? ' active' : '') + '" data-bulksell-mode="fan">凡</button>' +
+      '<button type="button" class="as-btn' + (bulkMode === 'fan_liang' ? ' active' : '') + '" data-bulksell-mode="fan_liang">凡＋良</button>' +
+      '<button type="button" class="btn primary" id="btn-bulk-sell" title="手動一鍵販售行囊符合品質；名號／珍絕／已裝備不賣">一鍵販售</button>' +
+      '<span class="autosell-hint">按了才賣包裡的；名號與珍絕預設不進。</span>' +
       '</div>';
     const eqLines = ['weapon', 'armor', 'boots', 'ring']
       .map((slot) => {
@@ -2196,6 +2262,19 @@
         setAutoSell(b.getAttribute('data-autosell'));
       })
     );
+    el.querySelectorAll('[data-bulksell-mode]').forEach((b) =>
+      b.addEventListener('click', () => {
+        if (Audio()) Audio().sfx('click');
+        setBulkSellMode(b.getAttribute('data-bulksell-mode'));
+      })
+    );
+    const bulkBtn = el.querySelector('#btn-bulk-sell');
+    if (bulkBtn) {
+      bulkBtn.addEventListener('click', () => {
+        if (Audio()) Audio().sfx('click');
+        oneClickSellBag();
+      });
+    }
   }
 
   function renderHero() {
@@ -2577,6 +2656,9 @@
       if (typeof saved.settings.muted !== 'boolean') saved.settings.muted = false;
       if (typeof saved.settings.bgmVol !== 'number') saved.settings.bgmVol = 0.28;
       if (typeof saved.settings.sfxVol !== 'number') saved.settings.sfxVol = 0.55;
+      if (saved.settings.bulkSell !== 'fan' && saved.settings.bulkSell !== 'fan_liang') {
+        saved.settings.bulkSell = 'fan';
+      }
       if (
         saved.settings.autoSell !== 'off' &&
         saved.settings.autoSell !== 'fan' &&
