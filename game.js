@@ -30,7 +30,13 @@
     { id: 'anqi', name: '暗器', atk: 1, spd: 3 },
   ];
 
-
+  const LOOKS = [
+    { id: 'a', glyph: '劍' },
+    { id: 'b', glyph: '刀' },
+    { id: 'c', glyph: '武' },
+    { id: 'd', glyph: '禪' },
+  ];
+  const SCHOOL_GLYPH = { cangjian: '劍', tiandao: '刀', wuzong: '影', chanwu: '禪' };
 
   const SCHOOL_SKILLS = {
     cangjian: [
@@ -496,6 +502,7 @@
   let state = null;
   let huntTimer = null;
   let selectedSchool = SCHOOLS[0].id;
+  let selectedLook = 'a';
   let selectedWeapon = WEAPONS[0].id;
 
   const $ = (id) => document.getElementById(id);
@@ -655,11 +662,12 @@
     return { atk, def, spd };
   }
 
-  function defaultHero(name, school, weaponPath) {
+  function defaultHero(name, school, weaponPath, look) {
     return {
       name,
       school,
       weaponPath,
+      look: look || 'a',
       lv: 1,
       exp: 0,
       silver: 20,
@@ -804,6 +812,7 @@
   function gainExp(n) {
     state.exp += n;
     let ups = 0;
+    const fromLv = state.lv;
     while (state.exp >= expToNext(state.lv)) {
       state.exp -= expToNext(state.lv);
       state.lv += 1;
@@ -812,7 +821,9 @@
     if (ups) {
       pushLog(`升級！目前 Lv.${state.lv}`, 'win');
       if (Audio()) Audio().sfx('levelup');
+      openLevelUpModal(fromLv, state.lv);
     }
+    return ups;
   }
 
   function grantDropItem(d, tag) {
@@ -827,7 +838,7 @@
         pushLog('悟得「' + d.name + '」，俠義 +' + d.chivalry, 'loot');
         if (Audio()) Audio().sfx('drop');
       }
-      return;
+      return null;
     }
     const item = {
       uid: d.id + '-' + Date.now() + '-' + Math.random().toString(16).slice(2, 6),
@@ -841,24 +852,33 @@
     state.bag.push(item);
     pushLog((tag || '掉落') + '裝備「' + item.name + '」', 'loot');
     if (Audio()) Audio().sfx('drop');
+    const bits = [];
+    if (item.atk) bits.push('攻+' + item.atk);
+    if (item.def) bits.push('防+' + item.def);
+    if (item.spd) bits.push('速+' + item.spd);
+    return { name: item.name, icon: '⚔️', meta: (tag || '裝備') + (bits.length ? ' · ' + bits.join(' ') : '') };
   }
 
   function tryDrop(fromRival) {
+    const got = [];
     if (fromRival && state._lastRivalDrop) {
       const d = state._lastRivalDrop;
       if (Math.random() < (d.rare == null ? 0.7 : d.rare)) {
-        grantDropItem(d, '名號最佳掉落');
+        const loot = grantDropItem(d, '名號最佳掉落');
+        if (loot) got.push(loot);
         state._lastRivalDrop = null;
-        return;
+        return got;
       }
       state._lastRivalDrop = null;
     }
     const zone = currentZone();
     for (const d of zone.drops) {
       if (Math.random() > d.rare) continue;
-      grantDropItem(d, '掉落');
-      return;
+      const loot = grantDropItem(d, '掉落');
+      if (loot) got.push(loot);
+      return got;
     }
+    return got;
   }
 
   function onRivalDefeated(mob) {
@@ -950,7 +970,8 @@
     if (wasRival) onRivalDefeated(mob);
     pushLog('擊敗「' + mob.name + '」！經驗 +' + gotExp + '，銀兩 +' + sil, wasRival ? 'rival' : 'win');
     if (Audio()) Audio().sfx('kill');
-    tryDrop(wasRival);
+    const lootGot = tryDrop(wasRival);
+    if (lootGot && lootGot.length) openLootModal(lootGot);
     consumeFightBuff();
     fxMobDefeat();
     state.mob = null;
@@ -1055,10 +1076,84 @@
     return root;
   }
 
+  const modalQueue = [];
+
   function closeModal() {
     modalOpen = false;
     const root = document.getElementById('modal-root');
     if (root) root.innerHTML = '';
+    if (modalQueue.length) {
+      const next = modalQueue.shift();
+      setTimeout(() => next && next(), 40);
+    }
+  }
+
+  function enqueueModal(fn) {
+    if (modalOpen) modalQueue.push(fn);
+    else fn();
+  }
+
+  function openLevelUpModal(fromLv, toLv) {
+    enqueueModal(() => {
+      if (modalOpen) {
+        modalQueue.push(() => openLevelUpModal(fromLv, toLv));
+        return;
+      }
+      modalOpen = true;
+      const root = ensureModalRoot();
+      const gained = toLv - fromLv;
+      root.innerHTML =
+        '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
+        '<div class="modal-card level-modal">' +
+        '<h3>恭喜升級</h3>' +
+        '<p class="muted" style="text-align:center">Lv.' + fromLv + ' → Lv.' + toLv +
+        (gained > 1 ? '（連升 ' + gained + ' 級）' : '') + '</p>' +
+        '<div class="level-delta">' +
+        '攻防速與氣血隨等級成長。<br/>' +
+        '目前等級 <b>Lv.' + toLv + '</b>，戰力請見頂欄。' +
+        '</div>' +
+        '<button type="button" class="btn primary full" data-close>知道了</button>' +
+        '</div></div>';
+      root.querySelector('[data-close]').onclick = () => {
+        if (Audio()) Audio().sfx('click');
+        closeModal();
+        renderAll();
+      };
+    });
+  }
+
+  function openLootModal(items) {
+    if (!items || !items.length) return;
+    enqueueModal(() => {
+      if (modalOpen) {
+        modalQueue.push(() => openLootModal(items));
+        return;
+      }
+      modalOpen = true;
+      const root = ensureModalRoot();
+      const rows = items.map((it) => {
+        const meta = it.meta || '';
+        return (
+          '<div class="loot-row">' +
+          '<div class="loot-icon">' + (it.icon || '🎒') + '</div>' +
+          '<div><div class="loot-name">' + escapeHtml(it.name) + '</div>' +
+          (meta ? '<div class="loot-meta">' + escapeHtml(meta) + '</div>' : '') +
+          '</div></div>'
+        );
+      }).join('');
+      root.innerHTML =
+        '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
+        '<div class="modal-card loot-modal">' +
+        '<h3>獲得物品</h3>' +
+        '<div class="loot-list">' + rows + '</div>' +
+        '<button type="button" class="btn primary full" data-close>收下</button>' +
+        '</div></div>';
+      root.querySelector('[data-close]').onclick = () => {
+        if (Audio()) Audio().sfx('click');
+        closeModal();
+        renderAll();
+      };
+    });
   }
 
   function openTeahouseModal() {
@@ -1469,8 +1564,10 @@
     if (powerEl) powerEl.textContent = String(calcPower(stats));
     const av = $('hud-avatar');
     if (av) {
-      av.className = 'hud-avatar school-' + (state.school || 'cangjian');
-      av.textContent = (state.name || '俠').charAt(0);
+      const look = state.look || 'a';
+      av.className = 'hud-avatar school-' + (state.school || 'cangjian') + ' look-' + look;
+      const lookDef = LOOKS.find((x) => x.id === look);
+      av.textContent = lookDef ? lookDef.glyph : (state.name || '俠').charAt(0);
     }
     $('stat-silver').textContent = String(state.silver);
     $('stat-chivalry').textContent = String(state.chivalry);
@@ -1892,9 +1989,24 @@
   }
 
   function renderChoices() {
+    const lookEl = $('look-list');
+    if (lookEl) {
+      lookEl.innerHTML = LOOKS.map(
+        (L) => `<button type="button" class="look-opt look-${L.id} ${selectedLook === L.id ? 'selected' : ''}" data-look="${L.id}" aria-label="外貌 ${L.glyph}">${L.glyph}</button>`
+      ).join('');
+      lookEl.querySelectorAll('[data-look]').forEach((b) =>
+        b.addEventListener('click', () => {
+          if (Audio()) Audio().sfx('click');
+          selectedLook = b.getAttribute('data-look');
+          renderChoices();
+        })
+      );
+    }
+
     const sEl = $('school-list');
     sEl.innerHTML = SCHOOLS.map(
       (s) => `<button type="button" class="choice ${selectedSchool === s.id ? 'selected' : ''}" data-school="${s.id}">
+        <span class="school-glyph">${SCHOOL_GLYPH[s.id] || '俠'}</span>
         ${s.name}<small>${s.desc}</small></button>`
     ).join('');
     sEl.querySelectorAll('[data-school]').forEach((b) =>
@@ -1924,7 +2036,7 @@
       e.preventDefault();
       const name = $('name-input').value.trim();
       if (!name) return;
-      state = defaultHero(name, selectedSchool, selectedWeapon);
+      state = defaultHero(name, selectedSchool, selectedWeapon, selectedLook);
       pushLog(`「${name}」踏入江湖。`);
       if (Audio()) {
         Audio().applySettings(state.settings);

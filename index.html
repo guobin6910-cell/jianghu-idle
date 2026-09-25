@@ -9,26 +9,31 @@
 </head>
 <body>
   <div id="app">
-    <section id="screen-create" class="screen">
-      <header class="hero">
+    <section id="screen-create" class="screen create-shell">
+      <header class="hero title-hero">
         <p class="eyebrow">致敬金庸／古龍武俠風格 · 原創江湖</p>
         <h1>江湖閒談錄</h1>
         <p class="sub">掛機行走江湖：打怪、掉寶、慢慢變強</p>
       </header>
-      <form id="create-form" class="card">
+      <form id="create-form" class="card create-card">
+        <div class="create-card-title">踏入江湖</div>
         <label>俠客名號
           <input id="name-input" maxlength="12" placeholder="例如：沈孤舟" required autocomplete="off" />
         </label>
+        <fieldset class="look-field">
+          <legend>外貌</legend>
+          <div id="look-list" class="look-grid" role="listbox" aria-label="外貌"></div>
+        </fieldset>
         <fieldset>
           <legend>門派</legend>
-          <div id="school-list" class="choice-grid"></div>
+          <div id="school-list" class="choice-grid school-icons"></div>
         </fieldset>
         <fieldset>
           <legend>兵器路數</legend>
           <div id="weapon-list" class="choice-grid"></div>
         </fieldset>
         <p class="hint">屬性依門派微調；之後靠掛機打怪成長。故事為原創江湖閒談，不搬用小說原文。</p>
-        <button type="submit" class="btn primary full">踏入江湖</button>
+        <button type="submit" class="btn primary full btn-enter">踏入江湖</button>
       </form>
       <p class="disclaimer">本作為原創放置小品，僅借用武俠氛圍與門派意象，非金庸／古龍作品官方改編。</p>
     </section>
