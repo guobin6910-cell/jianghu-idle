@@ -1008,7 +1008,10 @@
     pushLog('擊敗「' + mob.name + '」！經驗 +' + gotExp + '，銀兩 +' + sil, wasRival ? 'rival' : 'win');
     if (Audio()) Audio().sfx('kill');
     const lootGot = tryDrop(wasRival);
-    if (lootGot && lootGot.length) openLootModal(lootGot);
+    // 掛機自動打：普通掉寶只進背包＋日誌，不彈窗要確認；名號稀有掉落仍可彈
+    if (lootGot && lootGot.length) {
+      if (wasRival || !state.hunting) openLootModal(lootGot);
+    }
     consumeFightBuff();
     fxMobDefeat();
     state.mob = null;
