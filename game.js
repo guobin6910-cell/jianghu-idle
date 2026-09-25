@@ -185,6 +185,34 @@
     return ZONE_LOOK[zoneId] || 'bandit';
   }
 
+  const ENEMY_SPRITES = [
+    'assets/combat/sprites/enemy_drunk.png',
+    'assets/combat/sprites/enemy_pirate.png',
+    'assets/combat/sprites/enemy_bandit.png',
+  ];
+  const ENEMY_SPRITE_BY_LOOK = {
+    bandit: ENEMY_SPRITES[2],
+    sand: ENEMY_SPRITES[2],
+    cliff: ENEMY_SPRITES[2],
+    water: ENEMY_SPRITES[1],
+    mist: ENEMY_SPRITES[1],
+    sky: ENEMY_SPRITES[1],
+    night: ENEMY_SPRITES[0],
+    bamboo: ENEMY_SPRITES[0],
+    snow: ENEMY_SPRITES[0],
+    temple: ENEMY_SPRITES[0],
+  };
+
+  function enemySpriteSrc(mob, slotIndex) {
+    const name = (mob && mob.name) || '';
+    if (/醉|混|賭/.test(name)) return ENEMY_SPRITES[0];
+    if (/水|潮|船|碼頭|雨|海賊|浪/.test(name)) return ENEMY_SPRITES[1];
+    if (/馬賊|沙|盜|賊|匪|探子|打手/.test(name)) return ENEMY_SPRITES[2];
+    const byLook = mob && ENEMY_SPRITE_BY_LOOK[mob.look];
+    if (byLook) return byLook;
+    return ENEMY_SPRITES[(slotIndex || 0) % ENEMY_SPRITES.length];
+  }
+
   const ZONES = [
     {
       id: 'inn',
@@ -1873,10 +1901,13 @@
       if (!slot) continue;
       const mob = state.mobs[i];
       slot.className = 'fighter enemy-side enemy-slot slot-' + i;
+      const spr = slot.querySelector('[data-sprite]');
       if (!mob || mob.hp <= 0) {
         slot.classList.add('empty');
-        const g = slot.querySelector('[data-glyph]');
-        if (g) g.textContent = i === 0 ? '？' : '';
+        if (spr) {
+          spr.src = ENEMY_SPRITES[i % ENEMY_SPRITES.length];
+          spr.alt = '';
+        }
         const lab = slot.querySelector('[data-label]');
         if (lab) lab.textContent = i === 0 && !primary ? '等待開打' : '';
         const hp = $('mob-hp-' + i);
@@ -1885,10 +1916,15 @@
       }
       slot.classList.add('look-' + (mob.look || 'bandit'));
       if (state.hunting) slot.classList.add('idle');
-      if (mob.isRival) slot.classList.add('named-rival');
+      if (mob.isRival) {
+        slot.classList.add('named-rival');
+        slot.classList.add('gold-outline');
+      }
       if (primary && primary.uid === mob.uid) slot.classList.add('primary-target');
-      const g = slot.querySelector('[data-glyph]');
-      if (g) g.textContent = mob.glyph || '👤';
+      if (spr) {
+        spr.src = enemySpriteSrc(mob, i);
+        spr.alt = mob.name || '';
+      }
       const lab = slot.querySelector('[data-label]');
       if (lab) lab.textContent = (mob.isRival ? '名號·' : '') + mob.name;
       const hp = $('mob-hp-' + i);
@@ -1896,7 +1932,7 @@
     }
   }
 
-  // 斜角占位剪影：暫不用七幀橫版 sheet。等創意「斜角 Q 版」圖到再換回幀動畫。
+  // 斜角 Q 版：攻擊僅套 attacking class（斜衝 CSS），不再播橫版 sheet。
   const HERO_ATK_MS = 280;
   let heroAtkTimer = null;
 

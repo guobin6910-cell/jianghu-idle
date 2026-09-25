@@ -465,23 +465,22 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   height: auto;
   border-radius: 0;
   background:
-    /* 菱形地磚感 */
     repeating-linear-gradient(
       116deg,
-      rgba(226,199,128,0.07) 0 1px,
+      rgba(226,199,128,0.04) 0 1px,
       transparent 1px 28px
     ),
     repeating-linear-gradient(
       64deg,
-      rgba(226,199,128,0.055) 0 1px,
+      rgba(226,199,128,0.03) 0 1px,
       transparent 1px 28px
     ),
-    linear-gradient(160deg, rgba(40,52,36,0.55) 0%, rgba(18,22,16,0.35) 45%, rgba(10,12,10,0.15) 100%);
+    linear-gradient(160deg, rgba(40,52,36,0.18) 0%, rgba(18,22,16,0.08) 45%, transparent 100%);
   box-shadow: none;
   pointer-events: none;
   z-index: 1;
   clip-path: polygon(8% 72%, 48% 8%, 92% 28%, 58% 96%);
-  opacity: 0.92;
+  opacity: 0.45;
   transform: none;
 }
 .battle-stage .stage-ground.iso-tiles::before {
@@ -551,9 +550,9 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 }
 /* 我方：右下 */
 .fighter.hero-side {
-  left: 62%;
-  top: 52%;
-  width: 110px;
+  left: 58%;
+  top: 48%;
+  width: 130px;
   z-index: 5;
   flex: none;
   padding: 0;
@@ -566,7 +565,7 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   min-height: 0;
 }
 .enemy-slot {
-  width: 78px;
+  width: 96px;
   opacity: 1;
   transition: opacity 0.2s, transform 0.2s, filter 0.2s;
 }
@@ -634,55 +633,54 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 .fighter .sprite {
   position: relative;
   z-index: 1;
-  width: 72px;
-  height: 96px;
-  display: grid;
-  place-items: center;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
+  width: 96px;
+  height: 120px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.45));
 }
 #fighter-hero .sprite {
-  width: 88px;
-  height: 108px;
-  align-items: end;
-  filter: none;
+  width: 120px;
+  height: 140px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
 }
 
-/* 斜角占位剪影（非橫版 sheet） */
-.iso-sil.hero-sil,
-.hero-art.iso-sil {
-  --hero-frame-w: 88px;
-  --hero-frame-h: 108px;
-  width: 88px;
-  height: 108px;
-  margin: 0 auto;
-  pointer-events: none;
-  transform-origin: center bottom;
-  position: relative;
-  overflow: visible;
-  background-image: none !important;
-  background: transparent;
-  display: grid;
-  place-items: end center;
-  color: var(--robe, #4a6b8a);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
-}
-.hero-art.iso-sil svg {
+/* 斜角 Q 版戰鬥精靈（取代白剪影／emoji glyph／橫版 sheet） */
+.combat-sprite {
   display: block;
-  width: 76px;
-  height: 96px;
+  height: 120px;
+  width: auto;
+  max-width: 112px;
+  object-fit: contain;
+  object-position: bottom center;
+  pointer-events: none;
+  user-select: none;
+  transform-origin: center bottom;
+  image-rendering: auto;
 }
-.iso-sil.enemy-sil {
-  position: absolute;
-  inset: 8px 10px 14px;
-  border-radius: 40% 40% 28% 28% / 28% 28% 45% 45%;
-  background:
-    linear-gradient(160deg, var(--mob-top, #4a3830) 0%, var(--mob-bot, #1a1410) 100%);
-  border: 2px solid var(--mob-edge, #7a5a40);
-  box-shadow: inset 0 -10px 18px rgba(0,0,0,0.35);
-  clip-path: polygon(50% 4%, 78% 18%, 88% 48%, 72% 92%, 28% 92%, 12% 48%, 22% 18%);
-  opacity: 0.95;
-  z-index: 0;
+.enemy-slot .combat-sprite {
+  height: 100px;
+  max-width: 96px;
 }
+#fighter-hero .combat-sprite,
+.hero-combat-sprite {
+  height: 128px;
+  max-width: 118px;
+}
+.enemy-slot.empty .combat-sprite {
+  opacity: 0.4;
+  filter: grayscale(0.55) brightness(0.85);
+}
+
+/* 舊剪影／glyph 停用（若殘留節點也不顯示） */
+.iso-sil,
+.enemy-sil,
+.enemy-glyph,
+.hero-art.iso-sil svg {
+  display: none !important;
+}
+
 .fighter .figure {
   width: 80px;
   height: 110px;
@@ -692,106 +690,83 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
   font-size: 10px;
   color: var(--accent);
   text-align: center;
-  max-width: 84px;
+  max-width: 96px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 #fighter-hero .fighter-label {
   font-size: 11px;
-  max-width: 120px;
+  max-width: 130px;
 }
 
-#fighter-hero .face { fill: #e8c9a0; }
-#fighter-hero .hair { fill: #2a2218; }
-#fighter-hero .robe { fill: var(--robe, #4a6b8a); stroke: var(--robe-edge, #2a4058); stroke-width: 1.5; }
-#fighter-hero .sash { fill: var(--sash, #c4a35a); }
+/* 門派色變數保留（HUD 等仍可用）；戰鬥主體已改精靈圖 */
 #fighter-hero.school-cangjian { --robe: #3d6a9a; --robe-edge: #1e3a58; --sash: #d4b56a; }
 #fighter-hero.school-tiandao { --robe: #8a3a2e; --robe-edge: #4a1e18; --sash: #c4a35a; }
 #fighter-hero.school-wuzong { --robe: #3a3a4a; --robe-edge: #1a1a28; --sash: #7a8aaa; }
 #fighter-hero.school-chanwu { --robe: #5a6a48; --robe-edge: #2a3820; --sash: #c9b070; }
 
-.weapon-slot .blade { fill: #d8dde8; stroke: #8a90a0; stroke-width: 0.8; }
-.weapon-slot .hilt { fill: #6b4a2a; }
-.weapon-slot .glow { fill: #e2c780; opacity: 0.7; }
 
-.enemy-glyph {
-  position: relative;
-  z-index: 1;
-  width: 56px;
-  height: 72px;
-  display: grid;
-  place-items: center;
-  font-size: 28px;
-  line-height: 1;
-  border-radius: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  user-select: none;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.65);
-}
-.enemy-slot.look-bandit { --mob-top: #5a4030; --mob-bot: #2e2018; --mob-edge: #8a6040; }
-.enemy-slot.look-water { --mob-top: #2a4860; --mob-bot: #142838; --mob-edge: #4a7a9a; }
-.enemy-slot.look-sand { --mob-top: #8a6a30; --mob-bot: #4a3818; --mob-edge: #c4a35a; }
-.enemy-slot.look-bamboo { --mob-top: #3a6a40; --mob-bot: #1a3820; --mob-edge: #6dbf8a; }
-.enemy-slot.look-cliff { --mob-top: #4a4a58; --mob-bot: #222230; --mob-edge: #8a8aaa; }
-.enemy-slot.look-night { --mob-top: #2a2848; --mob-bot: #12101f; --mob-edge: #6a5a9a; }
-.enemy-slot.look-snow { --mob-top: #7a8a9a; --mob-bot: #3a4858; --mob-edge: #c8d4e0; }
-.enemy-slot.look-temple { --mob-top: #5a4830; --mob-bot: #2a2010; --mob-edge: #a08050; }
-.enemy-slot.look-mist { --mob-top: #3a5868; --mob-bot: #1a2830; --mob-edge: #7a9aaa; }
-.enemy-slot.look-sky { --mob-top: #4a6080; --mob-bot: #1a2840; --mob-edge: #90b0d0; }
-
-/* 十區場景底板 */
+/* 十區場景底板：邊城／煙雨為主圖，其餘借用＋色偏暗角 */
 .battle-stage.zone-inn {
   background-image:
-    linear-gradient(160deg, rgba(20, 16, 10, 0.55), rgba(10, 8, 6, 0.72)),
-    url("assets/scenes/inn.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(6,4,2,0.55) 100%),
+    linear-gradient(160deg, rgba(20, 16, 10, 0.28), rgba(10, 8, 6, 0.48)),
+    url("assets/combat/bg_biancheng.png");
 }
 .battle-stage.zone-river {
   background-image:
-    linear-gradient(160deg, rgba(12, 20, 28, 0.55), rgba(8, 12, 16, 0.72)),
-    url("assets/scenes/river.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(4,8,12,0.55) 100%),
+    linear-gradient(160deg, rgba(12, 20, 28, 0.28), rgba(8, 12, 16, 0.48)),
+    url("assets/combat/bg_yanyu.png");
 }
 .battle-stage.zone-desert {
   background-image:
-    linear-gradient(160deg, rgba(40, 28, 10, 0.55), rgba(16, 12, 6, 0.72)),
-    url("assets/scenes/desert.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(12,8,2,0.55) 100%),
+    linear-gradient(160deg, rgba(70, 45, 12, 0.42), rgba(30, 18, 6, 0.58)),
+    url("assets/combat/bg_biancheng.png");
 }
 .battle-stage.zone-bamboo {
   background-image:
-    linear-gradient(160deg, rgba(10, 24, 12, 0.55), rgba(6, 12, 8, 0.72)),
-    url("assets/scenes/bamboo.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(4,10,4,0.55) 100%),
+    linear-gradient(160deg, rgba(20, 55, 28, 0.4), rgba(8, 22, 12, 0.55)),
+    url("assets/combat/bg_biancheng.png");
 }
 .battle-stage.zone-cliff {
   background-image:
-    linear-gradient(160deg, rgba(16, 18, 24, 0.55), rgba(8, 8, 12, 0.72)),
-    url("assets/scenes/cliff.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(6,6,10,0.55) 100%),
+    linear-gradient(160deg, rgba(30, 32, 48, 0.42), rgba(12, 12, 20, 0.58)),
+    url("assets/combat/bg_biancheng.png");
 }
 .battle-stage.zone-nightmarket {
   background-image:
-    linear-gradient(160deg, rgba(12, 8, 24, 0.55), rgba(6, 4, 12, 0.72)),
-    url("assets/scenes/nightmarket.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(8,2,14,0.6) 100%),
+    linear-gradient(160deg, rgba(40, 18, 60, 0.45), rgba(12, 6, 22, 0.6)),
+    url("assets/combat/bg_biancheng.png");
 }
 .battle-stage.zone-snowpass {
   background-image:
-    linear-gradient(160deg, rgba(20, 28, 36, 0.55), rgba(10, 14, 18, 0.72)),
-    url("assets/scenes/snowpass.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(8,12,16,0.55) 100%),
+    linear-gradient(160deg, rgba(50, 70, 90, 0.4), rgba(18, 28, 38, 0.55)),
+    url("assets/combat/bg_yanyu.png");
 }
 .battle-stage.zone-oldtemple {
   background-image:
-    linear-gradient(160deg, rgba(28, 22, 12, 0.55), rgba(12, 10, 6, 0.72)),
-    url("assets/scenes/oldtemple.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(10,8,4,0.55) 100%),
+    linear-gradient(160deg, rgba(55, 40, 18, 0.42), rgba(20, 14, 8, 0.58)),
+    url("assets/combat/bg_biancheng.png");
 }
 .battle-stage.zone-mistisle {
   background-image:
-    linear-gradient(160deg, rgba(12, 24, 28, 0.55), rgba(8, 12, 14, 0.72)),
-    url("assets/scenes/mistisle.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(6,12,14,0.55) 100%),
+    linear-gradient(160deg, rgba(30, 55, 60, 0.4), rgba(10, 22, 26, 0.55)),
+    url("assets/combat/bg_yanyu.png");
 }
 .battle-stage.zone-skyridge {
   background-image:
-    linear-gradient(160deg, rgba(16, 28, 40, 0.55), rgba(8, 14, 22, 0.72)),
-    url("assets/scenes/skyridge.webp");
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(6,10,16,0.55) 100%),
+    linear-gradient(160deg, rgba(35, 55, 85, 0.42), rgba(12, 22, 36, 0.58)),
+    url("assets/combat/bg_yanyu.png");
 }
 
 @keyframes lunge-iso-nw {
@@ -868,12 +843,11 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 .fighter.idle:not(.hero-side) .sprite { animation: idle-bob 2.4s ease-in-out infinite; }
 .fighter.hero-side.attacking .sprite,
 .fighter.hit .sprite { animation: none; }
-.fighter.hero-side.idle .hero-art:not(.attacking),
-.fighter.hero-side.idle .iso-sil.hero-sil:not(.attacking) {
+.fighter.hero-side.idle .combat-sprite:not(.attacking) {
   animation: idle-bob 2.4s ease-in-out infinite;
 }
-.fighter.hero-side.attacking .hero-art,
-.fighter.hero-side.attacking .iso-sil {
+.fighter.hero-side.attacking .combat-sprite,
+.combat-sprite.attacking {
   filter: drop-shadow(0 0 10px rgba(255,240,180,0.55)) brightness(1.15);
 }
 
@@ -1156,20 +1130,14 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 }
 
 .enemy-slot.named-rival .sprite {
-  box-shadow:
-    0 0 0 2px #f0d080,
-    0 0 18px rgba(232, 184, 106, 0.65),
-    0 0 36px rgba(255, 200, 80, 0.35);
   border-radius: 12px;
 }
-.enemy-slot.named-rival .enemy-sil {
-  border-color: #e8b86a;
-  box-shadow:
-    inset 0 -10px 18px rgba(0,0,0,0.35),
-    0 0 16px rgba(232, 184, 106, 0.45);
-}
-.enemy-slot.named-rival .enemy-glyph {
-  font-size: 32px;
+.enemy-slot.named-rival .combat-sprite,
+.enemy-slot.named-rival.gold-outline .combat-sprite {
+  filter:
+    drop-shadow(0 0 1px #f0d080)
+    drop-shadow(0 0 4px #e8b86a)
+    drop-shadow(0 0 12px rgba(232, 184, 106, 0.75));
 }
 .enemy-slot.named-rival .fighter-label {
   color: #f0d080;
