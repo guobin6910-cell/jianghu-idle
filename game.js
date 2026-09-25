@@ -13,7 +13,14 @@
     if (!state) return;
     const A = Audio();
     if (!A) return;
-    state.settings = A.getSettings();
+    const audio = A.getSettings();
+    const prev = state.settings || {};
+    state.settings = {
+      muted: audio.muted,
+      bgmVol: audio.bgmVol,
+      sfxVol: audio.sfxVol,
+      autoSell: prev.autoSell || 'fan',
+    };
   }
 
   const SCHOOLS = [
@@ -71,6 +78,83 @@
 
   function calcPower(stats) {
     return Math.floor((stats.atk || 0) * 2 + (stats.def || 0) + (stats.spd || 0) * 3);
+  }
+
+  const QUALITY_META = {
+    fan: { id: 'fan', label: '凡', cls: 'q-fan' },
+    liang: { id: 'liang', label: '良', cls: 'q-liang' },
+    zhen: { id: 'zhen', label: '珍', cls: 'q-zhen' },
+    jue: { id: 'jue', label: '絕', cls: 'q-jue' },
+  };
+
+  function qualityMeta(q) {
+    return QUALITY_META[q] || QUALITY_META.fan;
+  }
+
+  /** 稀有度越低（越難掉）→ 高品質機率越高；名號至少珍 */
+  function rollQuality(rare, opts) {
+    opts = opts || {};
+    if (opts.fromRival) {
+      return Math.random() < 0.58 ? 'jue' : 'zhen';
+    }
+    const r = typeof rare === 'number' ? rare : 0.22;
+    const inv = 1 - Math.min(0.95, Math.max(0.04, r));
+    const roll = Math.random();
+    const pJue = 0.004 + inv * 0.045;
+    const pZhen = 0.025 + inv * 0.12;
+    const pLiang = 0.2 + inv * 0.22;
+    if (roll < pJue) return 'jue';
+    if (roll < pJue + pZhen) return 'zhen';
+    if (roll < pJue + pZhen + pLiang) return 'liang';
+    return 'fan';
+  }
+
+  function qualitySellPrice(item) {
+    const q = (item && item.quality) || 'fan';
+    const ranges = {
+      fan: [8, 15],
+      liang: [25, 40],
+      zhen: [60, 95],
+      jue: [120, 180],
+    };
+    const rg = ranges[q] || ranges.fan;
+    const base = rand(rg[0], rg[1]);
+    return (
+      base +
+      (item.atk || 0) * 4 +
+      (item.def || 0) * 3 +
+      (item.spd || 0) * 3
+    );
+  }
+
+  function junkSilverWithQuality(base, q) {
+    const mult = { fan: 1, liang: 1.35, zhen: 1.9, jue: 2.8 }[q] || 1;
+    return Math.max(1, Math.floor((base || 0) * mult));
+  }
+
+  function getAutoSellMode() {
+    const m = state && state.settings && state.settings.autoSell;
+    if (m === 'off' || m === 'fan' || m === 'fan_liang') return m;
+    return 'fan';
+  }
+
+  function shouldAutoSell(item) {
+    if (!item) return false;
+    if (item.keep || item.fromRival) return false;
+    const mode = getAutoSellMode();
+    if (mode === 'off') return false;
+    const q = item.quality || 'fan';
+    if (mode === 'fan') return q === 'fan';
+    if (mode === 'fan_liang') return q === 'fan' || q === 'liang';
+    return false;
+  }
+
+  function isItemEquipped(uid) {
+    if (!state || !state.equip) return false;
+    return Object.keys(state.equip).some((slot) => {
+      const it = state.equip[slot];
+      return it && it.uid === uid;
+    });
   }
 
   const ZONE_LOOK = {
@@ -703,7 +787,7 @@
       teaDailyCount: 0,
       teaCooldownUntil: 0,
       eventLogSeen: 0,
-      settings: { muted: false, bgmVol: 0.28, sfxVol: 0.55 },
+      settings: { muted: false, bgmVol: 0.28, sfxVol: 0.55, autoSell: 'fan' },
       skillCd: [0, 0, 0, 0],
       nextAtkBonus: 0,
       skillSoftLeft: 0,
@@ -850,20 +934,27 @@
     return ups;
   }
 
-  function grantDropItem(d, tag) {
+  function grantDropItem(d, tag, opts) {
+    opts = opts || {};
+    const fromRival = !!opts.fromRival || tag === '名號最佳掉落';
+    const q = rollQuality(d.rare, { fromRival: fromRival });
+    const qm = qualityMeta(q);
+
     if (d.type === 'junk') {
       if (d.silver) {
-        state.silver += d.silver;
-        pushLog('撿到「' + d.name + '」，換得銀兩 ' + d.silver, 'loot');
+        const sil = junkSilverWithQuality(d.silver, q);
+        state.silver += sil;
+        pushLog('撿到「' + d.name + '」（' + qm.label + '），換得銀兩 ' + sil, 'loot ' + qm.cls);
         if (Audio()) Audio().sfx('drop');
       }
       if (d.chivalry) {
         state.chivalry += d.chivalry;
-        pushLog('悟得「' + d.name + '」，俠義 +' + d.chivalry, 'loot');
+        pushLog('悟得「' + d.name + '」（' + qm.label + '），俠義 +' + d.chivalry, 'loot ' + qm.cls);
         if (Audio()) Audio().sfx('drop');
       }
       return null;
     }
+
     const item = {
       uid: d.id + '-' + Date.now() + '-' + Math.random().toString(16).slice(2, 6),
       id: d.id,
@@ -872,15 +963,33 @@
       atk: d.atk || 0,
       def: d.def || 0,
       spd: d.spd || 0,
+      quality: q,
+      keep: fromRival,
+      fromRival: fromRival,
     };
+
+    if (shouldAutoSell(item)) {
+      const price = qualitySellPrice(item);
+      state.silver += price;
+      pushLog('自動售出「' + item.name + '」（' + qm.label + '）＋' + price + ' 銀', 'loot ' + qm.cls);
+      if (Audio()) Audio().sfx('drop');
+      return null;
+    }
+
     state.bag.push(item);
-    pushLog((tag || '掉落') + '裝備「' + item.name + '」', 'loot');
+    pushLog((tag || '掉落') + '「' + item.name + '」（' + qm.label + '）', 'loot ' + qm.cls);
     if (Audio()) Audio().sfx('drop');
     const bits = [];
     if (item.atk) bits.push('攻+' + item.atk);
     if (item.def) bits.push('防+' + item.def);
     if (item.spd) bits.push('速+' + item.spd);
-    return { name: item.name, icon: '⚔️', meta: (tag || '裝備') + (bits.length ? ' · ' + bits.join(' ') : '') };
+    bits.unshift(qm.label);
+    return {
+      name: item.name,
+      icon: '⚔️',
+      meta: (tag || '裝備') + (bits.length ? ' · ' + bits.join(' ') : ''),
+      quality: q,
+    };
   }
 
   function tryDrop(fromRival) {
@@ -888,7 +997,7 @@
     if (fromRival && state._lastRivalDrop) {
       const d = state._lastRivalDrop;
       if (Math.random() < (d.rare == null ? 0.7 : d.rare)) {
-        const loot = grantDropItem(d, '名號最佳掉落');
+        const loot = grantDropItem(d, '名號最佳掉落', { fromRival: true });
         if (loot) got.push(loot);
         state._lastRivalDrop = null;
         return got;
@@ -1073,7 +1182,8 @@
     pushLog('「' + sk.name + '」對「' + mob.name + '」額外 -' + total, 'loot');
     spawnFloat('-' + total, isCrit ? 'crit skill' : 'skill');
     spawnSlash(!!isCrit, true);
-    pulseClass($('fighter-enemy'), 'hit', 280);
+    pulseClass($('fighter-enemy'), 'hit', 300);
+    pulseClass($('battle-stage'), 'shake', isCrit ? 340 : 240);
     if (Audio()) Audio().sfx(isCrit ? 'crit' : 'hit');
     renderCombatBars();
     renderSkillBar();
@@ -1173,8 +1283,9 @@
       const root = ensureModalRoot();
       const rows = items.map((it) => {
         const meta = it.meta || '';
+        const qcls = it.quality ? qualityMeta(it.quality).cls : '';
         return (
-          '<div class="loot-row">' +
+          '<div class="loot-row' + (qcls ? ' ' + qcls : '') + '">' +
           '<div class="loot-icon">' + (it.icon || '🎒') + '</div>' +
           '<div><div class="loot-name">' + escapeHtml(it.name) + '</div>' +
           (meta ? '<div class="loot-meta">' + escapeHtml(meta) + '</div>' : '') +
@@ -1454,11 +1565,22 @@
     const idx = state.bag.findIndex((x) => x.uid === uid);
     if (idx < 0) return;
     const item = state.bag[idx];
-    const price = 8 + (item.atk || 0) * 6 + (item.def || 0) * 5 + (item.spd || 0) * 5;
+    if (isItemEquipped(uid)) return;
+    const qm = qualityMeta(item.quality);
+    const price = qualitySellPrice(item);
     state.silver += price;
     state.bag.splice(idx, 1);
-    pushLog(`售出「${item.name}」＋${price} 銀`, 'loot');
+    pushLog('售出「' + item.name + '」（' + qm.label + '）＋' + price + ' 銀', 'loot ' + qm.cls);
     renderAll();
+    save();
+  }
+
+  function setAutoSell(mode) {
+    if (!state) return;
+    if (mode !== 'off' && mode !== 'fan' && mode !== 'fan_liang') return;
+    if (!state.settings) state.settings = { muted: false, bgmVol: 0.28, sfxVol: 0.55, autoSell: 'fan' };
+    state.settings.autoSell = mode;
+    renderBag();
     save();
   }
 
@@ -1494,19 +1616,27 @@
     const mk = (extra) => {
       const el = document.createElement('div');
       el.className = 'fx-slash' + (isCrit ? ' crit' : '') + (isSkill ? ' skill' : '') + (extra ? ' ' + extra : '');
-      el.style.left = (66 + rand(-4, 6)) + '%';
-      el.style.top = (38 + rand(-6, 8)) + '%';
+      el.style.left = (64 + rand(-3, 8)) + '%';
+      el.style.top = (36 + rand(-5, 10)) + '%';
       fx.appendChild(el);
-      setTimeout(() => el.remove(), 360);
+      setTimeout(() => el.remove(), isCrit ? 400 : 340);
     };
     mk('');
-    if (isCrit) mk('twin');
+    if (isCrit || isSkill) mk('twin');
     const spark = document.createElement('div');
     spark.className = 'fx-spark';
-    spark.style.left = (68 + rand(-3, 5)) + '%';
-    spark.style.top = (40 + rand(-4, 6)) + '%';
+    spark.style.left = (70 + rand(-4, 6)) + '%';
+    spark.style.top = (40 + rand(-5, 7)) + '%';
     fx.appendChild(spark);
-    setTimeout(() => spark.remove(), 240);
+    setTimeout(() => spark.remove(), 260);
+    if (isCrit) {
+      const spark2 = document.createElement('div');
+      spark2.className = 'fx-spark';
+      spark2.style.left = (62 + rand(-2, 4)) + '%';
+      spark2.style.top = (48 + rand(-3, 5)) + '%';
+      fx.appendChild(spark2);
+      setTimeout(() => spark2.remove(), 280);
+    }
   }
 
   function renderStage() {
@@ -1517,7 +1647,9 @@
     if (!stage || !heroF || !enemyF) return;
 
     const zone = currentZone();
-    stage.className = 'battle-stage zone-' + zone.id + (state.hunting ? ' hunting' : '');
+    const shaking = stage.classList.contains('shake');
+    stage.className =
+      'battle-stage zone-' + zone.id + (state.hunting ? ' hunting' : '') + (shaking ? ' shake' : '');
 
     heroF.className = 'fighter hero-side school-' + (state.school || 'cangjian') + (state.hunting ? ' idle' : '');
     const hLabel = $('hero-stage-label');
@@ -1581,7 +1713,8 @@
     const totalMs = HERO_ATK_FRAMES * HERO_ATK_FRAME_MS;
     pulseClass($('fighter-hero'), 'attacking', Math.max(280, totalMs));
     playHeroAttackAnim();
-    pulseClass($('fighter-enemy'), 'hit', 280);
+    pulseClass($('fighter-enemy'), 'hit', 300);
+    pulseClass($('battle-stage'), 'shake', isCrit ? 340 : 240);
     spawnFloat('-' + dmg, isCrit ? 'crit' : '');
     spawnSlash(!!isCrit, false);
   }
@@ -1810,41 +1943,85 @@
   function renderBag() {
     const el = $('panel-bag');
     const eq = state.equip;
+    const mode = getAutoSellMode();
+    const asBar =
+      '<div class="autosell-bar">' +
+      '<span class="label">自動售出</span>' +
+      '<button type="button" class="as-btn' + (mode === 'off' ? ' active' : '') + '" data-autosell="off">關</button>' +
+      '<button type="button" class="as-btn' + (mode === 'fan' ? ' active' : '') + '" data-autosell="fan">只賣凡</button>' +
+      '<button type="button" class="as-btn' + (mode === 'fan_liang' ? ' active' : '') + '" data-autosell="fan_liang">凡＋良</button>' +
+      '</div>';
     const eqLines = ['weapon', 'armor', 'boots', 'ring']
       .map((slot) => {
         const labels = { weapon: '兵器', armor: '護甲', boots: '靴履', ring: '飾物' };
         const it = eq[slot];
-        return `<div class="row"><span>${labels[slot]}</span><span>${
-          it ? escapeHtml(it.name) : '（空）'
-        }</span></div>`;
+        if (!it) {
+          return '<div class="row"><span>' + labels[slot] + '</span><span>（空）</span></div>';
+        }
+        const qm = qualityMeta(it.quality);
+        return (
+          '<div class="row eq-row ' +
+          qm.cls +
+          '"><span>' +
+          labels[slot] +
+          '</span><span>' +
+          escapeHtml(it.name) +
+          '<span class="q-badge">' +
+          qm.label +
+          '</span></span></div>'
+        );
       })
       .join('');
     const bagLines = state.bag.length
       ? state.bag
           .map((it) => {
+            const qm = qualityMeta(it.quality);
             const bonus = [
-              it.atk ? `攻+${it.atk}` : '',
-              it.def ? `防+${it.def}` : '',
-              it.spd ? `速+${it.spd}` : '',
+              it.atk ? '攻+' + it.atk : '',
+              it.def ? '防+' + it.def : '',
+              it.spd ? '速+' + it.spd : '',
             ]
               .filter(Boolean)
               .join(' ');
-            return `<div class="bag-item">
-              <div><strong>${escapeHtml(it.name)}</strong><div class="muted">${bonus || '雜物'}</div></div>
-              <div>
-                ${it.slot ? `<button type="button" class="btn" data-eq="${it.uid}">裝上</button>` : ''}
-                <button type="button" class="btn" data-sell="${it.uid}">出售</button>
-              </div>
-            </div>`;
+            const keepTag = it.fromRival || it.keep ? ' · 名號珍藏' : '';
+            return (
+              '<div class="bag-item ' +
+              qm.cls +
+              '">' +
+              '<div><strong>' +
+              escapeHtml(it.name) +
+              '</strong><span class="q-badge">' +
+              qm.label +
+              '</span><div class="muted">' +
+              escapeHtml((bonus || '雜物') + keepTag) +
+              '</div></div>' +
+              '<div>' +
+              (it.slot ? '<button type="button" class="btn" data-eq="' + it.uid + '">裝上</button>' : '') +
+              '<button type="button" class="btn" data-sell="' +
+              it.uid +
+              '">出售</button>' +
+              '</div></div>'
+            );
           })
           .join('')
-      : `<p class="muted">行囊空空，去掛機碰碰運氣。</p>`;
-    el.innerHTML = `<h3>已裝備</h3>${eqLines}<h3 style="margin-top:12px">行囊</h3>${bagLines}`;
+      : '<p class="muted">行囊空空，去掛機碰碰運氣。</p>';
+    el.innerHTML =
+      asBar +
+      '<h3>已裝備</h3>' +
+      eqLines +
+      '<h3 style="margin-top:12px">行囊</h3>' +
+      bagLines;
     el.querySelectorAll('[data-eq]').forEach((b) =>
       b.addEventListener('click', () => equipItem(b.getAttribute('data-eq')))
     );
     el.querySelectorAll('[data-sell]').forEach((b) =>
       b.addEventListener('click', () => sellItem(b.getAttribute('data-sell')))
+    );
+    el.querySelectorAll('[data-autosell]').forEach((b) =>
+      b.addEventListener('click', () => {
+        if (Audio()) Audio().sfx('click');
+        setAutoSell(b.getAttribute('data-autosell'));
+      })
     );
   }
 
@@ -2206,12 +2383,29 @@
     if (typeof saved.teaDailyCount !== 'number') saved.teaDailyCount = 0;
     if (typeof saved.teaCooldownUntil !== 'number') saved.teaCooldownUntil = 0;
     if (!saved.settings || typeof saved.settings !== 'object') {
-      saved.settings = { muted: false, bgmVol: 0.28, sfxVol: 0.55 };
+      saved.settings = { muted: false, bgmVol: 0.28, sfxVol: 0.55, autoSell: 'fan' };
     } else {
       if (typeof saved.settings.muted !== 'boolean') saved.settings.muted = false;
       if (typeof saved.settings.bgmVol !== 'number') saved.settings.bgmVol = 0.28;
       if (typeof saved.settings.sfxVol !== 'number') saved.settings.sfxVol = 0.55;
+      if (
+        saved.settings.autoSell !== 'off' &&
+        saved.settings.autoSell !== 'fan' &&
+        saved.settings.autoSell !== 'fan_liang'
+      ) {
+        saved.settings.autoSell = 'fan';
+      }
     }
+    saved.bag.forEach((it) => {
+      if (!it || typeof it !== 'object') return;
+      if (!it.quality || !QUALITY_META[it.quality]) it.quality = 'fan';
+    });
+    ['weapon', 'armor', 'boots', 'ring'].forEach((slot) => {
+      const it = saved.equip[slot];
+      if (it && typeof it === 'object' && (!it.quality || !QUALITY_META[it.quality])) {
+        it.quality = 'fan';
+      }
+    });
     if (typeof saved.lv !== 'number') saved.lv = 1;
     if (typeof saved.exp !== 'number') saved.exp = 0;
     if (typeof saved.silver !== 'number') saved.silver = 20;
