@@ -140,6 +140,7 @@
     return 'fan';
   }
 
+  // 自動售出僅由 grantDropItem 在「尚未 bag.push」時呼叫；禁止對行囊舊物批次販售。
   function shouldAutoSell(item) {
     if (!item) return false;
     if (item.keep || item.fromRival) return false;
@@ -1669,6 +1670,7 @@
     save();
   }
 
+  // 手動單件售出（玩家主動點一件）；不是自動、也不是一鍵清空。
   function sellItem(uid) {
     const idx = state.bag.findIndex((x) => x.uid === uid);
     if (idx < 0) return;
@@ -1678,7 +1680,7 @@
     const price = qualitySellPrice(item);
     state.silver += price;
     state.bag.splice(idx, 1);
-    pushLog('售出「' + item.name + '」（' + qm.label + '）＋' + price + ' 銀', 'loot ' + qm.cls);
+    pushLog('手動售出「' + item.name + '」（' + qm.label + '）＋' + price + ' 銀', 'loot ' + qm.cls);
     renderAll();
     save();
   }
@@ -1707,10 +1709,20 @@
     return idx < 0 ? 0 : Math.min(2, idx);
   }
 
+  // 斜角戰場座標（%）：敵左上沿斜線、我右下。與 CSS data-slot 站位對齊。
+  function slotIsoPos(slot) {
+    const map = {
+      0: { left: 32, top: 28 },
+      1: { left: 16, top: 42 },
+      2: { left: 44, top: 16 },
+    };
+    return map[slot] != null ? map[slot] : map[0];
+  }
+  function heroIsoPos() {
+    return { left: 70, top: 56 };
+  }
   function slotLeftPercent(slot) {
-    // 右場三槽大致位置（相對舞台）
-    const map = { 0: 72, 1: 58, 2: 84 };
-    return map[slot] != null ? map[slot] : 72;
+    return slotIsoPos(slot).left;
   }
 
   function spawnFloat(text, kind, slot) {
@@ -1720,13 +1732,12 @@
     const kinds = (kind || '').trim();
     el.className = 'dmg-float' + (kinds ? ' ' + kinds : '');
     el.textContent = text;
-    const enemySide = /enemy-hit|heal/.test(kinds);
-    let baseLeft = enemySide ? 28 : slotLeftPercent(slot == null ? 0 : slot);
-    if (!enemySide && slot == null) baseLeft = 70;
+    const onHero = /enemy-hit|heal/.test(kinds);
+    const pos = onHero ? heroIsoPos() : slotIsoPos(slot == null ? 0 : slot);
     const jitterX = rand(-8, 10);
-    const jitterY = rand(-8, 14);
-    el.style.left = (baseLeft + jitterX) + '%';
-    el.style.top = (26 + jitterY) + '%';
+    const jitterY = rand(-6, 10);
+    el.style.left = (pos.left + jitterX) + '%';
+    el.style.top = (pos.top + jitterY) + '%';
     fx.appendChild(el);
     setTimeout(() => el.remove(), 900);
   }
@@ -1734,12 +1745,14 @@
   function spawnSlash(isCrit, isSkill, slot) {
     const fx = $('stage-fx');
     if (!fx) return;
-    const baseLeft = slotLeftPercent(slot == null ? 0 : slot) - 4;
+    const pos = slotIsoPos(slot == null ? 0 : slot);
+    const baseLeft = pos.left - 2;
+    const baseTop = pos.top + 6;
     const mk = (extra) => {
       const el = document.createElement('div');
       el.className = 'fx-slash' + (isCrit ? ' crit' : '') + (isSkill ? ' skill' : '') + (extra ? ' ' + extra : '');
-      el.style.left = (baseLeft + rand(-3, 8)) + '%';
-      el.style.top = (36 + rand(-5, 10)) + '%';
+      el.style.left = (baseLeft + rand(-3, 6)) + '%';
+      el.style.top = (baseTop + rand(-4, 8)) + '%';
       fx.appendChild(el);
       setTimeout(() => el.remove(), isCrit ? 400 : 340);
     };
@@ -1747,15 +1760,15 @@
     if (isCrit || isSkill) mk('twin');
     const spark = document.createElement('div');
     spark.className = 'fx-spark';
-    spark.style.left = (baseLeft + 6 + rand(-4, 6)) + '%';
-    spark.style.top = (40 + rand(-5, 7)) + '%';
+    spark.style.left = (baseLeft + 5 + rand(-3, 5)) + '%';
+    spark.style.top = (baseTop + 2 + rand(-4, 6)) + '%';
     fx.appendChild(spark);
     setTimeout(() => spark.remove(), 260);
     if (isCrit) {
       const spark2 = document.createElement('div');
       spark2.className = 'fx-spark';
       spark2.style.left = (baseLeft - 2 + rand(-2, 4)) + '%';
-      spark2.style.top = (48 + rand(-3, 5)) + '%';
+      spark2.style.top = (baseTop + 8 + rand(-3, 5)) + '%';
       fx.appendChild(spark2);
       setTimeout(() => spark2.remove(), 280);
     }
@@ -1825,43 +1838,26 @@
     }
   }
 
-  const HERO_ATK_FRAMES = 7;
-  const HERO_ATK_FRAME_MS = 55;
+  // 斜角占位剪影：暫不用七幀橫版 sheet。等創意「斜角 Q 版」圖到再換回幀動畫。
+  const HERO_ATK_MS = 280;
   let heroAtkTimer = null;
 
   function playHeroAttackAnim() {
     const art = $('hero-art');
     if (!art) return;
     if (heroAtkTimer) {
-      clearInterval(heroAtkTimer);
+      clearTimeout(heroAtkTimer);
       heroAtkTimer = null;
     }
     art.classList.add('attacking');
-    let frame = 0;
-    // 等寬 7 格：以容器寬度整數倍偏移，避免百分比對齊吃到隔壁格
-    const applyFrame = (f) => {
-      const w = art.clientWidth || art.offsetWidth || 148;
-      const h = art.clientHeight || art.offsetHeight || 180;
-      art.style.backgroundSize = (w * HERO_ATK_FRAMES) + 'px ' + h + 'px';
-      art.style.backgroundPosition = (-f * w) + 'px 0';
-    };
-    applyFrame(0);
-    heroAtkTimer = setInterval(() => {
-      frame += 1;
-      if (frame >= HERO_ATK_FRAMES) {
-        clearInterval(heroAtkTimer);
-        heroAtkTimer = null;
-        art.classList.remove('attacking');
-        applyFrame(0); // 回 idle（第 1 幀）
-        return;
-      }
-      applyFrame(frame);
-    }, HERO_ATK_FRAME_MS);
+    heroAtkTimer = setTimeout(() => {
+      art.classList.remove('attacking');
+      heroAtkTimer = null;
+    }, HERO_ATK_MS);
   }
 
   function fxHeroAttack(dmg, isCrit, slot) {
-    const totalMs = HERO_ATK_FRAMES * HERO_ATK_FRAME_MS;
-    pulseClass($('fighter-hero'), 'attacking', Math.max(280, totalMs));
+    pulseClass($('fighter-hero'), 'attacking', HERO_ATK_MS);
     playHeroAttackAnim();
     const s = slot == null ? 0 : slot;
     pulseClass($('enemy-slot-' + s), 'hit', 300);
@@ -2126,6 +2122,7 @@
       '<button type="button" class="as-btn' + (mode === 'off' ? ' active' : '') + '" data-autosell="off">關</button>' +
       '<button type="button" class="as-btn' + (mode === 'fan' ? ' active' : '') + '" data-autosell="fan">只賣凡</button>' +
       '<button type="button" class="as-btn' + (mode === 'fan_liang' ? ' active' : '') + '" data-autosell="fan_liang">凡＋良</button>' +
+      '<span class="autosell-hint">只處理新掉落；行囊內既有物品不會被自動賣掉。</span>' +
       '</div>';
     const eqLines = ['weapon', 'armor', 'boots', 'ring']
       .map((slot) => {
@@ -2175,7 +2172,7 @@
               (it.slot ? '<button type="button" class="btn" data-eq="' + it.uid + '">裝上</button>' : '') +
               '<button type="button" class="btn" data-sell="' +
               it.uid +
-              '">出售</button>' +
+              '" title="手動單件售出（非自動、非一鍵清空）">手動出售</button>' +
               '</div></div>'
             );
           })
