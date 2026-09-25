@@ -78,47 +78,71 @@
           <div class="stage-bg-far" aria-hidden="true"></div>
           <div class="stage-bg-mid" aria-hidden="true"></div>
           <div class="stage-vignette" aria-hidden="true"></div>
+
+          <div class="stage-hud-center" aria-live="polite">
+            <div id="auto-status" class="auto-status hidden">自動戰鬥中…</div>
+          </div>
+
           <div class="stage-overlay-top">
             <div class="zone-chip">
               <div class="zone-title" id="zone-name">—</div>
               <div class="muted zone-flavor" id="zone-flavor"></div>
             </div>
-            <div class="hp-block">
-              <div id="mob-name">等待開打</div>
-              <div class="bar-wrap thin">
-                <div id="bar-mob" class="bar danger"></div>
+            <div class="zone-progress-chip">
+              <div class="zone-prog-label" id="zone-kill-label">本區擊殺 0</div>
+              <div class="bar-wrap thin zone-prog-bar">
+                <div id="bar-zone-prog" class="bar accent-bar"></div>
               </div>
             </div>
           </div>
+
           <div class="stage-ground"></div>
           <div class="stage-fx" id="stage-fx"></div>
-          <div class="fighter hero-side" id="fighter-hero">
-            <div class="shadow"></div>
-            <div class="sprite" id="hero-sprite">
-              <div class="hero-art" id="hero-art" role="img" aria-label="主角"></div>
+
+          <div class="fighters-row">
+            <div class="fighter hero-side" id="fighter-hero">
+              <div class="shadow"></div>
+              <div class="sprite" id="hero-sprite">
+                <div class="hero-art" id="hero-art" role="img" aria-label="主角"></div>
+              </div>
+              <div class="fighter-label" id="hero-stage-label">俠客</div>
             </div>
-            <div class="fighter-label" id="hero-stage-label">俠客</div>
-          </div>
-          <div class="vs-mark">⚔</div>
-          <div class="fighter enemy-side" id="fighter-enemy">
-            <div class="shadow"></div>
-            <div class="sprite" id="enemy-sprite">
-              <div class="enemy-glyph" id="enemy-glyph">？</div>
+
+            <div class="enemy-party" id="enemy-party">
+              <div class="fighter enemy-side enemy-slot empty" id="enemy-slot-0" data-slot="0">
+                <div class="mob-hp-wrap"><div class="mob-hp-bar" id="mob-hp-0"></div></div>
+                <div class="shadow"></div>
+                <div class="sprite"><div class="enemy-glyph" data-glyph>？</div></div>
+                <div class="fighter-label" data-label>等待開打</div>
+              </div>
+              <div class="fighter enemy-side enemy-slot empty" id="enemy-slot-1" data-slot="1">
+                <div class="mob-hp-wrap"><div class="mob-hp-bar" id="mob-hp-1"></div></div>
+                <div class="shadow"></div>
+                <div class="sprite"><div class="enemy-glyph" data-glyph>？</div></div>
+                <div class="fighter-label" data-label></div>
+              </div>
+              <div class="fighter enemy-side enemy-slot empty" id="enemy-slot-2" data-slot="2">
+                <div class="mob-hp-wrap"><div class="mob-hp-bar" id="mob-hp-2"></div></div>
+                <div class="shadow"></div>
+                <div class="sprite"><div class="enemy-glyph" data-glyph>？</div></div>
+                <div class="fighter-label" data-label></div>
+              </div>
             </div>
-            <div class="fighter-label" id="enemy-stage-label">等待開打</div>
           </div>
+
           <div id="combat-log" class="log stage-log" aria-live="polite"></div>
         </div>
 
         <div class="skill-bar" id="skill-bar">
-          <button type="button" id="btn-auto" class="skill-auto" aria-pressed="false" title="自動掛機">
+          <button type="button" id="btn-auto" class="skill-auto" aria-pressed="false" title="自動戰鬥">
             <span class="auto-dot"></span>
             <span class="auto-label">自動</span>
           </button>
           <div class="skill-slots" id="skill-slots"></div>
+          <button type="button" id="btn-bag" class="skill-bag" title="行囊">行囊</button>
         </div>
 
-        <div class="combat-actions compact">
+        <div class="combat-actions compact combat-actions--legacy" aria-hidden="true">
           <button type="button" id="btn-hunt" class="btn primary">⚔ 開始掛機</button>
           <button type="button" id="btn-stop" class="btn" disabled>■ 停手</button>
         </div>

@@ -44,6 +44,8 @@
     { id: 'd', glyph: '禪' },
   ];
   const SCHOOL_GLYPH = { cangjian: '劍', tiandao: '刀', wuzong: '影', chanwu: '禪' };
+  const SCHOOL_SHORT = { cangjian: '蒼山', tiandao: '天刀', wuzong: '無踪', chanwu: '禪武' };
+  const ZONE_KILL_GOAL = 20;
 
   const SCHOOL_SKILLS = {
     cangjian: [
@@ -764,6 +766,8 @@
       bag: [],
       equip: { weapon: null, armor: null, boots: null, ring: null },
       kills: 0,
+      zoneKills: {},
+      mobs: [],
       log: [],
       eventLog: [],
       zoneBossFlags: {},
@@ -828,8 +832,73 @@
     return ZONES.find((z) => z.id === state.zoneId) || ZONES[0];
   }
 
+  function schoolShort(schoolId) {
+    return SCHOOL_SHORT[schoolId] || '江湖';
+  }
+
+  function aliveMobs() {
+    if (!state || !Array.isArray(state.mobs)) return [];
+    return state.mobs.filter((m) => m && m.hp > 0);
+  }
+
+  function getPrimaryMob() {
+    const alive = aliveMobs();
+    return alive.length ? alive[0] : null;
+  }
+
+  function syncPrimaryMob() {
+    if (!state) return null;
+    state.mob = getPrimaryMob();
+    return state.mob;
+  }
+
+  function getZoneKillCount() {
+    if (!state) return 0;
+    if (!state.zoneKills || typeof state.zoneKills !== 'object') state.zoneKills = {};
+    return state.zoneKills[state.zoneId] || 0;
+  }
+
+  function bumpZoneKill() {
+    if (!state) return;
+    if (!state.zoneKills || typeof state.zoneKills !== 'object') state.zoneKills = {};
+    const z = state.zoneId;
+    state.zoneKills[z] = (state.zoneKills[z] || 0) + 1;
+  }
+
+  function buildMobFromBase(base, scale, extras) {
+    extras = extras || {};
+    const hp = Math.floor((base.hp || 30) * scale * (extras.hpMult || 1));
+    return {
+      uid: 'm' + Date.now().toString(36) + Math.random().toString(16).slice(2, 6),
+      name: extras.name || base.name,
+      maxHp: hp,
+      hp,
+      atk: Math.floor((base.atk || 4) * scale * (extras.atkMult || 1)),
+      def: Math.floor((base.def || 1) * (extras.defMult || 1)),
+      exp: Math.floor((base.exp || 6) * scale * (extras.expMult || 1)),
+      silver: extras.silver || base.silver || [1, 3],
+      glyph: extras.glyph || mobGlyph(extras.name || base.name),
+      look: extras.look || mobLook(extras.zoneId || state.zoneId, extras.name || base.name),
+      isRival: !!extras.isRival,
+      rivalId: extras.rivalId || null,
+      zoneId: extras.zoneId || state.zoneId,
+      desc: extras.desc || '',
+      bestDrop: extras.bestDrop || null,
+      loreId: extras.loreId || null,
+    };
+  }
+
   function ensureMob() {
-    if (state.mob && state.mob.hp > 0) return;
+    ensureMobs();
+  }
+
+  function ensureMobs() {
+    if (!state) return;
+    if (!Array.isArray(state.mobs)) state.mobs = [];
+    if (aliveMobs().length) {
+      syncPrimaryMob();
+      return;
+    }
     const zone = currentZone();
     const scale = 1 + Math.max(0, state.lv - zone.minLv) * 0.05;
     const now = Date.now();
@@ -839,6 +908,8 @@
       state.encounterReduceLeft -= 1;
       if (state.encounterReduceLeft <= 0) state.encounterReducePct = 0;
       if (Math.random() < pct) {
+        state.mobs = [];
+        state.mob = null;
         pushLog('這一路安靜，暫未遇敵。', 'event');
         return;
       }
@@ -869,22 +940,21 @@
       );
       const n = zone.mobs.length;
       const m = rival.mult;
-      const hp = Math.floor((avg.hp / n) * scale * m.hp);
-      const atk = Math.floor((avg.atk / n) * scale * m.atk);
-      const def = Math.floor((avg.def / n) * m.def);
-      const exp = Math.floor((avg.exp / n) * scale * m.exp);
-      const silver = [
-        Math.floor((avg.s0 / n) * m.silver),
-        Math.floor((avg.s1 / n) * m.silver),
-      ];
-      state.mob = {
+      const fakeBase = {
         name: rival.name,
-        maxHp: hp,
-        hp,
-        atk,
-        def,
-        exp,
-        silver,
+        hp: avg.hp / n,
+        atk: avg.atk / n,
+        def: avg.def / n,
+        exp: avg.exp / n,
+        silver: [Math.floor((avg.s0 / n) * m.silver), Math.floor((avg.s1 / n) * m.silver)],
+      };
+      const boss = buildMobFromBase(fakeBase, scale, {
+        name: rival.name,
+        hpMult: m.hp,
+        atkMult: m.atk,
+        defMult: m.def,
+        expMult: m.exp,
+        silver: fakeBase.silver,
         glyph: rival.glyph || mobGlyph(rival.name),
         look: mobLook(zone.id, rival.name),
         isRival: true,
@@ -893,7 +963,9 @@
         desc: rival.desc,
         bestDrop: rival.bestDrop,
         loreId: rival.loreId,
-      };
+      });
+      state.mobs = [boss];
+      syncPrimaryMob();
       pushLog('【名號】遇上「' + rival.name + '」！', 'rival');
       pushEventLog('遭遇名號對手「' + rival.name + '」於「' + zone.name + '」', 'rival');
       if (Audio()) {
@@ -902,19 +974,22 @@
       }
       return;
     }
-    const base = pick(zone.mobs);
-    state.mob = {
-      name: base.name,
-      maxHp: Math.floor(base.hp * scale),
-      hp: Math.floor(base.hp * scale),
-      atk: Math.floor(base.atk * scale),
-      def: base.def,
-      exp: Math.floor(base.exp * scale),
-      silver: base.silver,
-      glyph: mobGlyph(base.name),
-      look: mobLook(zone.id, base.name),
-      isRival: false,
-    };
+    // 掛機一般遇敵：1～3 隻（權重偏 1～2）
+    const roll = Math.random();
+    const count = roll < 0.55 ? 1 : roll < 0.88 ? 2 : 3;
+    const pack = [];
+    for (let i = 0; i < count; i++) {
+      const base = pick(zone.mobs);
+      // 多怪時略降單隻血量，避免碾壓
+      const packScale = count === 1 ? 1 : count === 2 ? 0.85 : 0.72;
+      pack.push(
+        buildMobFromBase(base, scale * packScale, {
+          zoneId: zone.id,
+        })
+      );
+    }
+    state.mobs = pack;
+    syncPrimaryMob();
   }
 
   function gainExp(n) {
@@ -1043,9 +1118,14 @@
     if (modalOpen) return;
     tryTriggerEvent(Date.now());
     if (modalOpen) return;
-    ensureMob();
+    ensureMobs();
     const stats = buffedStats(calcStats(state));
-    const mob = state.mob;
+    const mob = syncPrimaryMob();
+    if (!mob) {
+      renderCombatBars();
+      renderStage();
+      return;
+    }
     let bonusExp = 1;
     if (state.combatBuff && state.combatBuff.kind === 'exp') {
       bonusExp += state.combatBuff.pct || 0;
@@ -1060,7 +1140,7 @@
     mob.hp -= dmg;
     const tag = mob.isRival ? '【名號】' : '';
     pushLog(tag + '你對「' + mob.name + '」造成 ' + dmg + ' 傷害' + (isCrit ? '（暴擊）' : ''), mob.isRival ? 'rival' : '');
-    fxHeroAttack(dmg, isCrit);
+    fxHeroAttack(dmg, isCrit, mobSlotIndex(mob));
     if (Audio()) Audio().sfx(isCrit ? 'crit' : 'hit');
     renderCombatBars();
 
@@ -1068,16 +1148,20 @@
       tryAutoSkills(stats);
     }
 
-    // 技能可能已結算擊殺（state.mob 清空）
-    if (!state.mob) return;
+    // 技能可能已結算擊殺
+    const still = syncPrimaryMob();
+    if (!still) return;
     if (mob.hp <= 0) {
       finishMobKill(mob, bonusExp);
       return;
     }
 
+    // 場上存活敵人輪流／主目標反擊
+    const attackers = aliveMobs();
+    const foe = attackers[0] || mob;
     const hitChance = Math.max(0.35, 0.85 - (stats.spd - 5) * 0.02);
     if (Math.random() < hitChance) {
-      let mdmg = Math.max(1, mob.atk - stats.def + rand(-1, 1));
+      let mdmg = Math.max(1, foe.atk - stats.def + rand(-1, 1));
       mdmg = Math.max(1, Math.floor(mdmg * incomingDmgFactor()));
       if (state.skillSoftLeft > 0) {
         mdmg = Math.max(1, Math.floor(mdmg * 0.7));
@@ -1086,15 +1170,15 @@
       if (mdmg >= stats.def + 6 && Math.random() < 0.15) {
         const lose = Math.min(state.silver, rand(1, 3));
         state.silver -= lose;
-        pushLog('「' + mob.name + '」狠狠一擊，銀兩散落 -' + lose);
-        setTimeout(() => fxEnemyAttack('heavy'), 160);
+        pushLog('「' + foe.name + '」狠狠一擊，銀兩散落 -' + lose);
+        setTimeout(() => fxEnemyAttack('heavy', mobSlotIndex(foe)), 160);
       } else {
-        pushLog('「' + mob.name + '」攻來，你側身化解');
-        setTimeout(() => fxEnemyAttack('block'), 160);
+        pushLog('「' + foe.name + '」攻來，你側身化解');
+        setTimeout(() => fxEnemyAttack('block', mobSlotIndex(foe)), 160);
       }
     } else {
-      pushLog('你身法一閃，避過「' + mob.name + '」');
-      setTimeout(() => fxEnemyAttack('miss'), 160);
+      pushLog('你身法一閃，避過「' + foe.name + '」');
+      setTimeout(() => fxEnemyAttack('miss', mobSlotIndex(foe)), 160);
     }
     renderSkillBar();
     save();
@@ -1110,6 +1194,7 @@
     }
     state.silver += sil;
     state.kills += 1;
+    bumpZoneKill();
     const gotExp = Math.floor(mob.exp * bonusExp);
     gainExp(gotExp);
     const wasRival = !!mob.isRival;
@@ -1122,11 +1207,27 @@
       if (wasRival || !state.hunting) openLootModal(lootGot);
     }
     consumeFightBuff();
-    fxMobDefeat();
+    fxMobDefeat(mobSlotIndex(mob));
+    // 自陣列移除，其餘補位（陣列前移即為主目標）
+    if (Array.isArray(state.mobs)) {
+      state.mobs = state.mobs.filter((m) => m && m.uid !== mob.uid && m.hp > 0);
+    }
+    syncPrimaryMob();
+    renderCombatBars();
+    renderStage();
+    renderZoneProgress();
+
+    if (aliveMobs().length) {
+      // 還有怪：續打，不整場重置
+      save();
+      return;
+    }
+
+    state.mobs = [];
     state.mob = null;
     setTimeout(() => {
       if (!state || !state.hunting) return;
-      ensureMob();
+      ensureMobs();
       renderAll();
       save();
     }, 280);
@@ -1146,8 +1247,8 @@
     opts = opts || {};
     if (!state || !state.hunting) return false;
     if (modalOpen) return false;
-    ensureMob();
-    const mob = state.mob;
+    ensureMobs();
+    const mob = syncPrimaryMob();
     if (!mob || mob.hp <= 0) return false;
     if (!skillReady(idx)) return false;
     const skills = getSchoolSkills(state.school);
@@ -1155,7 +1256,7 @@
     if (!sk) return false;
 
     setSkillCd(idx, sk.cd || 5000);
-    spawnFloat(sk.name, 'skill-name');
+    spawnFloat(sk.name, 'skill-name', mobSlotIndex(mob));
     pulseClass(document.querySelector('.skill-slot[data-skill="' + idx + '"]'), 'flash', 280);
 
     if (sk.kind === 'buff') {
@@ -1172,6 +1273,7 @@
     const stats = buffedStats(calcStats(state));
     const hits = sk.hits || 1;
     let total = 0;
+    const slot = mobSlotIndex(mob);
     for (let i = 0; i < hits; i++) {
       const roll = rand(0, 2);
       let dmg = Math.max(1, Math.floor((stats.atk - mob.def + roll) * (sk.mult || 1.3)));
@@ -1180,9 +1282,10 @@
     }
     const isCrit = (sk.mult || 1) >= 1.6 || hits >= 3;
     pushLog('「' + sk.name + '」對「' + mob.name + '」額外 -' + total, 'loot');
-    spawnFloat('-' + total, isCrit ? 'crit skill' : 'skill');
-    spawnSlash(!!isCrit, true);
-    pulseClass($('fighter-enemy'), 'hit', 300);
+    spawnFloat('-' + total, isCrit ? 'crit skill' : 'skill', slot);
+    spawnSlash(!!isCrit, true, slot);
+    const slotEl = $('enemy-slot-' + slot);
+    pulseClass(slotEl, 'hit', 300);
     pulseClass($('battle-stage'), 'shake', isCrit ? 340 : 240);
     if (Audio()) Audio().sfx(isCrit ? 'crit' : 'hit');
     renderCombatBars();
@@ -1508,14 +1611,17 @@
     if (Audio()) {
       Audio().unlock();
       Audio().sfx('click');
-      const want = (state.mob && state.mob.isRival) ? 'battle' : 'world';
+      const prim = state.mob || (Array.isArray(state.mobs) && state.mobs[0]);
+      const want = (prim && prim.isRival) ? 'battle' : 'world';
       Audio().playBgm(want);
     }
     state.hunting = true;
-    ensureMob();
-    pushLog(`在「${zone.name}」開始掛機…`);
-    $('btn-hunt').disabled = true;
-    $('btn-stop').disabled = false;
+    ensureMobs();
+    pushLog(`在「${zone.name}」開始掛機…（自動戰鬥中）`);
+    const bh = $('btn-hunt');
+    const bs = $('btn-stop');
+    if (bh) bh.disabled = true;
+    if (bs) bs.disabled = false;
     if (huntTimer) clearInterval(huntTimer);
     const stats = calcStats(state);
     const ms = Math.max(650, 1400 - stats.spd * 40);
@@ -1536,8 +1642,10 @@
       clearInterval(huntTimer);
       huntTimer = null;
     }
-    $('btn-hunt').disabled = false;
-    $('btn-stop').disabled = true;
+    const bh = $('btn-hunt');
+    const bs = $('btn-stop');
+    if (bh) bh.disabled = false;
+    if (bs) bs.disabled = true;
     pushLog('停手歇息。');
     if (Audio()) {
       Audio().sfx('click');
@@ -1593,7 +1701,19 @@
     setTimeout(() => el.classList.remove(cls), ms || 300);
   }
 
-  function spawnFloat(text, kind) {
+  function mobSlotIndex(mob) {
+    if (!state || !mob || !Array.isArray(state.mobs)) return 0;
+    const idx = state.mobs.findIndex((m) => m && m.uid === mob.uid);
+    return idx < 0 ? 0 : Math.min(2, idx);
+  }
+
+  function slotLeftPercent(slot) {
+    // 右場三槽大致位置（相對舞台）
+    const map = { 0: 72, 1: 58, 2: 84 };
+    return map[slot] != null ? map[slot] : 72;
+  }
+
+  function spawnFloat(text, kind, slot) {
     const fx = $('stage-fx');
     if (!fx) return;
     const el = document.createElement('div');
@@ -1601,22 +1721,24 @@
     el.className = 'dmg-float' + (kinds ? ' ' + kinds : '');
     el.textContent = text;
     const enemySide = /enemy-hit|heal/.test(kinds);
-    const baseLeft = enemySide ? 28 : 70;
-    const jitterX = rand(-10, 12);
+    let baseLeft = enemySide ? 28 : slotLeftPercent(slot == null ? 0 : slot);
+    if (!enemySide && slot == null) baseLeft = 70;
+    const jitterX = rand(-8, 10);
     const jitterY = rand(-8, 14);
     el.style.left = (baseLeft + jitterX) + '%';
-    el.style.top = (28 + jitterY) + '%';
+    el.style.top = (26 + jitterY) + '%';
     fx.appendChild(el);
     setTimeout(() => el.remove(), 900);
   }
 
-  function spawnSlash(isCrit, isSkill) {
+  function spawnSlash(isCrit, isSkill, slot) {
     const fx = $('stage-fx');
     if (!fx) return;
+    const baseLeft = slotLeftPercent(slot == null ? 0 : slot) - 4;
     const mk = (extra) => {
       const el = document.createElement('div');
       el.className = 'fx-slash' + (isCrit ? ' crit' : '') + (isSkill ? ' skill' : '') + (extra ? ' ' + extra : '');
-      el.style.left = (64 + rand(-3, 8)) + '%';
+      el.style.left = (baseLeft + rand(-3, 8)) + '%';
       el.style.top = (36 + rand(-5, 10)) + '%';
       fx.appendChild(el);
       setTimeout(() => el.remove(), isCrit ? 400 : 340);
@@ -1625,17 +1747,30 @@
     if (isCrit || isSkill) mk('twin');
     const spark = document.createElement('div');
     spark.className = 'fx-spark';
-    spark.style.left = (70 + rand(-4, 6)) + '%';
+    spark.style.left = (baseLeft + 6 + rand(-4, 6)) + '%';
     spark.style.top = (40 + rand(-5, 7)) + '%';
     fx.appendChild(spark);
     setTimeout(() => spark.remove(), 260);
     if (isCrit) {
       const spark2 = document.createElement('div');
       spark2.className = 'fx-spark';
-      spark2.style.left = (62 + rand(-2, 4)) + '%';
+      spark2.style.left = (baseLeft - 2 + rand(-2, 4)) + '%';
       spark2.style.top = (48 + rand(-3, 5)) + '%';
       fx.appendChild(spark2);
       setTimeout(() => spark2.remove(), 280);
+    }
+  }
+
+  function renderZoneProgress() {
+    if (!state) return;
+    const n = getZoneKillCount();
+    const label = $('zone-kill-label');
+    if (label) label.textContent = '本區擊殺 ' + n;
+    const bar = $('bar-zone-prog');
+    if (bar) {
+      const pct = ((n % ZONE_KILL_GOAL) / ZONE_KILL_GOAL) * 100;
+      // 剛好整段時顯示滿格再歸零視覺：有擊殺時至少一點
+      bar.style.width = (n > 0 && pct === 0 ? 100 : pct) + '%';
     }
   }
 
@@ -1643,8 +1778,7 @@
     if (!state) return;
     const stage = $('battle-stage');
     const heroF = $('fighter-hero');
-    const enemyF = $('fighter-enemy');
-    if (!stage || !heroF || !enemyF) return;
+    if (!stage || !heroF) return;
 
     const zone = currentZone();
     const shaking = stage.classList.contains('shake');
@@ -1655,23 +1789,39 @@
     const hLabel = $('hero-stage-label');
     if (hLabel) hLabel.textContent = state.name || '俠客';
 
-    const mob = state.mob;
-    if (mob) {
-      enemyF.className =
-        'fighter enemy-side look-' +
-        (mob.look || 'bandit') +
-        (state.hunting ? ' idle' : '') +
-        (mob.isRival ? ' named-rival' : '');
-      const g = $('enemy-glyph');
+    const autoStatus = $('auto-status');
+    if (autoStatus) {
+      autoStatus.classList.toggle('hidden', !state.hunting);
+      autoStatus.textContent = '自動戰鬥中…';
+    }
+
+    if (!Array.isArray(state.mobs)) state.mobs = [];
+    const primary = syncPrimaryMob();
+    for (let i = 0; i < 3; i++) {
+      const slot = $('enemy-slot-' + i);
+      if (!slot) continue;
+      const mob = state.mobs[i];
+      slot.className = 'fighter enemy-side enemy-slot slot-' + i;
+      if (!mob || mob.hp <= 0) {
+        slot.classList.add('empty');
+        const g = slot.querySelector('[data-glyph]');
+        if (g) g.textContent = i === 0 ? '？' : '';
+        const lab = slot.querySelector('[data-label]');
+        if (lab) lab.textContent = i === 0 && !primary ? '等待開打' : '';
+        const hp = $('mob-hp-' + i);
+        if (hp) hp.style.width = '0%';
+        continue;
+      }
+      slot.classList.add('look-' + (mob.look || 'bandit'));
+      if (state.hunting) slot.classList.add('idle');
+      if (mob.isRival) slot.classList.add('named-rival');
+      if (primary && primary.uid === mob.uid) slot.classList.add('primary-target');
+      const g = slot.querySelector('[data-glyph]');
       if (g) g.textContent = mob.glyph || '👤';
-      const eLabel = $('enemy-stage-label');
-      if (eLabel) eLabel.textContent = (mob.isRival ? '名號·' : '') + mob.name;
-    } else {
-      enemyF.className = 'fighter enemy-side look-bandit';
-      const g = $('enemy-glyph');
-      if (g) g.textContent = '？';
-      const eLabel = $('enemy-stage-label');
-      if (eLabel) eLabel.textContent = '等待開打';
+      const lab = slot.querySelector('[data-label]');
+      if (lab) lab.textContent = (mob.isRival ? '名號·' : '') + mob.name;
+      const hp = $('mob-hp-' + i);
+      if (hp) hp.style.width = Math.max(0, (mob.hp / mob.maxHp) * 100) + '%';
     }
   }
 
@@ -1709,48 +1859,65 @@
     }, HERO_ATK_FRAME_MS);
   }
 
-  function fxHeroAttack(dmg, isCrit) {
+  function fxHeroAttack(dmg, isCrit, slot) {
     const totalMs = HERO_ATK_FRAMES * HERO_ATK_FRAME_MS;
     pulseClass($('fighter-hero'), 'attacking', Math.max(280, totalMs));
     playHeroAttackAnim();
-    pulseClass($('fighter-enemy'), 'hit', 300);
+    const s = slot == null ? 0 : slot;
+    pulseClass($('enemy-slot-' + s), 'hit', 300);
     pulseClass($('battle-stage'), 'shake', isCrit ? 340 : 240);
-    spawnFloat('-' + dmg, isCrit ? 'crit' : '');
-    spawnSlash(!!isCrit, false);
+    spawnFloat('-' + dmg, isCrit ? 'crit' : '', s);
+    spawnSlash(!!isCrit, false, s);
   }
 
-  function fxEnemyAttack(kind) {
-    pulseClass($('fighter-enemy'), 'attacking', 280);
+  function fxEnemyAttack(kind, slot) {
+    const s = slot == null ? 0 : slot;
+    pulseClass($('enemy-slot-' + s), 'attacking', 280);
     pulseClass($('fighter-hero'), 'hit', 280);
     if (kind === 'miss') spawnFloat('閃', 'miss enemy-hit');
     else if (kind === 'block') spawnFloat('化', 'miss enemy-hit');
     else spawnFloat('-!', 'enemy-hit');
   }
 
-  function fxMobDefeat() {
-    const enemyF = $('fighter-enemy');
+  function fxMobDefeat(slot) {
+    const s = slot == null ? 0 : slot;
+    const enemyF = $('enemy-slot-' + s);
     if (!enemyF) return;
     enemyF.classList.add('dying');
-    spawnFloat('破！', 'kill');
+    spawnFloat('破！', 'kill', s);
     setTimeout(() => enemyF.classList.remove('dying'), 420);
   }
 
   function renderCombatBars() {
     if (!state) return;
-    const mob = state.mob;
+    if (!Array.isArray(state.mobs)) state.mobs = [];
+    const primary = syncPrimaryMob();
+    for (let i = 0; i < 3; i++) {
+      const mob = state.mobs[i];
+      const hp = $('mob-hp-' + i);
+      if (!hp) continue;
+      if (!mob || mob.hp <= 0) hp.style.width = '0%';
+      else hp.style.width = Math.max(0, (mob.hp / mob.maxHp) * 100) + '%';
+    }
+    // 相容：若還有舊元素就不報錯
     const nameEl = $('mob-name');
-    if (mob) {
-      const label = (mob.isRival ? '【名號】' : '') + mob.name + '  ' + Math.max(0, mob.hp) + '/' + mob.maxHp;
-      nameEl.textContent = label;
-      nameEl.classList.toggle('rival-name', !!mob.isRival);
-      if (mob.isRival && mob.desc) nameEl.title = mob.desc;
-      else nameEl.title = '';
-      $('bar-mob').style.width = Math.max(0, (mob.hp / mob.maxHp) * 100) + '%';
-    } else {
-      nameEl.textContent = '等待開打';
-      nameEl.classList.remove('rival-name');
-      nameEl.title = '';
-      $('bar-mob').style.width = '0%';
+    if (nameEl) {
+      if (primary) {
+        nameEl.textContent =
+          (primary.isRival ? '【名號】' : '') +
+          primary.name +
+          '  ' +
+          Math.max(0, primary.hp) +
+          '/' +
+          primary.maxHp;
+      } else {
+        nameEl.textContent = '等待開打';
+      }
+    }
+    const bar = $('bar-mob');
+    if (bar) {
+      if (primary) bar.style.width = Math.max(0, (primary.hp / primary.maxHp) * 100) + '%';
+      else bar.style.width = '0%';
     }
   }
 
@@ -1787,6 +1954,7 @@
     $('zone-flavor').textContent = zone.flavor;
     renderCombatBars();
     renderStage();
+    renderZoneProgress();
     renderLog();
     renderSkillBar();
     syncAutoBtn();
@@ -1795,8 +1963,10 @@
     renderHero();
     renderLore();
 
-    $('btn-hunt').disabled = !!state.hunting;
-    $('btn-stop').disabled = !state.hunting;
+    const bh = $('btn-hunt');
+    const bs = $('btn-stop');
+    if (bh) bh.disabled = !!state.hunting;
+    if (bs) bs.disabled = !state.hunting;
   }
 
   function syncAutoBtn() {
@@ -1815,17 +1985,22 @@
     if (!wrap.dataset.bound || wrap.dataset.school !== state.school) {
       wrap.dataset.bound = '1';
       wrap.dataset.school = state.school || '';
-      wrap.innerHTML = skills
-        .map((sk, i) => {
+      const short = schoolShort(state.school);
+      wrap.innerHTML = [0, 1, 2, 3]
+        .map((i) => {
+          const sk = skills[i];
+          const label = sk ? sk.name : short;
+          const sub = sk ? '' : '<span class="sk-school">' + escapeHtml(short) + '</span>';
           return (
             '<button type="button" class="skill-slot" data-skill="' +
             i +
             '" title="' +
-            escapeHtml(sk.name) +
+            escapeHtml(label) +
             '">' +
             '<span class="sk-name">' +
-            escapeHtml(sk.name) +
+            escapeHtml(label) +
             '</span>' +
+            sub +
             '<span class="cd-mask"></span>' +
             '<span class="cd-text"></span>' +
             '</button>'
@@ -1933,6 +2108,7 @@
         else if (Audio()) Audio().sfx('click');
         state.zoneId = id;
         state.mob = null;
+        state.mobs = [];
         pushLog('來到「' + z.name + '」');
         renderAll();
         save();
@@ -2297,14 +2473,30 @@
       showGame();
     });
 
-    $('btn-hunt').addEventListener('click', startHunt);
-    $('btn-stop').addEventListener('click', stopHunt);
+    const huntBtn = $('btn-hunt');
+    const stopBtn = $('btn-stop');
+    if (huntBtn) huntBtn.addEventListener('click', startHunt);
+    if (stopBtn) stopBtn.addEventListener('click', stopHunt);
     const autoBtn = $('btn-auto');
     if (autoBtn) {
       autoBtn.addEventListener('click', () => {
         if (!state) return;
         if (state.hunting) stopHunt();
         else startHunt();
+      });
+    }
+    const bagBtn = $('btn-bag');
+    if (bagBtn) {
+      bagBtn.addEventListener('click', () => {
+        if (Audio()) Audio().sfx('click');
+        document.querySelectorAll('.tab').forEach((t) => {
+          const on = t.getAttribute('data-tab') === 'bag';
+          t.classList.toggle('active', on);
+        });
+        ['zones', 'bag', 'hero', 'lore'].forEach((p) => {
+          const el = $('panel-' + p);
+          if (el) el.classList.toggle('hidden', p !== 'bag');
+        });
       });
     }
     const muteBtn = $('btn-mute');
@@ -2415,6 +2607,8 @@
     if (!zoneOk) saved.zoneId = 'inn';
     saved.hunting = false;
     saved.mob = null;
+    saved.mobs = [];
+    if (!saved.zoneKills || typeof saved.zoneKills !== 'object') saved.zoneKills = {};
     if (!Array.isArray(saved.skillCd) || saved.skillCd.length !== 4) {
       saved.skillCd = [0, 0, 0, 0];
     }
