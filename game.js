@@ -1936,6 +1936,30 @@
   const HERO_ATK_MS = 280;
   let heroAtkTimer = null;
 
+  const HERO_POSE_SRC = {
+    idle: 'assets/combat/sprites/hero_idle.webp',
+    attack: 'assets/combat/sprites/hero_attack.webp',
+    hurt: 'assets/combat/sprites/hero_hurt.webp',
+    down: 'assets/combat/sprites/hero_down.webp',
+  };
+  let heroPoseTimer = null;
+  function setHeroPose(pose, ms) {
+    const art = $('hero-art');
+    if (!art) return;
+    if (heroPoseTimer) { clearTimeout(heroPoseTimer); heroPoseTimer = null; }
+    art.dataset.pose = pose;
+    art.src = HERO_POSE_SRC[pose] || HERO_POSE_SRC.idle;
+    if (pose !== 'idle' && ms) {
+      heroPoseTimer = setTimeout(() => {
+        art.dataset.pose = 'idle';
+        art.src = HERO_POSE_SRC.idle;
+        heroPoseTimer = null;
+      }, ms);
+    }
+  }
+  // 預載四幀避免切換閃爍
+  Object.values(HERO_POSE_SRC).forEach((u) => { const i = new Image(); i.src = u; });
+
   function playHeroAttackAnim() {
     const art = $('hero-art');
     if (!art) return;
@@ -1944,6 +1968,7 @@
       heroAtkTimer = null;
     }
     art.classList.add('attacking');
+    setHeroPose('attack', 320);
     heroAtkTimer = setTimeout(() => {
       art.classList.remove('attacking');
       heroAtkTimer = null;
@@ -1964,6 +1989,7 @@
     const s = slot == null ? 0 : slot;
     pulseClass($('enemy-slot-' + s), 'attacking', 280);
     pulseClass($('fighter-hero'), 'hit', 280);
+    if (kind !== 'miss' && kind !== 'block') setHeroPose('hurt', 300);
     if (kind === 'miss') spawnFloat('閃', 'miss enemy-hit');
     else if (kind === 'block') spawnFloat('化', 'miss enemy-hit');
     else spawnFloat('-!', 'enemy-hit');

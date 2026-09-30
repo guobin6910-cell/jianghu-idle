@@ -1492,3 +1492,10 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 .battle-stage[class*="zone-"] {
   background-blend-mode: multiply, normal;
 }
+
+
+/* 主角四幀（透明底，比例固定：每像素 0.19；腳底對齊） */
+#fighter-hero .hero-combat-sprite { height: 128px; width: auto; max-width: none; }
+#fighter-hero .hero-combat-sprite[data-pose="attack"] { height: 114px; }
+#fighter-hero .hero-combat-sprite[data-pose="hurt"] { height: 130px; }
+#fighter-hero .hero-combat-sprite[data-pose="down"] { height: 108px; }
