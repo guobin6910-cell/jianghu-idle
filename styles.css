@@ -1499,3 +1499,10 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 #fighter-hero .hero-combat-sprite[data-pose="attack"] { height: 114px; }
 #fighter-hero .hero-combat-sprite[data-pose="hurt"] { height: 130px; }
 #fighter-hero .hero-combat-sprite[data-pose="down"] { height: 108px; }
+
+
+/* 新四幀：尺寸由 JS 依幀寬高固定設定，腳底對齊、不套固定高度框 */
+.combat-sprite[data-sized="1"] { max-width: none; object-fit: fill; }
+.enemy-slot .combat-sprite[data-sized="1"], #fighter-hero .combat-sprite[data-sized="1"] { max-width: none; }
+.enemy-slot .ghost-down { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); animation: down-fade 0.65s ease forwards; z-index: 2; }
+@keyframes down-fade { 0%,55% { opacity: 1; } 100% { opacity: 0; } }

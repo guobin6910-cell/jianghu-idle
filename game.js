@@ -185,11 +185,50 @@
     return ZONE_LOOK[zoneId] || 'bandit';
   }
 
-  const ENEMY_SPRITES = [
-    'assets/combat/sprites/enemy_drunk.png',
-    'assets/combat/sprites/enemy_pirate.png',
-    'assets/combat/sprites/enemy_bandit.png',
-  ];
+  const ENEMY_SPRITES = ['drunk', 'pirate', 'bandit'];
+  // 各幀尺寸（已縮半後像素），換算成固定顯示比例，腳底對齊
+  const SPRITE_SIZES = {
+    drunk: { idle: [268, 338], attack: [267, 319], hurt: [300, 328], down: [360, 284] },
+    pirate: { idle: [229, 316], attack: [297, 320], hurt: [235, 316], down: [312, 264] },
+    bandit: { idle: [240, 336], attack: [238, 339], hurt: [259, 326], down: [360, 266] },
+    hero: { idle: [174, 334], attack: [344, 299], hurt: [230, 340], down: [320, 284] },
+  };
+  const SPRITE_SCALE = { hero: 0.383, enemy: 0.3 };
+  function spriteUrl(kind, pose) {
+    return 'assets/combat/sprites/' + (kind === 'hero' ? 'hero_' : 'enemy_' + kind + '_') + pose + '.webp';
+  }
+  function applySprite(img, kind, pose) {
+    if (!img) return;
+    const sz = (SPRITE_SIZES[kind] || SPRITE_SIZES.bandit)[pose] || SPRITE_SIZES.bandit.idle;
+    const sc = kind === 'hero' ? SPRITE_SCALE.hero : SPRITE_SCALE.enemy;
+    img.src = spriteUrl(kind, pose);
+    img.dataset.kind = kind;
+    img.dataset.pose = pose;
+    img.dataset.sized = '1';
+    img.style.width = Math.round(sz[0] * sc) + 'px';
+    img.style.height = Math.round(sz[1] * sc) + 'px';
+  }
+  // 各敵槽暫時姿勢（受擊／倒地），renderAll 重繪時要保留
+  const slotPose = [null, null, null];
+  function slotPoseNow(i) {
+    const sp = slotPose[i];
+    if (sp && Date.now() < sp.until) return sp.pose;
+    return null;
+  }
+  function setSlotPose(i, pose, ms) {
+    slotPose[i] = { pose, until: Date.now() + ms };
+    const slot = $('enemy-slot-' + i);
+    const spr = slot && slot.querySelector('[data-sprite]');
+    const kind = spr && spr.dataset.kind;
+    if (spr && kind) applySprite(spr, kind, pose);
+    setTimeout(() => {
+      if (slotPose[i] && Date.now() >= slotPose[i].until) {
+        slotPose[i] = null;
+        const s2 = slot && slot.querySelector('[data-sprite]');
+        if (s2 && s2.dataset.kind && !slot.classList.contains('empty')) applySprite(s2, s2.dataset.kind, 'idle');
+      }
+    }, ms + 20);
+  }
   const ENEMY_SPRITE_BY_LOOK = {
     bandit: ENEMY_SPRITES[2],
     sand: ENEMY_SPRITES[2],
@@ -1905,7 +1944,9 @@
       if (!mob || mob.hp <= 0) {
         slot.classList.add('empty');
         if (spr) {
-          spr.src = ENEMY_SPRITES[i % ENEMY_SPRITES.length];
+          const keepKind = spr.dataset.kind && spr.dataset.kind !== 'hero' ? spr.dataset.kind : ENEMY_SPRITES[i % ENEMY_SPRITES.length];
+          const dp = slotPoseNow(i);
+          applySprite(spr, keepKind, dp || 'idle');
           spr.alt = '';
         }
         const lab = slot.querySelector('[data-label]');
@@ -1922,7 +1963,7 @@
       }
       if (primary && primary.uid === mob.uid) slot.classList.add('primary-target');
       if (spr) {
-        spr.src = enemySpriteSrc(mob, i);
+        applySprite(spr, enemySpriteSrc(mob, i), slotPoseNow(i) || 'idle');
         spr.alt = mob.name || '';
       }
       const lab = slot.querySelector('[data-label]');
@@ -1936,29 +1977,21 @@
   const HERO_ATK_MS = 280;
   let heroAtkTimer = null;
 
-  const HERO_POSE_SRC = {
-    idle: 'assets/combat/sprites/hero_idle.webp',
-    attack: 'assets/combat/sprites/hero_attack.webp',
-    hurt: 'assets/combat/sprites/hero_hurt.webp',
-    down: 'assets/combat/sprites/hero_down.webp',
-  };
   let heroPoseTimer = null;
   function setHeroPose(pose, ms) {
     const art = $('hero-art');
     if (!art) return;
     if (heroPoseTimer) { clearTimeout(heroPoseTimer); heroPoseTimer = null; }
-    art.dataset.pose = pose;
-    art.src = HERO_POSE_SRC[pose] || HERO_POSE_SRC.idle;
+    applySprite(art, 'hero', pose);
     if (pose !== 'idle' && ms) {
       heroPoseTimer = setTimeout(() => {
-        art.dataset.pose = 'idle';
-        art.src = HERO_POSE_SRC.idle;
+        applySprite(art, 'hero', 'idle');
         heroPoseTimer = null;
       }, ms);
     }
   }
   // 預載四幀避免切換閃爍
-  Object.values(HERO_POSE_SRC).forEach((u) => { const i = new Image(); i.src = u; });
+  ['hero', 'drunk', 'pirate', 'bandit'].forEach((k) => ['idle', 'attack', 'hurt', 'down'].forEach((po) => { const i = new Image(); i.src = spriteUrl(k, po); }));
 
   function playHeroAttackAnim() {
     const art = $('hero-art');
@@ -1980,6 +2013,7 @@
     playHeroAttackAnim();
     const s = slot == null ? 0 : slot;
     pulseClass($('enemy-slot-' + s), 'hit', 300);
+    setSlotPose(s, 'hurt', 280);
     pulseClass($('battle-stage'), 'shake', isCrit ? 340 : 240);
     spawnFloat('-' + dmg, isCrit ? 'crit' : '', s);
     spawnSlash(!!isCrit, false, s);
@@ -1988,6 +2022,7 @@
   function fxEnemyAttack(kind, slot) {
     const s = slot == null ? 0 : slot;
     pulseClass($('enemy-slot-' + s), 'attacking', 280);
+    setSlotPose(s, 'attack', 300);
     pulseClass($('fighter-hero'), 'hit', 280);
     if (kind !== 'miss' && kind !== 'block') setHeroPose('hurt', 300);
     if (kind === 'miss') spawnFloat('閃', 'miss enemy-hit');
@@ -1999,9 +2034,18 @@
     const s = slot == null ? 0 : slot;
     const enemyF = $('enemy-slot-' + s);
     if (!enemyF) return;
-    enemyF.classList.add('dying');
+    // 倒地用殘影：敵人陣列隨即前移補位，不能直接改槽內那張圖
+    const spr = enemyF.querySelector('[data-sprite]');
+    if (spr && spr.dataset.kind && spr.dataset.kind !== 'hero') {
+      const ghost = document.createElement('img');
+      ghost.className = 'combat-sprite ghost-down';
+      ghost.alt = '';
+      ghost.draggable = false;
+      applySprite(ghost, spr.dataset.kind, 'down');
+      enemyF.appendChild(ghost);
+      setTimeout(() => ghost.remove(), 700);
+    }
     spawnFloat('破！', 'kill', s);
-    setTimeout(() => enemyF.classList.remove('dying'), 420);
   }
 
   function renderCombatBars() {
