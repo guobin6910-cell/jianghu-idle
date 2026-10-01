@@ -1552,3 +1552,7 @@ body.modal-open { overflow: hidden; }
 
 /* 倒地殘影放進 .sprite 內，腳底與站立時一致（不再沉到影子下） */
 .enemy-slot .sprite .ghost-down { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); }
+
+.set-box { border: 1px solid rgba(232,192,80,0.35); border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+.set-box .set-off { opacity: 0.5; }
+.eq-row .btn, .bag-item .btn[data-enh] { font-size: 12px; }

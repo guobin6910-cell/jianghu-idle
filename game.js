@@ -97,6 +97,134 @@
     return QUALITY_META[q] || QUALITY_META.fan;
   }
 
+
+  // ===== 裝備系統（強化／詞條／套裝／首領專屬武器）=====
+  // ※ 所有數字集中在這裡；目前為暫訂值，創意提供者的數值表到了只改這一區。
+  const ENH_MAX = 10;
+  const ENH_COST = [60, 120, 220, 380, 600, 900, 1400, 2100, 3200, 5000]; // 第 n 次強化（+n）所需銀兩
+  const ENH_RATE = [1, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2]; // 基礎成功率
+  const ENH_PITY_STEP = 0.1; // 連續失敗每次 +10% 成功率
+  const ENH_PITY_GUARANTEE = 4; // 連續失敗 4 次，下一次必成
+  const ENH_STAT_PCT = 0.12; // 每 +1 提升該件基礎屬性 12%（不為 0 的屬性至少 +1 per 2 級）
+  const AFFIX_DEFS = {
+    atk: { name: '鋒銳', unit: '攻擊', zhen: [3, 6], jue: [6, 10] },
+    def: { name: '堅韌', unit: '防禦', zhen: [3, 6], jue: [6, 10] },
+    spd: { name: '迅捷', unit: '速度', zhen: [3, 6], jue: [6, 10] },
+    silver: { name: '貪財', unit: '銀兩所得', zhen: [5, 10], jue: [10, 18] },
+    exp: { name: '悟性', unit: '經驗所得', zhen: [4, 8], jue: [8, 14] },
+    drop: { name: '福緣', unit: '掉落機率', zhen: [2, 4], jue: [4, 7] },
+  };
+  const AFFIX_COUNT = { fan: 0, liang: 0, zhen: 1, jue: 2 };
+  const EQUIP_SETS = {
+    yanyu: {
+      name: '煙雨套',
+      pieces: ['umbrella_bone_spike', 'lantern_cloak', 'boots', 'pearl_ring'],
+      bonus: [
+        { n: 2, spd: 10, text: '速度 +10%' },
+        { n: 4, spd: 10, silver: 10, text: '速度再 +10%、銀兩所得 +10%' },
+      ],
+    },
+    lieren: {
+      name: '烈刃套',
+      pieces: ['frost_blade', 'temple_armor', 'snow_boots', 'bell_ring'],
+      bonus: [
+        { n: 2, atk: 8, text: '攻擊 +8%' },
+        { n: 4, atk: 12, def: 8, text: '攻擊再 +12%、防禦 +8%' },
+      ],
+    },
+  };
+  function setOfItem(item) {
+    if (!item) return null;
+    for (const k of Object.keys(EQUIP_SETS)) if (EQUIP_SETS[k].pieces.indexOf(item.id) >= 0) return k;
+    return null;
+  }
+  function enhLv(it) { return (it && it.enh) || 0; }
+  function itemBase(it, key) {
+    const b = (it && it[key]) || 0;
+    if (!b) return 0;
+    const lv = enhLv(it);
+    return b + Math.max(Math.floor(lv / 2), Math.round(b * ENH_STAT_PCT * lv));
+  }
+  function itemDisplayName(it) {
+    return it.name + (enhLv(it) > 0 ? ' +' + enhLv(it) : '');
+  }
+  function rollAffixes(q) {
+    const n = AFFIX_COUNT[q] || 0;
+    const keys = Object.keys(AFFIX_DEFS);
+    const out = [];
+    while (out.length < n && keys.length) {
+      const k = keys.splice(Math.floor(Math.random() * keys.length), 1)[0];
+      const rg = AFFIX_DEFS[k][q === 'jue' ? 'jue' : 'zhen'];
+      out.push({ k: k, v: rand(rg[0], rg[1]) });
+    }
+    return out;
+  }
+  function affixText(it) {
+    return (it.affixes || []).map((a) => {
+      const d = AFFIX_DEFS[a.k];
+      return d ? d.name + ' ' + d.unit + '+' + a.v + '%' : '';
+    }).filter(Boolean).join('、');
+  }
+  function activeSets(hero) {
+    const cnt = {};
+    for (const it of Object.values((hero && hero.equip) || {})) {
+      const sid = setOfItem(it);
+      if (sid) cnt[sid] = (cnt[sid] || 0) + 1;
+    }
+    return cnt;
+  }
+  /** 詞條＋套裝合計（百分比整數） */
+  function gearPct(hero) {
+    const t = { atk: 0, def: 0, spd: 0, silver: 0, exp: 0, drop: 0 };
+    for (const it of Object.values((hero && hero.equip) || {})) {
+      if (!it) continue;
+      for (const a of it.affixes || []) if (t[a.k] != null) t[a.k] += a.v;
+    }
+    const cnt = activeSets(hero);
+    for (const sid of Object.keys(cnt)) {
+      for (const b of EQUIP_SETS[sid].bonus) {
+        if (cnt[sid] >= b.n) for (const k of Object.keys(t)) t[k] += b[k] || 0;
+      }
+    }
+    return t;
+  }
+  function enhRate(it) {
+    const lv = enhLv(it);
+    if (lv >= ENH_MAX) return 0;
+    const streak = it.enhFail || 0;
+    if (streak >= ENH_PITY_GUARANTEE) return 1;
+    return Math.min(1, ENH_RATE[lv] + streak * ENH_PITY_STEP);
+  }
+  function enhCost(it) { return ENH_COST[Math.min(ENH_MAX - 1, enhLv(it))]; }
+  function findOwnedItem(uid) {
+    const b = state.bag.find((x) => x.uid === uid);
+    if (b) return b;
+    for (const sl of Object.keys(state.equip)) if (state.equip[sl] && state.equip[sl].uid === uid) return state.equip[sl];
+    return null;
+  }
+  function enhanceItem(uid) {
+    const it = findOwnedItem(uid);
+    if (!it || !it.slot) return;
+    if (enhLv(it) >= ENH_MAX) { pushLog('「' + it.name + '」已強化至極限。'); renderBag(); return; }
+    const cost = enhCost(it);
+    if (state.silver < cost) { pushLog('銀兩不足，強化「' + it.name + '」需 ' + cost + ' 銀。'); renderBag(); return; }
+    const rate = enhRate(it);
+    state.silver -= cost;
+    const qm = qualityMeta(it.quality);
+    if (Math.random() < rate) {
+      it.enh = enhLv(it) + 1;
+      it.enhFail = 0;
+      pushLog('強化成功！「' + it.name + '」→ +' + it.enh + '（−' + cost + ' 銀）', 'loot ' + qm.cls);
+      if (Audio()) Audio().sfx('levelup');
+    } else {
+      it.enhFail = (it.enhFail || 0) + 1;
+      pushLog('強化失敗，「' + it.name + '」未受損（−' + cost + ' 銀，保底 ' + it.enhFail + '/' + ENH_PITY_GUARANTEE + '）', 'loot');
+      if (Audio()) Audio().sfx('click');
+    }
+    renderAll();
+    save();
+  }
+
   /** 稀有度越低（越難掉）→ 高品質機率越高；名號至少珍 */
   function rollQuality(rare, opts) {
     opts = opts || {};
@@ -126,7 +254,7 @@
     const rg = ranges[q] || ranges.fan;
     const base = rand(rg[0], rg[1]);
     return (
-      base +
+      base + enhLv(item) * 30 +
       (item.atk || 0) * 4 +
       (item.def || 0) * 3 +
       (item.spd || 0) * 3
@@ -526,7 +654,7 @@
       name: '「醉裡抽刀」馬三刀',
       desc: '酒氣紅臉、斷刀背肩',
       mult: { hp: 2.4, atk: 1.55, def: 1.35, exp: 2.8, silver: 2.2 },
-      bestDrop: { id: 'broken_inn_blade', name: '斷刃客棧刀', slot: 'weapon', atk: 4, rare: 0.72 },
+      bestDrop: { id: 'broken_inn_blade', name: '斷刃客棧刀', slot: 'weapon', atk: 5, spd: 1, rare: 0.72, bossWeapon: true },
       loreId: 'rival_inn',
       loreTitle: '客棧後院的交易',
       loreBody: '後院燈火未熄，銀兩與刀鞘同時換手。有人說那不是買賣，是約——約好了誰先出聲，誰就先死。',
@@ -537,7 +665,7 @@
       name: '「濕衣不乾」柳七',
       desc: '蓑衣遮臉、袖藏短刺',
       mult: { hp: 2.3, atk: 1.6, def: 1.3, exp: 2.7, silver: 2.1 },
-      bestDrop: { id: 'tide_soft_armor', name: '潮痕軟甲', slot: 'armor', def: 4, spd: 1, rare: 0.7 },
+      bestDrop: { id: 'liu_short_spike', name: '濕衣短刺', slot: 'weapon', atk: 7, spd: 2, rare: 0.7, bossWeapon: true },
       loreId: 'rival_river',
       loreTitle: '雨夜運過什麼貨',
       loreBody: '雨大得像幕，船卻偏偏不泊碼頭。艙裡響過一聲輕咔，像鎖，又像牙——第二天潮退，岸上只剩半截濕繩。',
@@ -548,7 +676,7 @@
       name: '「駝鈴聲斷」沙滿倉',
       desc: '黃巾裹頭、駝鈴腰墜',
       mult: { hp: 2.35, atk: 1.58, def: 1.4, exp: 2.75, silver: 2.15 },
-      bestDrop: { id: 'sandstorm_cloak', name: '狂沙披風', slot: 'armor', def: 5, atk: 1, rare: 0.68 },
+      bestDrop: { id: 'sandstorm_scimitar', name: '狂沙彎刀', slot: 'weapon', atk: 9, def: 1, rare: 0.68, bossWeapon: true },
       loreId: 'rival_desert',
       loreTitle: '驛道失蹤的鏢車',
       loreBody: '駝鈴忽然齊啞，沙丘換了一個形狀。鏢旗還在，車轍沒有；有人說貨進了風裡，有人說風進了貨裡。',
@@ -559,7 +687,7 @@
       name: '「一葉蔽目」青娘',
       desc: '白衣青帶、竹葉半臉',
       mult: { hp: 2.25, atk: 1.65, def: 1.25, exp: 2.8, silver: 2.1 },
-      bestDrop: { id: 'bamboo_slim_sword', name: '竹海細劍', slot: 'weapon', atk: 6, spd: 2, rare: 0.65 },
+      bestDrop: { id: 'bamboo_slim_sword', name: '竹海細劍', slot: 'weapon', atk: 11, spd: 2, rare: 0.65, bossWeapon: true },
       loreId: 'rival_bamboo',
       loreTitle: '竹海裡誰在練刀',
       loreBody: '竹響三聲後還有第四聲，更輕，更準。葉落處不見人影，只見一道青痕貼地而過，像有人把風也練進刀裡。',
@@ -570,7 +698,7 @@
       name: '「崖邊無影」無名',
       desc: '灰袍無徽、腳步無聲',
       mult: { hp: 2.5, atk: 1.6, def: 1.45, exp: 2.9, silver: 2.3 },
-      bestDrop: { id: 'cliff_rope_hook', name: '斷雲繩鉤', slot: 'boots', spd: 3, def: 1, rare: 0.62 },
+      bestDrop: { id: 'cliff_rope_hook', name: '斷雲鉤鐮', slot: 'weapon', atk: 13, spd: 3, rare: 0.62, bossWeapon: true },
       loreId: 'rival_cliff',
       loreTitle: '絕壁上的舊盟約',
       loreBody: '碑陰另有一行小字，被風雨啃得只剩半句。有人對過誓言，有人對過刀；到後來，誓言與刀都成了風聲。',
@@ -581,7 +709,7 @@
       name: '「傘下無聲」阿雨',
       desc: '黑傘半開、靴底無泥',
       mult: { hp: 2.3, atk: 1.7, def: 1.3, exp: 2.85, silver: 2.2 },
-      bestDrop: { id: 'umbrella_bone_spike', name: '夜雨傘骨刺', slot: 'weapon', atk: 8, spd: 2, rare: 0.6 },
+      bestDrop: { id: 'umbrella_bone_spike', name: '夜雨傘骨刺', slot: 'weapon', atk: 15, spd: 3, rare: 0.6, bossWeapon: true },
       loreId: 'rival_night',
       loreTitle: '長街第三盞燈',
       loreBody: '前兩盞照路，第三盞照人。燈油將盡時，傘骨會輕輕一顫——懂的人換巷，不懂的人換命。',
@@ -592,7 +720,7 @@
       name: '「白刃不凍」關北',
       desc: '鐵盔結霜、刀上無雪',
       mult: { hp: 2.4, atk: 1.62, def: 1.5, exp: 2.9, silver: 2.25 },
-      bestDrop: { id: 'frost_pass_armor', name: '寒關戍甲', slot: 'armor', def: 9, atk: 2, rare: 0.58 },
+      bestDrop: { id: 'frost_pass_blade', name: '寒關戍刀', slot: 'weapon', atk: 18, def: 2, rare: 0.58, bossWeapon: true },
       loreId: 'rival_snow',
       loreTitle: '誰守過這道關',
       loreBody: '名冊上最後一個名字被雪蓋住。關吏換過三任，刀卻還是那把——刃上不掛雪的人，心裡未必不掛事。',
@@ -603,7 +731,7 @@
       name: '「鐘響無人」空戒',
       desc: '破袈裟、棍纏舊鈴',
       mult: { hp: 2.45, atk: 1.58, def: 1.55, exp: 3.0, silver: 2.3 },
-      bestDrop: { id: 'broken_bell_beads', name: '殘鐘念珠', slot: 'ring', atk: 4, def: 4, rare: 0.55 },
+      bestDrop: { id: 'broken_bell_staff', name: '殘鐘禪杖', slot: 'weapon', atk: 21, def: 3, rare: 0.55, bossWeapon: true },
       loreId: 'rival_temple',
       loreTitle: '古寺半夜為什麼響鐘',
       loreBody: '鐘樓無人，鐘繩卻動。有的僧說是風，有的僧說是債；債若會走路，多半穿破袈裟。',
@@ -614,7 +742,7 @@
       name: '「潮來即走」島主阿嵐',
       desc: '斗笠遮眼、袖有鹽花',
       mult: { hp: 2.4, atk: 1.68, def: 1.4, exp: 3.0, silver: 2.35 },
-      bestDrop: { id: 'isle_tide_blade', name: '孤嶼潮刃', slot: 'weapon', atk: 13, spd: 2, rare: 0.52 },
+      bestDrop: { id: 'isle_tide_blade', name: '孤嶼潮刃', slot: 'weapon', atk: 24, spd: 3, rare: 0.52, bossWeapon: true },
       loreId: 'rival_mist',
       loreTitle: '霧裡那艘不靠岸的船',
       loreBody: '船影在霧裡停了很久，始終不落錨。岸上有人招手，船上有人搖頭——潮一漲，雙方都成了傳聞。',
@@ -625,7 +753,7 @@
       name: '「雲上獨行」老叟',
       desc: '白鬚、杖當劍',
       mult: { hp: 2.55, atk: 1.72, def: 1.5, exp: 3.2, silver: 2.5 },
-      bestDrop: { id: 'skywind_cloak', name: '天風披氅', slot: 'armor', def: 12, atk: 3, spd: 1, rare: 0.5 },
+      bestDrop: { id: 'skywind_sword', name: '天風長劍', slot: 'weapon', atk: 28, def: 2, spd: 3, rare: 0.5, bossWeapon: true },
       loreId: 'rival_sky',
       loreTitle: '雲棧盡頭有沒有路',
       loreBody: '棧盡處雲厚如牆。有人退了，有人笑著進去；出來的人少，帶話回來的更少——只說：路在腳下，也在回頭。',
@@ -889,10 +1017,14 @@
     let spd = 5 + Math.floor(hero.lv / 2) + (school.spd || 0) + (weapon.spd || 0);
     for (const it of Object.values(hero.equip || {})) {
       if (!it) continue;
-      atk += it.atk || 0;
-      def += it.def || 0;
-      spd += it.spd || 0;
+      atk += itemBase(it, 'atk');
+      def += itemBase(it, 'def');
+      spd += itemBase(it, 'spd');
     }
+    const gp = gearPct(hero);
+    atk = Math.floor(atk * (1 + gp.atk / 100));
+    def = Math.floor(def * (1 + gp.def / 100));
+    spd = Math.floor(spd * (1 + gp.spd / 100));
     return { atk, def, spd };
   }
 
@@ -1206,6 +1338,9 @@
       quality: q,
       keep: fromRival,
       fromRival: fromRival,
+      enh: 0,
+      affixes: rollAffixes(q),
+      bossWeapon: !!d.bossWeapon,
     };
 
     if (shouldAutoSell(item)) {
@@ -1223,6 +1358,7 @@
     if (item.atk) bits.push('攻+' + item.atk);
     if (item.def) bits.push('防+' + item.def);
     if (item.spd) bits.push('速+' + item.spd);
+    if (item.affixes && item.affixes.length) bits.push(affixText(item));
     bits.unshift(qm.label);
     return {
       name: item.name,
@@ -1251,6 +1387,7 @@
       state.dropBonusLeft -= 1;
       if (state.dropBonusLeft <= 0) state.dropBonusPct = 0;
     }
+    dropBonus += gearPct(state).drop / 100;
     for (const d of zone.drops) {
       const rare = Math.min(0.95, (d.rare || 0) + dropBonus);
       if (Math.random() > rare) continue;
@@ -1271,7 +1408,7 @@
     state.rivalCooldownUntil[zid] = Date.now() + 4 * 60 * 60 * 1000;
     if (rival) {
       state._lastRivalDrop = firstClear ? Object.assign({}, rival.bestDrop, { rare: 1 }) : rival.bestDrop;
-      if (firstClear) pushLog('首次征服「' + (ZONES.find((z) => z.id === zid) || {}).name + '」！必掉「' + rival.bestDrop.name + '」', 'rival');
+      if (firstClear) pushLog('首次征服「' + (ZONES.find((z) => z.id === zid) || {}).name + '」！必掉首領專屬武器「' + rival.bestDrop.name + '」', 'rival');
       pushLog('名號已破！可於俠客頁花俠義解鎖傳聞「' + rival.loreTitle + '」', 'rival');
       pushEventLog('擊敗名號「' + rival.name + '」（' + (ZONES.find((z) => z.id === zid) || {}).name + '）', 'rival');
     }
@@ -1359,10 +1496,12 @@
     } else if (zsb && Date.now() >= (zsb.until || 0)) {
       state.zoneSilverBonus = null;
     }
+    const _gp = gearPct(state);
+    if (_gp.silver) sil = Math.floor(sil * (1 + _gp.silver / 100));
     state.silver += sil;
     state.kills += 1;
     bumpZoneKill();
-    const gotExp = Math.floor(mob.exp * bonusExp);
+    const gotExp = Math.floor(mob.exp * bonusExp * (1 + _gp.exp / 100));
     gainExp(gotExp);
     const wasRival = !!mob.isRival;
     if (wasRival) onRivalDefeated(mob);
@@ -2424,6 +2563,36 @@
     });
   }
 
+
+  function gearLine(it) {
+    const bits = [];
+    const sid = setOfItem(it);
+    if (sid) bits.push('【' + EQUIP_SETS[sid].name + '】');
+    const a = affixText(it);
+    if (a) bits.push(a);
+    return bits.join(' ');
+  }
+  function enhBtn(it) {
+    if (!it || !it.slot) return '';
+    const lv = enhLv(it);
+    if (lv >= ENH_MAX) return '<button type="button" class="btn" disabled>強化已滿</button>';
+    const pct = Math.round(enhRate(it) * 100);
+    const pity = it.enhFail ? '·保底' + it.enhFail + '/' + ENH_PITY_GUARANTEE : '';
+    return '<button type="button" class="btn" data-enh="' + it.uid + '"' + (state.silver < enhCost(it) ? ' title="銀兩不足"' : '') +
+      '>強化+' + (lv + 1) + '（' + enhCost(it) + '銀·' + pct + '%' + pity + '）</button>';
+  }
+  function setSummaryHtml() {
+    const cnt = activeSets(state);
+    let h = '';
+    for (const sid of Object.keys(EQUIP_SETS)) {
+      const S = EQUIP_SETS[sid];
+      const n = cnt[sid] || 0;
+      const lines = S.bonus.map((b) => '<div class="muted' + (n >= b.n ? '' : ' set-off') + '">' + b.n + ' 件：' + b.text + (n >= b.n ? ' ✓' : '') + '</div>').join('');
+      h += '<div class="set-box"><strong>' + S.name + '（' + n + '/4）</strong>' + lines + '</div>';
+    }
+    return '<h3 style="margin-top:12px">套裝</h3>' + h;
+  }
+
   function renderBag() {
     const el = $('panel-bag');
     const eq = state.equip;
@@ -2453,15 +2622,11 @@
         }
         const qm = qualityMeta(it.quality);
         return (
-          '<div class="row eq-row ' +
-          qm.cls +
-          '"><span>' +
-          labels[slot] +
-          '</span><span>' +
-          escapeHtml(it.name) +
-          '<span class="q-badge">' +
-          qm.label +
-          '</span></span></div>'
+          '<div class="row eq-row ' + qm.cls + '"><span>' + labels[slot] + '</span><span>' +
+          escapeHtml(itemDisplayName(it)) + '<span class="q-badge">' + qm.label + '</span>' +
+          (it.bossWeapon ? '<span class="q-badge">首領專屬</span>' : '') +
+          (gearLine(it) ? '<div class="muted">' + escapeHtml(gearLine(it)) + '</div>' : '') +
+          enhBtn(it) + '</span></div>'
         );
       })
       .join('');
@@ -2470,9 +2635,9 @@
           .map((it) => {
             const qm = qualityMeta(it.quality);
             const bonus = [
-              it.atk ? '攻+' + it.atk : '',
-              it.def ? '防+' + it.def : '',
-              it.spd ? '速+' + it.spd : '',
+              it.atk ? '攻+' + itemBase(it, 'atk') : '',
+              it.def ? '防+' + itemBase(it, 'def') : '',
+              it.spd ? '速+' + itemBase(it, 'spd') : '',
             ]
               .filter(Boolean)
               .join(' ');
@@ -2482,13 +2647,13 @@
               qm.cls +
               '">' +
               '<div><strong>' +
-              escapeHtml(it.name) +
+              escapeHtml(itemDisplayName(it)) +
               '</strong><span class="q-badge">' +
               qm.label +
-              '</span><div class="muted">' +
+              '</span>' + (it.bossWeapon ? '<span class="q-badge">首領專屬</span>' : '') + '<div class="muted">' +
               escapeHtml((bonus || '雜物') + keepTag) +
-              '</div></div>' +
-              '<div>' +
+              '</div>' + (gearLine(it) ? '<div class="muted">' + escapeHtml(gearLine(it)) + '</div>' : '') + '</div>' +
+              '<div>' + (it.slot ? enhBtn(it) : '') +
               (it.slot ? '<button type="button" class="btn" data-eq="' + it.uid + '">裝上</button>' : '') +
               '<button type="button" class="btn" data-sell="' +
               it.uid +
@@ -2501,11 +2666,14 @@
     el.innerHTML =
       asBar +
       '<h3>已裝備</h3>' +
-      eqLines +
+      eqLines + setSummaryHtml() +
       '<h3 style="margin-top:12px">行囊</h3>' +
       bagLines;
     el.querySelectorAll('[data-eq]').forEach((b) =>
       b.addEventListener('click', () => equipItem(b.getAttribute('data-eq')))
+    );
+    el.querySelectorAll('[data-enh]').forEach((b) =>
+      b.addEventListener('click', () => enhanceItem(b.getAttribute('data-enh')))
     );
     el.querySelectorAll('[data-sell]').forEach((b) =>
       b.addEventListener('click', () => sellItem(b.getAttribute('data-sell')))
@@ -2882,6 +3050,9 @@
       saved.equip = { weapon: null, armor: null, boots: null, ring: null };
     }
     if (!Array.isArray(saved.bag)) saved.bag = [];
+    const _fix = (it) => { if (it && typeof it === 'object') { if (typeof it.enh !== 'number') it.enh = 0; if (!Array.isArray(it.affixes)) it.affixes = []; } };
+    saved.bag.forEach(_fix);
+    Object.keys(saved.equip).forEach((k) => _fix(saved.equip[k]));
     if (!Array.isArray(saved.log)) saved.log = [];
     if (!Array.isArray(saved.eventLog)) saved.eventLog = [];
     if (!saved.zoneBossFlags || typeof saved.zoneBossFlags !== 'object') saved.zoneBossFlags = {};
