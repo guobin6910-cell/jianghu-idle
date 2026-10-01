@@ -5,6 +5,10 @@
   const BGM_SRC = {
     world: [BASE + 'bgm_world.ogg', BASE + 'bgm_world.mp3'],
     battle: [BASE + 'bgm_battle.ogg', BASE + 'bgm_battle.mp3'],
+    calm: [BASE + 'bgm_calm.ogg', BASE + 'bgm_calm.mp3'],
+    road: [BASE + 'bgm_road.ogg', BASE + 'bgm_road.mp3'],
+    peak: [BASE + 'bgm_peak.ogg', BASE + 'bgm_peak.mp3'],
+    battle2: [BASE + 'bgm_battle2.ogg', BASE + 'bgm_battle2.mp3'],
   };
   const SFX_SRC = {
     hit: BASE + 'sfx_hit.ogg',

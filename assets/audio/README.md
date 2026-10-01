@@ -10,6 +10,13 @@ SFX 為 **CC0／Public Domain** 素材，經 ffmpeg（libvorbis）轉 Ogg、音�
 | `bgm_world.ogg` / `.mp3` | 地圖／掛機 BGM | *Beneath the Shattered Gate*（使用者自製） | 專案自有 |
 | `bgm_battle.ogg` / `.mp3` | 名號對手遭遇 BGM | *Blade of the Last Emperor*（使用者自製） | 專案自有 |
 
+| `bgm_calm.ogg` / `.mp3` | 河岸、竹林、古寺、霧島閒逛 | 使用者 2026-10-01 由 Gemini 生成之曲（`gemini_generated_video_F3D59B3D.mp4` 抽音軌，約 173 秒） | 使用者自製 |
+| `bgm_road.ogg` / `.mp3` | 沙漠、斷崖、雪關閒逛 | 同上（`..._9ADC5A52.mp4`，約 178 秒） | 使用者自製 |
+| `bgm_peak.ogg` / `.mp3` | 天脊雲棧閒逛 | 同上（`..._6496830F.mp4`，約 181 秒） | 使用者自製 |
+| `bgm_battle2.ogg` / `.mp3` | 部分地圖的名號戰 | 同上（`..._9C22052E.mp4`，約 174 秒） | 使用者自製 |
+
+另有兩支 mp4（`..._4BFFC171`、`..._A9C1DF8B`）超過雲端下載上限，尚未匯入。曲名未知，僅以檔名標示；音軌已去除靜音段並加淡入淡出。
+
 `audio.js` 優先播放 `.ogg`，不支援時回退 `.mp3`。
 
 ## SFX

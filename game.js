@@ -1039,6 +1039,18 @@
     ensureMobs();
   }
 
+  // 依地圖挑 BGM：地圖閒逛各區不同，名號戰兩首輪替
+  const ZONE_WORLD_BGM = {
+    inn: 'world', river: 'calm', desert: 'road', bamboo: 'calm', cliff: 'road',
+    nightmarket: 'world', snowpass: 'road', oldtemple: 'calm', mistisle: 'calm', skyridge: 'peak',
+  };
+  const ZONE_BATTLE_BGM = {
+    inn: 'battle', river: 'battle2', desert: 'battle', bamboo: 'battle2', cliff: 'battle',
+    nightmarket: 'battle2', snowpass: 'battle', oldtemple: 'battle2', mistisle: 'battle', skyridge: 'battle2',
+  };
+  function worldBgm(zid) { return ZONE_WORLD_BGM[zid || (state && state.zoneId)] || 'world'; }
+  function battleBgm(zid) { return ZONE_BATTLE_BGM[zid || (state && state.zoneId)] || 'battle'; }
+
   function ensureMobs() {
     if (!state) return;
     if (!Array.isArray(state.mobs)) state.mobs = [];
@@ -1119,7 +1131,7 @@
       pushEventLog('遭遇名號對手「' + rival.name + '」於「' + zone.name + '」', 'rival');
       if (Audio()) {
         Audio().sfx('rival');
-        Audio().playBgm('battle');
+        Audio().playBgm(battleBgm(zone.id));
       }
       return;
     }
@@ -1259,7 +1271,7 @@
     }
     state.chivalry += 5;
     pushLog('名號對手敗退，俠義 +5', 'rival');
-    if (Audio()) Audio().playBgm('world');
+    if (Audio()) Audio().playBgm(worldBgm());
   }
 
   function tickCombat() {
@@ -1762,7 +1774,7 @@
       Audio().unlock();
       Audio().sfx('click');
       const prim = state.mob || (Array.isArray(state.mobs) && state.mobs[0]);
-      const want = (prim && prim.isRival) ? 'battle' : 'world';
+      const want = (prim && prim.isRival) ? battleBgm(prim.zoneId || zone.id) : worldBgm();
       Audio().playBgm(want);
     }
     state.hunting = true;
@@ -1799,7 +1811,7 @@
     pushLog('停手歇息。');
     if (Audio()) {
       Audio().sfx('click');
-      Audio().playBgm('world');
+      Audio().playBgm(worldBgm());
     }
     renderAll();
     save();
@@ -2358,6 +2370,7 @@
         state.zoneId = id;
         state.mob = null;
         state.mobs = [];
+        if (Audio() && Audio().getCurrentBgm()) Audio().playBgm(worldBgm(id));
         pushLog('來到「' + z.name + '」');
         renderAll();
         save();
@@ -2738,7 +2751,7 @@
         Audio().applySettings(state.settings);
         Audio().unlock();
         Audio().sfx('click');
-        Audio().playBgm('world');
+        Audio().playBgm(worldBgm());
       }
       syncMuteBtn();
       save();
@@ -2783,7 +2796,7 @@
         save();
         if (!A.isMuted()) {
           A.sfx('click');
-          if (!A.getCurrentBgm()) A.playBgm('world');
+          if (!A.getCurrentBgm()) A.playBgm(worldBgm());
         }
       });
     }
