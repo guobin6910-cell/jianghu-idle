@@ -3025,6 +3025,12 @@
   }
 
   function boot() {
+    if (DEBUG_BOSS) {
+      const tag = document.createElement('div');
+      tag.textContent = '驗收模式：只出名號首領（網址去掉 ?debug=boss 即恢復正常）';
+      tag.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#a33;color:#fff;font-size:12px;text-align:center;padding:2px 4px;pointer-events:none';
+      document.body.appendChild(tag);
+    }
     renderChoices();
     bind();
     const saved = migrateSave(load());
