@@ -1738,3 +1738,4 @@ body.modal-open { overflow: hidden; }
 .quest-meta { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; flex-wrap: wrap; }
 .quest-row .btn { flex: 0 0 auto; min-width: 64px; }
 @media (max-width: 420px) { .tab { font-size: 13px; padding: 8px 2px; } }
+.ach-cat { margin: 10px 0 4px; font-size: 12px; color: var(--gold); letter-spacing: 0.1em; }

@@ -412,8 +412,12 @@
     bumpQuest('enh');
     const qm = qualityMeta(it.quality);
     if (Math.random() < rate) {
+      const _a = achStats();
+      if ((it.enhFail || 0) >= ENH_PITY_GUARANTEE) _a.pityHit += 1;
       it.enh = enhLv(it) + 1;
       it.enhFail = 0;
+      _a.enhOk += 1;
+      _a.maxEnh = Math.max(_a.maxEnh, it.enh);
       pushLog('強化成功！「' + it.name + '」→ +' + it.enh + '（−' + cost + ' 銀）', 'loot ' + qm.cls);
       if (it.enh === 5 || it.enh === 10) {
         pushEventLog('傳聞：有人把「' + it.name + '」鍛到 +' + it.enh + '，刃上光華隱隱。', 'rival');
@@ -1275,6 +1279,7 @@
     if (state.exhaustUntil) {
       if (now >= state.exhaustUntil) {
         state.exhaustUntil = 0;
+        achStats().standUps += 1;
         state.hp = Math.floor(heroMaxHp(state) / 2);
         pushLog('調息完畢，回復半血，繼續上路。', 'win');
         setHeroPose('idle', 10);
@@ -1647,6 +1652,8 @@
       bossWeapon: !!d.bossWeapon,
     };
 
+    if (q === 'zhen') achStats().gotZhen += 1;
+    if (q === 'jue') achStats().gotJue += 1;
     if (shouldAutoSell(item)) {
       const price = qualitySellPrice(item);
       state.silver += price;
@@ -3373,7 +3380,7 @@
   function questClaimable() {
     if (!state) return 0;
     const q = ensureQuests();
-    let n = DAILY_QUESTS.filter((d) => questDone(d) && !q.claimed[d.id]).length;
+    let n = achClaimable() + DAILY_QUESTS.filter((d) => questDone(d) && !q.claimed[d.id]).length;
     if (questAllClaimed() && !q.bonus) n += 1;
     return n;
   }
@@ -3461,10 +3468,73 @@
     el.querySelectorAll('[data-claim]').forEach((b) => b.addEventListener('click', () => claimQuest(b.getAttribute('data-claim'))));
     el.querySelectorAll('[data-ach]').forEach((b) => b.addEventListener('click', () => claimAch(b.getAttribute('data-ach'))));
   }
-  // 成就（第二階段實作）
-  function achSig() { return ''; }
-  function renderAchBody() { return '<p class="muted">成就即將開放。</p>'; }
-  function claimAch() {}
+  // ===== 成就（17 個；無對應系統的獎勵改為銀兩） =====
+  function achStats() {
+    if (!state.ach || typeof state.ach !== 'object') state.ach = {};
+    const a = state.ach;
+    if (!a.claimed) a.claimed = {};
+    ['enhOk', 'maxEnh', 'pityHit', 'gotZhen', 'gotJue', 'setHit', 'standUps'].forEach((k) => { if (typeof a[k] !== 'number') a[k] = 0; });
+    return a;
+  }
+  function rivalCount() { return Object.keys(state.zoneBossFlags || {}).filter((k) => state.zoneBossFlags[k]).length; }
+  const ACHS = [
+    { id: 'a1', cat: '等級', name: '初出茅廬', desc: '等級達到 5', goal: 5, val: () => state.lv, silver: 500 },
+    { id: 'a2', cat: '等級', name: '小有名氣', desc: '等級達到 20', goal: 20, val: () => state.lv, silver: 3000 },
+    { id: 'a3', cat: '等級', name: '江湖老手', desc: '等級達到 50', goal: 50, val: () => state.lv, silver: 2000, note: '（洗武學券未開放，改發銀兩）' },
+    { id: 'a4', cat: '擊殺', name: '百人斬', desc: '累計擊殺 100 隻', goal: 100, val: () => state.kills, silver: 1000 },
+    { id: 'a5', cat: '擊殺', name: '千人斬', desc: '累計擊殺 1000 隻', goal: 1000, val: () => state.kills, silver: 2000, note: '（保底符未開放，改發銀兩）' },
+    { id: 'a6', cat: '擊殺', name: '萬人敵', desc: '累計擊殺 10000 隻', goal: 10000, val: () => state.kills, title: '萬人敵' },
+    { id: 'a7', cat: '名號', name: '討債人', desc: '擊敗第 1 個名號', goal: 1, val: rivalCount, silver: 2000 },
+    { id: 'a8', cat: '名號', name: '半壁江湖', desc: '擊敗 5 個名號', goal: 5, val: rivalCount, title: '半壁' },
+    { id: 'a9', cat: '名號', name: '十地俱服', desc: '十個區域名號全部擊敗', goal: 10, val: rivalCount, title: '十地俱服' },
+    { id: 'a10', cat: '強化', name: '試試手氣', desc: '強化成功 1 次', goal: 1, val: () => achStats().enhOk, silver: 300 },
+    { id: 'a11', cat: '強化', name: '鐵杵成針', desc: '強化到 +5', goal: 5, val: () => achStats().maxEnh, title: '鐵杵' },
+    { id: 'a12', cat: '強化', name: '刃上光華', desc: '強化到 +10', goal: 10, val: () => achStats().maxEnh, title: '光華' },
+    { id: 'a13', cat: '強化', name: '福禍相依', desc: '強化連敗 4 次後觸發保底', goal: 1, val: () => achStats().pityHit, silver: 500 },
+    { id: 'a14', cat: '裝備', name: '珍藏', desc: '得到 1 件「珍」品質裝備', goal: 1, val: () => achStats().gotZhen + achStats().gotJue, silver: 1000 },
+    { id: 'a15', cat: '裝備', name: '絕世', desc: '得到 1 件「絕」品質裝備', goal: 1, val: () => achStats().gotJue, title: '藏鋒' },
+    { id: 'a16', cat: '裝備', name: '成套', desc: '湊齊任一套裝 2 件效果', goal: 1, val: () => { const c = activeSets(state); if (Object.keys(c).some((k) => c[k] >= 2)) achStats().setHit = 1; return achStats().setHit; }, silver: 2000 },
+    { id: 'a17', cat: '稱號', name: '力竭而起', desc: '力竭後起身 10 次', goal: 10, val: () => achStats().standUps, title: '不倒' },
+  ];
+  function achDone(d) { return d.val() >= d.goal; }
+  function achClaimed(d) { return !!achStats().claimed[d.id]; }
+  function achClaimable() { return state ? ACHS.filter((d) => achDone(d) && !achClaimed(d)).length : 0; }
+  function achSig() { return ACHS.map((d) => Math.min(d.goal, d.val()) + (achClaimed(d) ? 'c' : '')).join(','); }
+  function achRewardText(d) { return d.title ? '稱號「' + d.title + '」' : d.silver + ' 銀兩'; }
+  function claimAch(id) {
+    const d = ACHS.find((x) => x.id === id);
+    if (!d || !achDone(d) || achClaimed(d)) return;
+    achStats().claimed[id] = true;
+    if (d.title) {
+      if (!state.titlesOwned.includes(d.title)) state.titlesOwned.push(d.title);
+      pushLog('成就〈' + d.name + '〉達成，獲得稱號「' + d.title + '」', 'rival');
+    } else {
+      state.silver += d.silver;
+      pushLog('成就〈' + d.name + '〉達成，銀兩 +' + d.silver, 'rival');
+    }
+    if (id === 'a11') pushEventLog('傳聞：有人把兵器鍛到 +5，劍鞘裡開始有聲音。', 'rival');
+    if (id === 'a12') pushEventLog('傳聞：刃上光華隱隱，連掌櫃都不敢收那把刀。', 'rival');
+    if (Audio()) Audio().sfx('levelup');
+    questSig = '';
+    renderAll();
+    save();
+  }
+  function renderAchBody() {
+    const done = ACHS.filter(achClaimed).length;
+    let cat = '';
+    const rows = ACHS.map((d) => {
+      const head = d.cat !== cat ? '<div class="ach-cat">' + d.cat + '</div>' : '';
+      cat = d.cat;
+      const p = Math.min(d.goal, d.val());
+      const ok = p >= d.goal;
+      const cl = achClaimed(d);
+      return head + '<div class="quest-row' + (cl ? ' claimed' : '') + '"><div class="quest-main"><strong>〈' + escapeHtml(d.name) + '〉</strong> <span class="muted">' + escapeHtml(d.desc) + '</span>' +
+        (d.goal > 1 ? '<div class="bar-wrap thin quest-bar"><div class="bar" style="width:' + (p / d.goal * 100) + '%"></div></div>' : '') +
+        '<div class="quest-meta"><span>' + (d.goal > 1 ? p + ' / ' + d.goal : (ok ? '已達成' : '未達成')) + '</span><span class="muted">獎勵：' + achRewardText(d) + (d.note ? d.note : '') + '</span></div></div>' +
+        '<button type="button" class="btn' + (ok && !cl ? ' primary' : '') + '" data-ach="' + d.id + '"' + (ok && !cl ? '' : ' disabled') + '>' + (cl ? '已領取' : '領取') + '</button></div>';
+    }).join('');
+    return '<div class="quest-head"><span class="muted">已領取 ' + done + ' / ' + ACHS.length + '</span></div>' + rows;
+  }
 
   function renderLore() {
     const el = $('panel-lore');
@@ -3706,6 +3776,7 @@
     if (typeof saved.encounterReduceLeft !== 'number') saved.encounterReduceLeft = 0;
     if (!saved.zoneSilverBonus || typeof saved.zoneSilverBonus !== 'object') saved.zoneSilverBonus = null;
     if (!saved.rivalChanceBonus || typeof saved.rivalChanceBonus !== 'object') saved.rivalChanceBonus = null;
+    if (!saved.ach || typeof saved.ach !== 'object') saved.ach = {};
     if (typeof saved.teaDayKey !== 'string') saved.teaDayKey = '';
     if (typeof saved.teaDailyCount !== 'number') saved.teaDailyCount = 0;
     if (typeof saved.teaCooldownUntil !== 'number') saved.teaCooldownUntil = 0;
