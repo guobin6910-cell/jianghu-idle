@@ -1556,3 +1556,10 @@ body.modal-open { overflow: hidden; }
 .set-box { border: 1px solid rgba(232,192,80,0.35); border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
 .set-box .set-off { opacity: 0.5; }
 .eq-row .btn, .bag-item .btn[data-enh] { font-size: 12px; }
+
+.item-ico { position: relative; display: inline-block; width: 40px; height: 40px; vertical-align: middle; margin-right: 6px; }
+.item-ico img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.enh-glow { color: #ffe08a; text-shadow: 0 0 6px rgba(255,210,90,0.9); }
+.enh-glow.enh-10 { color: #ff9a5a; text-shadow: 0 0 8px rgba(255,120,60,1), 0 0 14px rgba(255,200,90,0.8); }
+.skill-slot .sk-ico { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; border-radius: 50%; }
+.skill-slot .sk-ico + .sk-name { position: absolute; left: 0; right: 0; bottom: 1px; z-index: 2; font-size: 10px; color: #fff; text-shadow: 0 1px 3px #000, 0 0 4px #000; text-align: center; }

@@ -101,18 +101,19 @@
   // ===== 裝備系統（強化／詞條／套裝／首領專屬武器）=====
   // ※ 所有數字集中在這裡；目前為暫訂值，創意提供者的數值表到了只改這一區。
   const ENH_MAX = 10;
-  const ENH_COST = [60, 120, 220, 380, 600, 900, 1400, 2100, 3200, 5000]; // 第 n 次強化（+n）所需銀兩
+  const ENH_COST = [200, 300, 450, 680, 1020, 1540, 2320, 3500, 5300, 8000]; // 第 n 次強化（+n）基礎銀兩
+  const ENH_QUALITY_MULT = { fan: 1, liang: 2, zhen: 4, jue: 8 }; // 品質倍率（乘在銀兩上）
   const ENH_RATE = [1, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2]; // 基礎成功率
-  const ENH_PITY_STEP = 0.1; // 連續失敗每次 +10% 成功率
-  const ENH_PITY_GUARANTEE = 4; // 連續失敗 4 次，下一次必成
-  const ENH_STAT_PCT = 0.12; // 每 +1 提升該件基礎屬性 12%（不為 0 的屬性至少 +1 per 2 級）
+  const ENH_PITY_STEP = 0; // 保底：只用「連敗 4 次必成」
+  const ENH_PITY_GUARANTEE = 4;
+  const ENH_STAT_PCT = 0.08; // 每 +1 提升該件基礎屬性 8%（至少每 2 級 +1）
   const AFFIX_DEFS = {
-    atk: { name: '鋒銳', unit: '攻擊', zhen: [3, 6], jue: [6, 10] },
-    def: { name: '堅韌', unit: '防禦', zhen: [3, 6], jue: [6, 10] },
-    spd: { name: '迅捷', unit: '速度', zhen: [3, 6], jue: [6, 10] },
-    silver: { name: '貪財', unit: '銀兩所得', zhen: [5, 10], jue: [10, 18] },
-    exp: { name: '悟性', unit: '經驗所得', zhen: [4, 8], jue: [8, 14] },
-    drop: { name: '福緣', unit: '掉落機率', zhen: [2, 4], jue: [4, 7] },
+    atk: { name: '鋒銳', unit: '攻擊', zhen: [5, 12], jue: [5, 12] },
+    def: { name: '堅韌', unit: '防禦', zhen: [5, 12], jue: [5, 12] },
+    spd: { name: '迅捷', unit: '速度', zhen: [2, 6], jue: [2, 6] },
+    silver: { name: '貪財', unit: '銀兩掉落', zhen: [5, 15], jue: [5, 15] },
+    exp: { name: '悟性', unit: '經驗', zhen: [5, 15], jue: [5, 15] },
+    drop: { name: '福緣', unit: '掉落率', zhen: [5, 15], jue: [5, 15] },
   };
   const AFFIX_COUNT = { fan: 0, liang: 0, zhen: 1, jue: 2 };
   const EQUIP_SETS = {
@@ -120,16 +121,16 @@
       name: '煙雨套',
       pieces: ['umbrella_bone_spike', 'lantern_cloak', 'boots', 'pearl_ring'],
       bonus: [
-        { n: 2, spd: 10, text: '速度 +10%' },
-        { n: 4, spd: 10, silver: 10, text: '速度再 +10%、銀兩所得 +10%' },
+        { n: 2, spd: 5, text: '速度 +5%' },
+        { n: 4, def: 8, text: '防禦再 +8%' },
       ],
     },
     lieren: {
       name: '烈刃套',
       pieces: ['frost_blade', 'temple_armor', 'snow_boots', 'bell_ring'],
       bonus: [
-        { n: 2, atk: 8, text: '攻擊 +8%' },
-        { n: 4, atk: 12, def: 8, text: '攻擊再 +12%、防禦 +8%' },
+        { n: 2, atk: 6, text: '攻擊 +6%' },
+        { n: 4, atk: 10, text: '攻擊累計 +16%' },
       ],
     },
   };
@@ -147,6 +148,20 @@
   }
   function itemDisplayName(it) {
     return it.name + (enhLv(it) > 0 ? ' +' + enhLv(it) : '');
+  }
+  function nameHtml(it) {
+    const lv = enhLv(it);
+    return '<span class="' + (lv >= 10 ? 'enh-glow enh-10' : lv >= 5 ? 'enh-glow' : '') + '">' + escapeHtml(itemDisplayName(it)) + '</span>';
+  }
+  const ICON_ITEMS = ['lantern_cloak', 'boots', 'pearl_ring', 'frost_blade', 'temple_armor', 'snow_boots', 'bell_ring'];
+  const ICON_WEAPONS = ['broken_inn_blade', 'liu_short_spike', 'sandstorm_scimitar', 'bamboo_slim_sword', 'cliff_rope_hook', 'umbrella_bone_spike', 'frost_pass_blade', 'broken_bell_staff', 'isle_tide_blade', 'skywind_sword'];
+  function iconHtml(it) {
+    let f = null;
+    if (it.bossWeapon && ICON_WEAPONS.indexOf(it.id) >= 0) f = 'weapon_' + it.id;
+    else if (ICON_ITEMS.indexOf(it.id) >= 0) f = 'item_' + it.id;
+    else if (it.id === 'umbrella_bone_spike' && ICON_WEAPONS.indexOf(it.id) >= 0) f = 'weapon_' + it.id;
+    if (!f) return '';
+    return '<span class="item-ico"><img src="assets/icons/' + f + '.webp" alt="" onerror="this.remove()"><img class="frame" src="assets/icons/frame_' + (it.quality || 'fan') + '.webp" alt="" onerror="this.remove()"></span>';
   }
   function rollAffixes(q) {
     const n = AFFIX_COUNT[q] || 0;
@@ -195,7 +210,7 @@
     if (streak >= ENH_PITY_GUARANTEE) return 1;
     return Math.min(1, ENH_RATE[lv] + streak * ENH_PITY_STEP);
   }
-  function enhCost(it) { return ENH_COST[Math.min(ENH_MAX - 1, enhLv(it))]; }
+  function enhCost(it) { return ENH_COST[Math.min(ENH_MAX - 1, enhLv(it))] * (ENH_QUALITY_MULT[it.quality] || 1); }
   function findOwnedItem(uid) {
     const b = state.bag.find((x) => x.uid === uid);
     if (b) return b;
@@ -215,6 +230,10 @@
       it.enh = enhLv(it) + 1;
       it.enhFail = 0;
       pushLog('強化成功！「' + it.name + '」→ +' + it.enh + '（−' + cost + ' 銀）', 'loot ' + qm.cls);
+      if (it.enh === 5 || it.enh === 10) {
+        pushEventLog('傳聞：有人把「' + it.name + '」鍛到 +' + it.enh + '，刃上光華隱隱。', 'rival');
+        pushLog('✨「' + it.name + '」強化到 +' + it.enh + '，名號生輝！', 'loot ' + qm.cls);
+      }
       if (Audio()) Audio().sfx('levelup');
     } else {
       it.enhFail = (it.enhFail || 0) + 1;
@@ -654,7 +673,7 @@
       name: '「醉裡抽刀」馬三刀',
       desc: '酒氣紅臉、斷刀背肩',
       mult: { hp: 2.4, atk: 1.55, def: 1.35, exp: 2.8, silver: 2.2 },
-      bestDrop: { id: 'broken_inn_blade', name: '斷刃客棧刀', slot: 'weapon', atk: 5, spd: 1, rare: 0.72, bossWeapon: true },
+      bestDrop: { id: 'broken_inn_blade', name: '斷刃客棧刀', slot: 'weapon', atk: 5, spd: 1, rare: 0.72, bossWeapon: true, affix: { k: 'atk', v: 6 } },
       loreId: 'rival_inn',
       loreTitle: '客棧後院的交易',
       loreBody: '後院燈火未熄，銀兩與刀鞘同時換手。有人說那不是買賣，是約——約好了誰先出聲，誰就先死。',
@@ -665,7 +684,7 @@
       name: '「濕衣不乾」柳七',
       desc: '蓑衣遮臉、袖藏短刺',
       mult: { hp: 2.3, atk: 1.6, def: 1.3, exp: 2.7, silver: 2.1 },
-      bestDrop: { id: 'liu_short_spike', name: '濕衣短刺', slot: 'weapon', atk: 7, spd: 2, rare: 0.7, bossWeapon: true },
+      bestDrop: { id: 'liu_short_spike', name: '濕衣短刺', slot: 'weapon', atk: 5, spd: 2, rare: 0.7, bossWeapon: true, affix: { k: 'spd', v: 4 } },
       loreId: 'rival_river',
       loreTitle: '雨夜運過什麼貨',
       loreBody: '雨大得像幕，船卻偏偏不泊碼頭。艙裡響過一聲輕咔，像鎖，又像牙——第二天潮退，岸上只剩半截濕繩。',
@@ -676,7 +695,7 @@
       name: '「駝鈴聲斷」沙滿倉',
       desc: '黃巾裹頭、駝鈴腰墜',
       mult: { hp: 2.35, atk: 1.58, def: 1.4, exp: 2.75, silver: 2.15 },
-      bestDrop: { id: 'sandstorm_scimitar', name: '狂沙彎刀', slot: 'weapon', atk: 9, def: 1, rare: 0.68, bossWeapon: true },
+      bestDrop: { id: 'sandstorm_scimitar', name: '狂沙彎刀', slot: 'weapon', atk: 5, def: 1, rare: 0.68, bossWeapon: true, affix: { k: 'silver', v: 8 } },
       loreId: 'rival_desert',
       loreTitle: '驛道失蹤的鏢車',
       loreBody: '駝鈴忽然齊啞，沙丘換了一個形狀。鏢旗還在，車轍沒有；有人說貨進了風裡，有人說風進了貨裡。',
@@ -687,7 +706,7 @@
       name: '「一葉蔽目」青娘',
       desc: '白衣青帶、竹葉半臉',
       mult: { hp: 2.25, atk: 1.65, def: 1.25, exp: 2.8, silver: 2.1 },
-      bestDrop: { id: 'bamboo_slim_sword', name: '竹海細劍', slot: 'weapon', atk: 11, spd: 2, rare: 0.65, bossWeapon: true },
+      bestDrop: { id: 'bamboo_slim_sword', name: '竹海細劍', slot: 'weapon', atk: 6, spd: 2, rare: 0.65, bossWeapon: true, affix: { k: 'atk', v: 8 } },
       loreId: 'rival_bamboo',
       loreTitle: '竹海裡誰在練刀',
       loreBody: '竹響三聲後還有第四聲，更輕，更準。葉落處不見人影，只見一道青痕貼地而過，像有人把風也練進刀裡。',
@@ -698,7 +717,7 @@
       name: '「崖邊無影」無名',
       desc: '灰袍無徽、腳步無聲',
       mult: { hp: 2.5, atk: 1.6, def: 1.45, exp: 2.9, silver: 2.3 },
-      bestDrop: { id: 'cliff_rope_hook', name: '斷雲鉤鐮', slot: 'weapon', atk: 13, spd: 3, rare: 0.62, bossWeapon: true },
+      bestDrop: { id: 'cliff_rope_hook', name: '斷雲鉤鐮', slot: 'weapon', atk: 6, spd: 3, rare: 0.62, bossWeapon: true, affix: { k: 'spd', v: 5 } },
       loreId: 'rival_cliff',
       loreTitle: '絕壁上的舊盟約',
       loreBody: '碑陰另有一行小字，被風雨啃得只剩半句。有人對過誓言，有人對過刀；到後來，誓言與刀都成了風聲。',
@@ -709,7 +728,7 @@
       name: '「傘下無聲」阿雨',
       desc: '黑傘半開、靴底無泥',
       mult: { hp: 2.3, atk: 1.7, def: 1.3, exp: 2.85, silver: 2.2 },
-      bestDrop: { id: 'umbrella_bone_spike', name: '夜雨傘骨刺', slot: 'weapon', atk: 15, spd: 3, rare: 0.6, bossWeapon: true },
+      bestDrop: { id: 'umbrella_bone_spike', name: '夜雨傘骨刺', slot: 'weapon', atk: 9, spd: 3, rare: 0.6, bossWeapon: true, affix: { k: 'drop', v: 8 } },
       loreId: 'rival_night',
       loreTitle: '長街第三盞燈',
       loreBody: '前兩盞照路，第三盞照人。燈油將盡時，傘骨會輕輕一顫——懂的人換巷，不懂的人換命。',
@@ -720,7 +739,7 @@
       name: '「白刃不凍」關北',
       desc: '鐵盔結霜、刀上無雪',
       mult: { hp: 2.4, atk: 1.62, def: 1.5, exp: 2.9, silver: 2.25 },
-      bestDrop: { id: 'frost_pass_blade', name: '寒關戍刀', slot: 'weapon', atk: 18, def: 2, rare: 0.58, bossWeapon: true },
+      bestDrop: { id: 'frost_pass_blade', name: '寒關戍刀', slot: 'weapon', atk: 11, def: 2, rare: 0.58, bossWeapon: true, affix: { k: 'atk', v: 10 } },
       loreId: 'rival_snow',
       loreTitle: '誰守過這道關',
       loreBody: '名冊上最後一個名字被雪蓋住。關吏換過三任，刀卻還是那把——刃上不掛雪的人，心裡未必不掛事。',
@@ -731,7 +750,7 @@
       name: '「鐘響無人」空戒',
       desc: '破袈裟、棍纏舊鈴',
       mult: { hp: 2.45, atk: 1.58, def: 1.55, exp: 3.0, silver: 2.3 },
-      bestDrop: { id: 'broken_bell_staff', name: '殘鐘禪杖', slot: 'weapon', atk: 21, def: 3, rare: 0.55, bossWeapon: true },
+      bestDrop: { id: 'broken_bell_staff', name: '殘鐘禪杖', slot: 'weapon', atk: 11, def: 3, rare: 0.55, bossWeapon: true, affix: { k: 'def', v: 10 } },
       loreId: 'rival_temple',
       loreTitle: '古寺半夜為什麼響鐘',
       loreBody: '鐘樓無人，鐘繩卻動。有的僧說是風，有的僧說是債；債若會走路，多半穿破袈裟。',
@@ -742,7 +761,7 @@
       name: '「潮來即走」島主阿嵐',
       desc: '斗笠遮眼、袖有鹽花',
       mult: { hp: 2.4, atk: 1.68, def: 1.4, exp: 3.0, silver: 2.35 },
-      bestDrop: { id: 'isle_tide_blade', name: '孤嶼潮刃', slot: 'weapon', atk: 24, spd: 3, rare: 0.52, bossWeapon: true },
+      bestDrop: { id: 'isle_tide_blade', name: '孤嶼潮刃', slot: 'weapon', atk: 15, spd: 3, rare: 0.52, bossWeapon: true, affix: { k: 'exp', v: 10 } },
       loreId: 'rival_mist',
       loreTitle: '霧裡那艘不靠岸的船',
       loreBody: '船影在霧裡停了很久，始終不落錨。岸上有人招手，船上有人搖頭——潮一漲，雙方都成了傳聞。',
@@ -753,7 +772,7 @@
       name: '「雲上獨行」老叟',
       desc: '白鬚、杖當劍',
       mult: { hp: 2.55, atk: 1.72, def: 1.5, exp: 3.2, silver: 2.5 },
-      bestDrop: { id: 'skywind_sword', name: '天風長劍', slot: 'weapon', atk: 28, def: 2, spd: 3, rare: 0.5, bossWeapon: true },
+      bestDrop: { id: 'skywind_sword', name: '天風長劍', slot: 'weapon', atk: 19, def: 2, spd: 3, rare: 0.5, bossWeapon: true, affix: { k: 'atk', v: 12 } },
       loreId: 'rival_sky',
       loreTitle: '雲棧盡頭有沒有路',
       loreBody: '棧盡處雲厚如牆。有人退了，有人笑著進去；出來的人少，帶話回來的更少——只說：路在腳下，也在回頭。',
@@ -1339,7 +1358,7 @@
       keep: fromRival,
       fromRival: fromRival,
       enh: 0,
-      affixes: rollAffixes(q),
+      affixes: d.affix ? [{ k: d.affix.k, v: d.affix.v }] : rollAffixes(q),
       bossWeapon: !!d.bossWeapon,
     };
 
@@ -2403,6 +2422,7 @@
             '" title="' +
             escapeHtml(label) +
             '">' +
+            (sk && sk.id ? '<img class="sk-ico" src="assets/icons/skill_' + sk.id + '.webp" alt="" onerror="this.remove()">' : '') +
             '<span class="sk-name">' +
             escapeHtml(label) +
             '</span>' +
@@ -2623,7 +2643,7 @@
         const qm = qualityMeta(it.quality);
         return (
           '<div class="row eq-row ' + qm.cls + '"><span>' + labels[slot] + '</span><span>' +
-          escapeHtml(itemDisplayName(it)) + '<span class="q-badge">' + qm.label + '</span>' +
+          iconHtml(it) + nameHtml(it) + '<span class="q-badge">' + qm.label + '</span>' +
           (it.bossWeapon ? '<span class="q-badge">首領專屬</span>' : '') +
           (gearLine(it) ? '<div class="muted">' + escapeHtml(gearLine(it)) + '</div>' : '') +
           enhBtn(it) + '</span></div>'
@@ -2647,7 +2667,7 @@
               qm.cls +
               '">' +
               '<div><strong>' +
-              escapeHtml(itemDisplayName(it)) +
+              iconHtml(it) + nameHtml(it) +
               '</strong><span class="q-badge">' +
               qm.label +
               '</span>' + (it.bossWeapon ? '<span class="q-badge">首領專屬</span>' : '') + '<div class="muted">' +
