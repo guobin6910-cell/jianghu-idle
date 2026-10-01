@@ -917,6 +917,8 @@
       log: [],
       eventLog: [],
       zoneBossFlags: {},
+      zoneChallengeAt: {},
+      forceRival: false,
       unlockedLore: {},
       rivalCooldownUntil: {},
       rivalDaily: {},
@@ -1076,7 +1078,8 @@
     }
     const rival = ZONE_RIVALS[zone.id];
     let spawnRival = false;
-    if (rival && DEBUG_BOSS) {
+    if (rival && (DEBUG_BOSS || state.forceRival)) {
+      state.forceRival = false;
       spawnRival = true;
     } else if (rival && canSpawnRival(zone.id, now)) {
       let chance = 0.03 + Math.random() * 0.02; // 3%～5%
@@ -1261,12 +1264,14 @@
   function onRivalDefeated(mob) {
     const zid = mob.zoneId || state.zoneId;
     const rival = ZONE_RIVALS[zid];
+    const firstClear = !state.zoneBossFlags[zid];
     state.zoneBossFlags[zid] = true;
     refreshRivalDay();
     state.rivalDaily[zid] = (state.rivalDaily[zid] || 0) + 1;
     state.rivalCooldownUntil[zid] = Date.now() + 4 * 60 * 60 * 1000;
     if (rival) {
-      state._lastRivalDrop = rival.bestDrop;
+      state._lastRivalDrop = firstClear ? Object.assign({}, rival.bestDrop, { rare: 1 }) : rival.bestDrop;
+      if (firstClear) pushLog('首次征服「' + (ZONES.find((z) => z.id === zid) || {}).name + '」！必掉「' + rival.bestDrop.name + '」', 'rival');
       pushLog('名號已破！可於俠客頁花俠義解鎖傳聞「' + rival.loreTitle + '」', 'rival');
       pushEventLog('擊敗名號「' + rival.name + '」（' + (ZONES.find((z) => z.id === zid) || {}).name + '）', 'rival');
     }
@@ -2304,6 +2309,35 @@
     });
   }
 
+  function challengeReady(zid) {
+    const total = (state.zoneKills && state.zoneKills[zid]) || 0;
+    const last = (state.zoneChallengeAt && state.zoneChallengeAt[zid]) || 0;
+    return total - last >= ZONE_KILL_GOAL;
+  }
+  function challengeLeft(zid) {
+    const total = (state.zoneKills && state.zoneKills[zid]) || 0;
+    const last = (state.zoneChallengeAt && state.zoneChallengeAt[zid]) || 0;
+    return Math.max(0, ZONE_KILL_GOAL - (total - last));
+  }
+  function startBossChallenge(zid) {
+    const z = ZONES.find((x) => x.id === zid);
+    if (!z || !ZONE_RIVALS[zid]) return;
+    if (!DEBUG_BOSS && state.lv < z.minLv) return;
+    if (!challengeReady(zid) && !DEBUG_BOSS) {
+      pushLog('再擊殺 ' + challengeLeft(zid) + ' 隻，才能挑戰「' + ZONE_RIVALS[zid].name + '」');
+      renderAll();
+      return;
+    }
+    state.zoneChallengeAt[zid] = (state.zoneKills && state.zoneKills[zid]) || 0;
+    if (state.hunting) stopHunt();
+    state.zoneId = zid;
+    state.mob = null;
+    state.mobs = [];
+    state.forceRival = true;
+    pushLog('向「' + ZONE_RIVALS[zid].name + '」下戰帖！', 'rival');
+    startHunt();
+  }
+
   function renderZones() {
     const el = $('panel-zones');
     const now = Date.now();
@@ -2320,7 +2354,7 @@
         let rivalLine = '';
         if (rival) {
           const status = beaten
-            ? '<span class="badge beaten">已破</span>'
+            ? '<span class="badge beaten">已征服</span>'
             : '<span class="badge pending">未破</span>';
           let avail;
           if (locked) avail = '區未開';
@@ -2335,6 +2369,14 @@
             ' · ' +
             avail +
             '</div>';
+          if (!locked) {
+            const ready = challengeReady(z.id);
+            rivalLine +=
+              '<div class="rival-line"><button type="button" class="btn small boss-challenge" data-challenge="' + z.id + '" ' +
+              (ready ? '' : 'disabled') + '>' +
+              (ready ? '⚔ 挑戰首領' : '挑戰首領（再擊殺 ' + challengeLeft(z.id) + '）') +
+              '</button></div>';
+          }
         }
         return (
           '<div class="zone-item ' +
@@ -2361,6 +2403,9 @@
           '</button></div>'
         );
       }).join('');
+    el.querySelectorAll('[data-challenge]').forEach((btn) => {
+      btn.addEventListener('click', () => startBossChallenge(btn.getAttribute('data-challenge')));
+    });
     el.querySelectorAll('[data-zone]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-zone');
@@ -2840,6 +2885,8 @@
     if (!Array.isArray(saved.log)) saved.log = [];
     if (!Array.isArray(saved.eventLog)) saved.eventLog = [];
     if (!saved.zoneBossFlags || typeof saved.zoneBossFlags !== 'object') saved.zoneBossFlags = {};
+    if (!saved.zoneChallengeAt || typeof saved.zoneChallengeAt !== 'object') saved.zoneChallengeAt = {};
+    saved.forceRival = false;
     if (!saved.unlockedLore || typeof saved.unlockedLore !== 'object') saved.unlockedLore = {};
     if (!saved.rivalCooldownUntil || typeof saved.rivalCooldownUntil !== 'object') saved.rivalCooldownUntil = {};
     if (!saved.rivalDaily || typeof saved.rivalDaily !== 'object') saved.rivalDaily = {};
