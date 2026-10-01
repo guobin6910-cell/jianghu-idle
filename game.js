@@ -3992,6 +3992,8 @@
       const rare = [];
       if (r.byQ.zhen > 0) rare.push('珍品 ×' + r.byQ.zhen);
       if (r.byQ.jue > 0) rare.push('絕品 ×' + r.byQ.jue);
+      let btOff = 0;
+      Object.keys(BREAKTHROUGH_TEXT).forEach((k) => { if (r.fromLv < +k && r.toLv >= +k) btOff = Math.max(btOff, +k); });
       const bye = pick(['江湖路遠，明日再戰。', '茶還熱著，你就回來了。', '這一覺，江湖沒閒著。']);
       root.innerHTML =
         '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
@@ -4004,6 +4006,7 @@
         '<div><span>經驗</span><b>+' + r.expGain + '</b></div>' +
         '<div><span>銀兩</span><b>+' + r.silver + '</b></div>' +
         '</div>' +
+        (btOff ? '<p style="text-align:center;color:#ffd986;margin:4px 0"><b>突破！' + realmName(r.toLv) + '</b><br/>' + BREAKTHROUGH_TEXT[btOff] + '</p>' : '') +
         '<div class="level-delta">等級　Lv.' + r.fromLv + ' → <b>Lv.' + r.toLv + '</b>' + (r.toLv > r.fromLv ? '（' + realmName(r.toLv) + '）' : '') + '</div>' +
         '<div class="level-delta">' + (r.bagAdded > 0 ? '獲得裝備 ' + r.bagAdded + ' 件' : '沒有撿到新裝備') +
         (rare.length ? '<br/><b style="color:#ffd23a">其中 ' + rare.join('、') + '</b>' : '') +

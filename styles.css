@@ -1748,3 +1748,16 @@ body.modal-open { overflow: hidden; }
 .rumor-line { padding: 6px 4px; border-bottom: 1px dashed var(--line); font-size: 13px; }
 .rumor-line.locked { opacity: 0.55; }
 @media (max-width: 420px) { .subtab { font-size: 13px; padding: 7px 2px; } .subtab .ui-ico { width: 18px; height: 18px; margin-right: 1px; } .tab-ico { display: none; } }
+
+/* 2026-10-01 美術複測修正 */
+.hpb-enemy.hpb-small .hpb-box { height: auto; }
+.hpb-enemy.hpb-small .hpb-frame { aspect-ratio: 216 / 56; height: auto; object-fit: fill; }
+.quest-row .ui-ico.done { top: calc(50% + 8px); }
+.rumor-line.locked { opacity: 1; color: #c9d3bf; }
+.rumor-line.locked .muted { color: #b7c4ad; }
+@media (max-width: 480px) {
+  .hero-status .hs-top { flex-wrap: wrap; row-gap: 2px; }
+  .hs-top strong { flex: 1 1 100%; }
+  .hs-top .hs-stats { flex: 1 1 100%; }
+}
+@media (max-width: 340px) { .tab.has-dot::after { top: 1px; right: 1px; } }
