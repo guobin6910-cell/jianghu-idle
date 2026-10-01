@@ -317,6 +317,12 @@
         { n: 4, atk: 10, text: '攻擊累計 +16%' },
       ],
     },
+    langji: { name: '浪跡套', pieces: ['rusty_cleaver', 'cloth', 'straw_shoes', 'copper_coin_ring'], bonus: [{ n: 2, silver: 8, text: '銀兩掉落 +8%' }, { n: 4, exp: 6, text: '經驗再 +6%' }] },
+    tuodui: { name: '駝隊套', pieces: ['sand_blade', 'scarf', 'camel_boots', 'camelbell_ring'], bonus: [{ n: 2, def: 5, text: '防禦 +5%' }, { n: 4, drop: 6, text: '掉落率再 +6%' }] },
+    qingyun: { name: '青筠套', pieces: ['bamboo_sword', 'bamboo_armor', 'bamboo_shoes', 'bamboo_ring'], bonus: [{ n: 2, spd: 5, text: '速度 +5%' }, { n: 4, atk: 5, text: '攻擊 +5%' }] },
+    duanyun: { name: '斷雲套', pieces: ['cliff_hook', 'cliffwind_coat', 'cliff_boots', 'ring'], bonus: [{ n: 2, atk: 5, text: '攻擊 +5%' }, { n: 4, spd: 5, text: '速度再 +5%' }] },
+    chaoxi: { name: '潮汐套', pieces: ['tide_sword', 'mist_cloak', 'tide_boots', 'conch_ring'], bonus: [{ n: 2, exp: 8, text: '經驗 +8%' }, { n: 4, def: 6, text: '防禦再 +6%' }] },
+    tianfeng: { name: '天風套', pieces: ['ridge_blade', 'cloud_armor', 'sky_boots', 'cloud_ring'], bonus: [{ n: 2, atk: 6, text: '攻擊 +6%' }, { n: 4, atk: 4, spd: 6, text: '攻擊再 +4%、速度 +6%' }] },
   };
   function setOfItem(item) {
     if (!item) return null;
@@ -337,6 +343,7 @@
     const lv = enhLv(it);
     return '<span class="' + (lv >= 10 ? 'enh-glow enh-10' : lv >= 5 ? 'enh-glow' : '') + '">' + escapeHtml(itemDisplayName(it)) + '</span>';
   }
+  const NEW_ICON_IDS = ['rusty_cleaver', 'straw_shoes', 'copper_coin_ring', 'camel_boots', 'camelbell_ring', 'bamboo_armor', 'bamboo_shoes', 'cliff_hook', 'cliffwind_coat', 'tide_boots', 'conch_ring', 'cloud_ring', 'wire_ring', 'fish_trident', 'straw_raincape', 'lantern_market_boots', 'night_ring', 'coldiron_chest', 'frost_ring', 'xiangmo_staff', 'ascetic_shoes'];
   const ICON_ITEMS = ['lantern_cloak', 'boots', 'pearl_ring', 'frost_blade', 'temple_armor', 'snow_boots', 'bell_ring'];
   const ICON_WEAPONS = ['broken_inn_blade', 'liu_short_spike', 'sandstorm_scimitar', 'bamboo_slim_sword', 'cliff_rope_hook', 'umbrella_bone_spike', 'frost_pass_blade', 'broken_bell_staff', 'isle_tide_blade', 'skywind_sword'];
   function iconHtml(it) {
@@ -344,6 +351,7 @@
     if (it.bossWeapon && ICON_WEAPONS.indexOf(it.id) >= 0) f = 'weapon_' + it.id;
     else if (ICON_ITEMS.indexOf(it.id) >= 0) f = 'item_' + it.id;
     else if (it.id === 'umbrella_bone_spike' && ICON_WEAPONS.indexOf(it.id) >= 0) f = 'weapon_' + it.id;
+    if (!f && NEW_ICON_IDS.indexOf(it.id) >= 0) f = (it.slot === 'weapon' ? 'weapon_' : 'item_') + it.id;
     if (!f) return '<span class="item-ico-ph"></span>';
     return '<span class="item-ico"><img src="assets/icons/' + f + '.webp" alt="" onerror="var p=this.parentNode;if(p)p.remove()"><img class="frame" src="assets/icons/frame_' + (it.quality || 'fan') + '.webp" alt="" onerror="this.remove()"></span>';
   }
@@ -677,6 +685,9 @@
         { id: 'cloth', name: '粗布勁裝', slot: 'armor', def: 1, rare: 0.32 },
         { id: 'wine', name: '燒刀子', type: 'junk', silver: 5, rare: 0.38 },
         { id: 'dice', name: '缺角骰子', type: 'junk', silver: 4, rare: 0.28 },
+        { id: 'rusty_cleaver', name: '鏽口柴刀', slot: 'weapon', atk: 2, rare: 0.22 },
+        { id: 'straw_shoes', name: '草編快鞋', slot: 'boots', spd: 1, rare: 0.24 },
+        { id: 'wire_ring', name: '鐵絲戒', slot: 'ring', atk: 1, rare: 0.15 },
       ],
     },
     {
@@ -693,6 +704,9 @@
         { id: 'boots', name: '軟底快靴', slot: 'boots', spd: 1, rare: 0.28 },
         { id: 'pearl', name: '雨打珠', type: 'junk', silver: 12, rare: 0.24 },
         { id: 'rope', name: '浸水麻繩', type: 'junk', silver: 8, rare: 0.3 },
+        { id: 'copper_coin_ring', name: '銅錢戒', slot: 'ring', atk: 1, def: 1, rare: 0.15 },
+        { id: 'fish_trident', name: '漁叉', slot: 'weapon', atk: 3, rare: 0.2 },
+        { id: 'straw_raincape', name: '蓑衣', slot: 'armor', def: 2, spd: 1, rare: 0.18 },
       ],
     },
     {
@@ -709,6 +723,8 @@
         { id: 'scarf', name: '沙紋披風', slot: 'armor', def: 3, atk: 1, rare: 0.22 },
         { id: 'jade', name: '殘缺玉佩', type: 'junk', silver: 22, rare: 0.2 },
         { id: 'sand_blade', name: '黃沙短刃', slot: 'weapon', atk: 3, rare: 0.16 },
+        { id: 'camel_boots', name: '駝皮靴', slot: 'boots', spd: 2, def: 1, rare: 0.2 },
+        { id: 'camelbell_ring', name: '銅鈴戒', slot: 'ring', atk: 2, def: 1, rare: 0.14 },
       ],
     },
     {
@@ -725,6 +741,8 @@
         { id: 'bamboo_sword', name: '青筠劍', slot: 'weapon', atk: 5, spd: 1, rare: 0.18 },
         { id: 'manual', name: '殘頁劍譜', type: 'junk', chivalry: 2, rare: 0.15 },
         { id: 'bamboo_ring', name: '竹節戒', slot: 'ring', atk: 1, spd: 1, rare: 0.14 },
+        { id: 'bamboo_armor', name: '青竹護甲', slot: 'armor', def: 4, spd: 1, rare: 0.17 },
+        { id: 'bamboo_shoes', name: '竹履', slot: 'boots', spd: 2, def: 1, rare: 0.16 },
       ],
     },
     {
@@ -741,6 +759,8 @@
         { id: 'ring', name: '斷雲戒', slot: 'ring', atk: 3, def: 2, rare: 0.12 },
         { id: 'scroll', name: '絕壁殘簡', type: 'junk', chivalry: 5, rare: 0.1 },
         { id: 'cliff_boots', name: '踏雲履', slot: 'boots', spd: 2, def: 1, rare: 0.11 },
+        { id: 'cliff_hook', name: '斷崖鉤刀', slot: 'weapon', atk: 6, def: 1, rare: 0.13 },
+        { id: 'cliffwind_coat', name: '崖風衣', slot: 'armor', def: 5, atk: 1, rare: 0.12 },
       ],
     },
     {
@@ -758,6 +778,8 @@
         { id: 'night_dagger', name: '燈影匕首', slot: 'weapon', atk: 7, spd: 1, rare: 0.12 },
         { id: 'tea_token', name: '半盞茶籌', type: 'junk', silver: 40, rare: 0.22 },
         { id: 'street_note', name: '街巷密箋', type: 'junk', chivalry: 4, rare: 0.12 },
+        { id: 'lantern_market_boots', name: '燈市軟靴', slot: 'boots', spd: 3, def: 1, rare: 0.14 },
+        { id: 'night_ring', name: '夜行戒', slot: 'ring', atk: 4, spd: 1, rare: 0.12 },
       ],
     },
     {
@@ -775,6 +797,8 @@
         { id: 'snow_boots', name: '踏雪靴', slot: 'boots', spd: 3, def: 2, rare: 0.12 },
         { id: 'ice_jade', name: '寒玉碎片', type: 'junk', silver: 55, rare: 0.18 },
         { id: 'pass_seal', name: '關隘舊印', type: 'junk', chivalry: 6, rare: 0.1 },
+        { id: 'coldiron_chest', name: '寒鐵護胸', slot: 'armor', def: 7, atk: 1, rare: 0.12 },
+        { id: 'frost_ring', name: '冰紋戒', slot: 'ring', atk: 4, def: 2, rare: 0.1 },
       ],
     },
     {
@@ -792,6 +816,8 @@
         { id: 'bell_ring', name: '殘鐘戒', slot: 'ring', atk: 4, def: 3, rare: 0.09 },
         { id: 'incense', name: '斷香一炷', type: 'junk', silver: 70, rare: 0.16 },
         { id: 'sutra_scrap', name: '經頁殘角', type: 'junk', chivalry: 8, rare: 0.09 },
+        { id: 'xiangmo_staff', name: '降魔棍', slot: 'weapon', atk: 10, def: 2, rare: 0.1 },
+        { id: 'ascetic_shoes', name: '苦行履', slot: 'boots', spd: 3, def: 3, rare: 0.1 },
       ],
     },
     {
@@ -810,6 +836,8 @@
         { id: 'pearl_ring', name: '潮珠戒', slot: 'ring', atk: 5, spd: 2, rare: 0.08 },
         { id: 'isle_map', name: '半張島圖', type: 'junk', silver: 95, rare: 0.14 },
         { id: 'wave_letter', name: '浪邊書簡', type: 'junk', chivalry: 10, rare: 0.08 },
+        { id: 'tide_boots', name: '潮鳴靴', slot: 'boots', spd: 4, def: 2, rare: 0.09 },
+        { id: 'conch_ring', name: '海螺戒', slot: 'ring', atk: 5, def: 3, rare: 0.08 },
       ],
     },
     {
@@ -828,6 +856,7 @@
         { id: 'cloud_armor', name: '天風甲', slot: 'armor', def: 12, atk: 3, rare: 0.07 },
         { id: 'sky_jade', name: '雲紋玉', type: 'junk', silver: 130, rare: 0.12 },
         { id: 'ridge_note', name: '棧上殘札', type: 'junk', chivalry: 14, rare: 0.07 },
+        { id: 'cloud_ring', name: '雲海戒', slot: 'ring', atk: 7, def: 3, spd: 1, rare: 0.07 },
       ],
     },
   ];
@@ -3093,16 +3122,29 @@
     return '<button type="button" class="btn" data-enh="' + it.uid + '"' + (state.silver < enhCost(it) ? ' title="銀兩不足"' : '') +
       '>強化+' + (lv + 1) + '（' + enhCost(it) + '銀·' + pct + '%' + pity + '）</button>';
   }
+  function setPieceNames() {
+    const m = {};
+    ZONES.forEach((z) => (z.drops || []).forEach((d) => { if (d.slot) m[d.id] = d.name; }));
+    Object.keys(ZONE_RIVALS).forEach((k) => { const b = ZONE_RIVALS[k].bestDrop; if (b && b.id) m[b.id] = b.name; });
+    return m;
+  }
+  function setBoxHtml(sid, n, withPieces) {
+    const S = EQUIP_SETS[sid];
+    const lines = S.bonus.map((b) => '<div class="muted' + (n >= b.n ? '' : ' set-off') + '">' + b.n + ' 件：' + b.text + (n >= b.n ? ' ✓' : '') + '</div>').join('');
+    let pcs = '';
+    if (withPieces) {
+      const nm = setPieceNames();
+      pcs = '<div class="muted set-pieces">' + S.pieces.map((p) => escapeHtml(nm[p] || p)).join('、') + '</div>';
+    }
+    return '<div class="set-box"><strong>' + S.name + '（' + n + '/4）</strong>' + pcs + lines + '</div>';
+  }
   function setSummaryHtml() {
     const cnt = activeSets(state);
     let h = '';
-    for (const sid of Object.keys(EQUIP_SETS)) {
-      const S = EQUIP_SETS[sid];
-      const n = cnt[sid] || 0;
-      const lines = S.bonus.map((b) => '<div class="muted' + (n >= b.n ? '' : ' set-off') + '">' + b.n + ' 件：' + b.text + (n >= b.n ? ' ✓' : '') + '</div>').join('');
-      h += '<div class="set-box"><strong>' + S.name + '（' + n + '/4）</strong>' + lines + '</div>';
-    }
-    return '<h3 style="margin-top:12px">套裝</h3>' + h;
+    for (const sid of Object.keys(EQUIP_SETS)) if (cnt[sid]) h += setBoxHtml(sid, cnt[sid], false);
+    const all = Object.keys(EQUIP_SETS).map((sid) => setBoxHtml(sid, cnt[sid] || 0, true)).join('');
+    return (h ? '<h3 style="margin-top:12px">套裝</h3>' + h : '') +
+      '<details class="set-dex"><summary>套裝圖鑑（共 ' + Object.keys(EQUIP_SETS).length + ' 套）</summary>' + all + '</details>';
   }
 
   function renderBag() {

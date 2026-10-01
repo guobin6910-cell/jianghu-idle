@@ -1797,3 +1797,6 @@ body.modal-open { overflow: hidden; }
 .st-q.doing { color: var(--gold); } .st-q.done { color: var(--muted); }
 .st-subs .subtab { font-size: 13px; padding: 7px 2px; }
 @media (max-width: 420px) { .st-scene { height: 120px; } .st-portrait { height: 110px; } .st-text { font-size: 14px; min-height: 96px; } .st-subs .subtab { font-size: 12px; } }
+.set-dex { margin-top: 10px; }
+.set-dex summary { cursor: pointer; color: var(--gold); padding: 6px 0; }
+.set-pieces { font-size: 12px; margin: 2px 0 4px; }
