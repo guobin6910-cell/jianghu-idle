@@ -3980,10 +3980,10 @@
       modalOpen = true;
       document.body.classList.add('modal-open');
       const root = ensureModalRoot();
-      const qLines = ['fan', 'liang', 'zhen', 'jue'].filter((q) => r.byQ[q] > 0).map((q) => {
-        const m = qualityMeta(q);
-        return '<span class="' + m.cls + '">' + m.label + ' ×' + r.byQ[q] + '</span>';
-      }).join('　');
+      const rare = [];
+      if (r.byQ.zhen > 0) rare.push('珍品 ×' + r.byQ.zhen);
+      if (r.byQ.jue > 0) rare.push('絕品 ×' + r.byQ.jue);
+      const bye = pick(['江湖路遠，明日再戰。', '茶還熱著，你就回來了。', '這一覺，江湖沒閒著。']);
       root.innerHTML =
         '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
         '<div class="modal-card offline-modal">' +
@@ -3995,9 +3995,11 @@
         '<div><span>經驗</span><b>+' + r.expGain + '</b></div>' +
         '<div><span>銀兩</span><b>+' + r.silver + '</b></div>' +
         '</div>' +
-        (r.toLv > r.fromLv ? '<div class="level-delta">境界提升：Lv.' + r.fromLv + ' → <b>Lv.' + r.toLv + '</b>（' + realmName(r.toLv) + '）</div>' : '') +
-        '<div class="level-delta">' + (r.bagAdded > 0 ? '行囊新增 ' + r.bagAdded + ' 件裝備' + (qLines ? '<br/>' + qLines : '') : '沒有撿到新裝備') +
-        '<br/><span class="muted">離線效率 40%，高於此區等級收益遞減；不含名號對手與茶樓事件。</span></div>' +
+        '<div class="level-delta">等級　Lv.' + r.fromLv + ' → <b>Lv.' + r.toLv + '</b>' + (r.toLv > r.fromLv ? '（' + realmName(r.toLv) + '）' : '') + '</div>' +
+        '<div class="level-delta">' + (r.bagAdded > 0 ? '獲得裝備 ' + r.bagAdded + ' 件' : '沒有撿到新裝備') +
+        (rare.length ? '<br/><b style="color:#ffd23a">其中 ' + rare.join('、') + '</b>' : '') +
+        '<br/><span class="muted">離線效率 ' + Math.round(OFFLINE_EFFICIENCY * 100) + '%，高於此區等級收益遞減；不含名號對手與茶樓事件。</span></div>' +
+        '<p class="muted" style="text-align:center;margin:6px 0">' + bye + '</p>' +
         '<button type="button" class="btn primary full" data-close>收下</button>' +
         '</div></div>';
       root.querySelector('[data-close]').onclick = () => {
