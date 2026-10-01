@@ -1506,3 +1506,19 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 .enemy-slot .combat-sprite[data-sized="1"], #fighter-hero .combat-sprite[data-sized="1"] { max-width: none; }
 .enemy-slot .ghost-down { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); animation: down-fade 0.65s ease forwards; z-index: 2; }
 @keyframes down-fade { 0%,55% { opacity: 1; } 100% { opacity: 0; } }
+
+
+/* —— 歡迎回來（離線收益）—— */
+.modal-card.offline-modal {
+  background: linear-gradient(180deg, #33281a, #1d160d);
+  border: 1px solid var(--gold);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.55), inset 0 0 0 3px rgba(212,181,106,0.12);
+}
+.modal-card.offline-modal h3 { text-align: center; font-size: 1.3rem; letter-spacing: 0.2em; color: var(--gold); }
+.offline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+.offline-grid > div {
+  display: grid; gap: 2px; text-align: center; padding: 10px 4px; border-radius: 10px;
+  background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dim);
+}
+.offline-grid span { font-size: 11px; color: var(--muted); }
+.offline-grid b { font-size: 1.1rem; color: var(--gold); }

@@ -1,6 +1,7 @@
 (() => {
   const SAVE_KEY = 'jianghu-idle-v1';
-  const Audio = () => (typeof window !== 'undefined' && window.JianghuAudio) || null;
+  let audioSilent = false;
+  const Audio = () => (audioSilent ? null : (typeof window !== 'undefined' && window.JianghuAudio) || null);
   function syncMuteBtn() {
     const btn = document.getElementById('btn-mute');
     if (!btn || !Audio()) return;
@@ -869,6 +870,8 @@
 
   function save() {
     if (!state) return;
+    state.lastSeen = Date.now();
+    state.wasHunting = !!state.hunting;
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
   }
 
@@ -2802,6 +2805,135 @@
     return saved;
   }
 
+
+  // —— 離線收益 ——
+  const OFFLINE_CAP_MS = 8 * 3600 * 1000; // 最多結算 8 小時
+  const OFFLINE_MIN_MS = 90 * 1000; // 離開不足 90 秒不結算
+  const OFFLINE_EFFICIENCY = 0.6; // 離線效率 60%（不含名號對手與茶樓事件）
+  const OFFLINE_MAX_DROP_ROLLS = 400;
+
+  function fmtDuration(ms) {
+    const m = Math.floor(ms / 60000);
+    const h = Math.floor(m / 60);
+    return h > 0 ? h + ' 小時 ' + (m % 60) + ' 分' : m + ' 分鐘';
+  }
+
+  // 以區域怪物平均值估算離線期間的擊殺，回傳收益摘要（已套用到存檔）
+  function settleOffline(awayMs) {
+    if (!state || awayMs < OFFLINE_MIN_MS) return null;
+    const usedMs = Math.min(awayMs, OFFLINE_CAP_MS);
+    const zone = currentZone();
+    const stats = calcStats(state);
+    const scale = 1 + Math.max(0, state.lv - zone.minLv) * 0.05;
+    const n = zone.mobs.length;
+    const avg = zone.mobs.reduce(
+      (a, m) => ({
+        hp: a.hp + m.hp * scale,
+        def: a.def + m.def,
+        exp: a.exp + m.exp * scale,
+        s: a.s + (m.silver[0] + m.silver[1]) / 2,
+      }),
+      { hp: 0, def: 0, exp: 0, s: 0 }
+    );
+    avg.hp /= n; avg.def /= n; avg.exp /= n; avg.s /= n;
+    const dmg = Math.max(1, stats.atk - avg.def + 0.5);
+    const ticksPerKill = Math.ceil(avg.hp / dmg) + 1;
+    const tickMs = Math.max(650, 1400 - stats.spd * 40);
+    const kills = Math.min(5000, Math.floor((usedMs * OFFLINE_EFFICIENCY) / (ticksPerKill * tickMs)));
+    if (kills < 1) return null;
+
+    const fromLv = state.lv;
+    const expGain = Math.floor(kills * avg.exp);
+    let silGain = Math.floor(kills * avg.s);
+    state.exp += expGain;
+    while (state.exp >= expToNext(state.lv)) {
+      state.exp -= expToNext(state.lv);
+      state.lv += 1;
+    }
+    state.kills += kills;
+    if (!state.zoneKills || typeof state.zoneKills !== 'object') state.zoneKills = {};
+    state.zoneKills[state.zoneId] = (state.zoneKills[state.zoneId] || 0) + kills;
+
+    // 掉落：沿用現有掉落／自動售出規則，最多擲 400 次，避免背包暴增
+    const silBefore = state.silver;
+    const bagBefore = state.bag.length;
+    audioSilent = true;
+    const logBackup = state.log.slice();
+    let rolls = Math.min(kills, OFFLINE_MAX_DROP_ROLLS);
+    let loots = [];
+    try {
+      for (let i = 0; i < rolls; i++) {
+        const got = tryDrop(false);
+        if (got && got.length) loots = loots.concat(got);
+      }
+    } finally {
+      audioSilent = false;
+      state.log = logBackup;
+    }
+    const dropSilver = state.silver - silBefore; // 雜物與自動售出所得
+    state.silver += silGain;
+    const bagAdded = state.bag.length - bagBefore;
+    const byQ = {};
+    loots.forEach((it) => { byQ[it.quality] = (byQ[it.quality] || 0) + 1; });
+    state.lastSeen = Date.now();
+    pushLog('離線 ' + fmtDuration(usedMs) + '，擊敗約 ' + kills + ' 名對手', 'event');
+    return {
+      awayMs, usedMs, capped: awayMs > OFFLINE_CAP_MS,
+      kills, expGain, silver: silGain + dropSilver,
+      fromLv, toLv: state.lv, bagAdded, byQ,
+      zoneName: zone.name,
+    };
+  }
+
+  function openOfflineModal(r) {
+    enqueueModal(() => {
+      if (modalOpen) {
+        modalQueue.push(() => openOfflineModal(r));
+        return;
+      }
+      modalOpen = true;
+      const root = ensureModalRoot();
+      const qLines = Object.keys(r.byQ).map((q) => {
+        const m = qualityMeta(q);
+        return '<span class="' + m.cls + '">' + m.label + ' ×' + r.byQ[q] + '</span>';
+      }).join('　');
+      root.innerHTML =
+        '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
+        '<div class="modal-card offline-modal">' +
+        '<h3>歡迎回來</h3>' +
+        '<p class="muted" style="text-align:center">你在「' + escapeHtml(r.zoneName) + '」閉關 ' + fmtDuration(r.usedMs) +
+        (r.capped ? '（已達 8 小時上限）' : '') + '</p>' +
+        '<div class="offline-grid">' +
+        '<div><span>擊敗</span><b>' + r.kills + '</b></div>' +
+        '<div><span>經驗</span><b>+' + r.expGain + '</b></div>' +
+        '<div><span>銀兩</span><b>+' + r.silver + '</b></div>' +
+        '</div>' +
+        (r.toLv > r.fromLv ? '<div class="level-delta">境界提升：Lv.' + r.fromLv + ' → <b>Lv.' + r.toLv + '</b></div>' : '') +
+        '<div class="level-delta">' + (r.bagAdded > 0 ? '行囊新增 ' + r.bagAdded + ' 件裝備' + (qLines ? '<br/>' + qLines : '') : '沒有撿到新裝備') +
+        '<br/><span class="muted">離線效率 60%，不含名號對手與茶樓事件。</span></div>' +
+        '<button type="button" class="btn primary full" data-close>收下</button>' +
+        '</div></div>';
+      root.querySelector('[data-close]').onclick = () => {
+        if (Audio()) Audio().sfx('click');
+        closeModal();
+        renderAll();
+      };
+      if (Audio()) Audio().sfx('levelup');
+    });
+  }
+
+  // 回到分頁（掛機中被瀏覽器節流）時補算
+  function onReturnVisible() {
+    if (!state || !state.hunting || $('screen-game').classList.contains('hidden')) return;
+    const away = Date.now() - (state.lastSeen || Date.now());
+    const r = settleOffline(away);
+    if (r) {
+      save();
+      renderAll();
+      openOfflineModal(r);
+    }
+  }
+
   function boot() {
     renderChoices();
     bind();
@@ -2811,9 +2943,23 @@
       if (Audio() && state.settings) Audio().applySettings(state.settings);
       syncMuteBtn();
       showGame();
+      if (saved.wasHunting && saved.lastSeen) {
+        const r = settleOffline(Date.now() - saved.lastSeen);
+        if (r) {
+          save();
+          renderAll();
+          openOfflineModal(r);
+        }
+        startHunt();
+      }
     } else {
       showCreate();
     }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') save();
+      else onReturnVisible();
+    });
+    window.addEventListener('pagehide', save);
   }
 
   boot();
