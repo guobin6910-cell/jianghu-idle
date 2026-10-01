@@ -1529,3 +1529,17 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 .offline-modal .level-delta { font-size: 14px; line-height: 1.7; }
 .offline-modal .muted { font-size: 13px; color: #cdbf9d; }
 body.modal-open { overflow: hidden; }
+
+/* 敵人造型區別：未有專屬圖時以色相／大小變化區分，名號首領更大並帶金邊 */
+.enemy-slot:not(.empty) .combat-sprite {
+  filter: hue-rotate(var(--hue, 0deg)) saturate(var(--sat, 1));
+  zoom: var(--sz, 1);
+}
+.enemy-slot.named-rival .combat-sprite,
+.enemy-slot.named-rival.gold-outline .combat-sprite {
+  filter:
+    hue-rotate(var(--hue, 0deg)) saturate(var(--sat, 1))
+    drop-shadow(0 0 1px #f0d080)
+    drop-shadow(0 0 4px #e8b86a)
+    drop-shadow(0 0 12px rgba(232, 184, 106, 0.75));
+}

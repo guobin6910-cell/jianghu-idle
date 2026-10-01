@@ -195,19 +195,68 @@
     hero: { idle: [174, 334], attack: [344, 299], hurt: [230, 340], down: [320, 284] },
   };
   const SPRITE_SCALE = { hero: 0.383, enemy: 0.3 };
+
+  // —— 專屬敵人／名號首領圖：檔名 enemy_<kind>_<idle|attack|hurt|down>.webp，放 assets/combat/sprites/ ——
+  // 圖到位（idle 載得到）就自動啟用，沒有的暫用 drunk／pirate／bandit 三隻加色調區別。
+  const MOB_KIND = {
+    '醉拳混混': 'inn_drunk', '馬賊探子': 'inn_scout', '賭坊打手': 'inn_gambler',
+    '水盜刀客': 'river_pirate', '黑衣追踪者': 'river_tracker', '碼頭鏢師': 'river_escort',
+    '沙盜頭目': 'desert_chief', '駝鈴刺客': 'desert_bell', '狂沙刀客': 'desert_blade',
+    '竹林伏兵': 'bamboo_ambush', '白衣劍客': 'bamboo_white', '青衣鏢客': 'bamboo_blue',
+    '崖魔護法': 'cliff_demon', '無名老怪': 'cliff_freak', '風聲劍侍': 'cliff_wind',
+    '夜行刀客': 'night_blade', '傘下刺客': 'night_umbrella', '茶攤眼線': 'night_spy',
+    '雪原騎客': 'snow_rider', '白刃戍衛': 'snow_guard', '凍傷隱士': 'snow_hermit',
+    '守殿棍僧': 'temple_monk', '破戒刀僧': 'temple_rogue', '影廊行者': 'temple_walker',
+    '潮汐劍客': 'mist_tide', '霧中刀影': 'mist_shadow', '孤嶼船主': 'mist_boatman',
+    '雲棧護法': 'sky_guard', '絕嶺瞎子': 'sky_blind', '天風老叟': 'sky_elder',
+  };
+  const RIVAL_KIND = {
+    rival_inn: 'boss_inn', rival_river: 'boss_river', rival_desert: 'boss_desert', rival_bamboo: 'boss_bamboo',
+    rival_cliff: 'boss_cliff', rival_night: 'boss_night', rival_snow: 'boss_snow', rival_temple: 'boss_temple',
+    rival_mist: 'boss_mist', rival_sky: 'boss_sky',
+  };
+  const SPRITE_READY = {};
+  function probeSprites() {
+    const kinds = Object.keys(MOB_KIND).map((k) => MOB_KIND[k]).concat(Object.keys(RIVAL_KIND).map((k) => RIVAL_KIND[k]));
+    kinds.forEach((kind) => {
+      const im = new Image();
+      im.onload = () => {
+        SPRITE_READY[kind] = true;
+        ['attack', 'hurt', 'down'].forEach((po) => { const p = new Image(); p.src = spriteUrl(kind, po); });
+        if (state && !$('screen-game').classList.contains('hidden')) { try { renderStage(); } catch (e) { /* ignore */ } }
+      };
+      im.src = spriteUrl(kind, 'idle');
+    });
+  }
+  function strHash(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h;
+  }
   function spriteUrl(kind, pose) {
     return 'assets/combat/sprites/' + (kind === 'hero' ? 'hero_' : 'enemy_' + kind + '_') + pose + '.webp';
   }
   function applySprite(img, kind, pose) {
     if (!img) return;
-    const sz = (SPRITE_SIZES[kind] || SPRITE_SIZES.bandit)[pose] || SPRITE_SIZES.bandit.idle;
     const sc = kind === 'hero' ? SPRITE_SCALE.hero : SPRITE_SCALE.enemy;
-    img.src = spriteUrl(kind, pose);
     img.dataset.kind = kind;
     img.dataset.pose = pose;
     img.dataset.sized = '1';
-    img.style.width = Math.round(sz[0] * sc) + 'px';
-    img.style.height = Math.round(sz[1] * sc) + 'px';
+    if (SPRITE_SIZES[kind]) {
+      const sz = SPRITE_SIZES[kind][pose] || SPRITE_SIZES[kind].idle;
+      img.src = spriteUrl(kind, pose);
+      img.style.width = Math.round(sz[0] * sc) + 'px';
+      img.style.height = Math.round(sz[1] * sc) + 'px';
+    } else {
+      // 專屬圖：依圖檔實際尺寸換算；缺幀退回該怪待機圖
+      img.onerror = () => { img.onerror = null; if (pose !== 'idle') img.src = spriteUrl(kind, 'idle'); };
+      img.onload = () => {
+        if (img.dataset.kind !== kind) return;
+        img.style.width = Math.round(img.naturalWidth * sc) + 'px';
+        img.style.height = Math.round(img.naturalHeight * sc) + 'px';
+      };
+      img.src = spriteUrl(kind, pose);
+    }
   }
   // 各敵槽暫時姿勢（受擊／倒地），renderAll 重繪時要保留
   const slotPose = [null, null, null];
@@ -243,8 +292,13 @@
     temple: ENEMY_SPRITES[0],
   };
 
+  function hashPick(s) { return strHash(String(s)) % ENEMY_SPRITES.length; }
   function enemySpriteSrc(mob, slotIndex) {
     const name = (mob && mob.name) || '';
+    const own = mob && (mob.isRival ? RIVAL_KIND[mob.rivalId] : MOB_KIND[name]);
+    if (own && SPRITE_READY[own]) return own;
+    if (mob && mob.isRival && !/醉|混|賭/.test(name)) return ENEMY_SPRITES[hashPick(mob.rivalId || name)];
+    if (name && MOB_KIND[name]) return ENEMY_SPRITES[hashPick(name)];
     if (/醉|混|賭/.test(name)) return ENEMY_SPRITES[0];
     if (/水|潮|船|碼頭|雨|海賊|浪/.test(name)) return ENEMY_SPRITES[1];
     if (/馬賊|沙|盜|賊|匪|探子|打手/.test(name)) return ENEMY_SPRITES[2];
@@ -1974,6 +2028,14 @@
         continue;
       }
       slot.classList.add('look-' + (mob.look || 'bandit'));
+      {
+        const ownKind = mob.isRival ? RIVAL_KIND[mob.rivalId] : MOB_KIND[mob.name];
+        const tintKey = ownKind && SPRITE_READY[ownKind] ? null : (mob.isRival ? mob.rivalId : mob.name);
+        const h = tintKey ? strHash(tintKey) : 0;
+        slot.style.setProperty('--hue', tintKey ? ((h % 12) * 30) + 'deg' : '0deg');
+        slot.style.setProperty('--sat', tintKey ? String(0.85 + (h % 5) * 0.08) : '1');
+        slot.style.setProperty('--sz', mob.isRival ? '1.28' : String(0.92 + (strHash(mob.name || '') % 4) * 0.05));
+      }
       if (state.hunting) slot.classList.add('idle');
       if (mob.isRival) {
         slot.classList.add('named-rival');
@@ -2981,5 +3043,6 @@
     window.addEventListener('pagehide', save);
   }
 
+  probeSprites();
   boot();
 })();
