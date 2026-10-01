@@ -170,6 +170,7 @@
   };
 
   const MOB_GLYPH = [
+    [/犬|狼/, '🐺'], [/鼠/, '🐀'], [/蛟|鮫/, '🐊'], [/蟹/, '🦀'], [/蠍/, '🦂'], [/鷲|鷹|鳥/, '🦅'], [/蛇|竹葉青/, '🐍'], [/魈|猿/, '🐒'], [/岩魔|石/, '🪨'],
     [/醉|賭|混/, '🥴'], [/馬賊|沙盜|盜/, '🗡️'], [/水|潮|船|碼頭/, '🌊'],
     [/黑衣|刺客|影|追踪/, '🥷'], [/劍/, '⚔️'], [/刀/, '🔪'], [/僧|寺|禪/, '🥋'],
     [/雪|寒|凍/, '❄️'], [/崖|絕|風|雲|天/, '🦅'], [/傘|夜|街/, '🌂'],
@@ -201,11 +202,11 @@
   // —— 專屬敵人／名號首領圖：檔名 enemy_<kind>_<idle|attack|hurt|down>.webp，放 assets/combat/sprites/ ——
   // 圖到位（idle 載得到）就自動啟用，沒有的暫用 drunk／pirate／bandit 三隻加色調區別。
   const MOB_KIND = {
-    '醉拳混混': 'inn_drunk', '馬賊探子': 'inn_scout', '賭坊打手': 'inn_gambler',
-    '水盜刀客': 'river_pirate', '黑衣追踪者': 'river_tracker', '碼頭鏢師': 'river_escort',
-    '沙盜頭目': 'desert_chief', '駝鈴刺客': 'desert_bell', '狂沙刀客': 'desert_blade',
-    '竹林伏兵': 'bamboo_ambush', '白衣劍客': 'bamboo_white', '青衣鏢客': 'bamboo_blue',
-    '崖魔護法': 'cliff_demon', '無名老怪': 'cliff_freak', '風聲劍侍': 'cliff_wind',
+    '醉拳混混': 'inn_drunk', '疤面惡犬': 'inn_dog', '碩鼠': 'inn_rat',
+    '水盜刀客': 'river_pirate', '河蛟': 'river_croc', '巨鉗蟹': 'river_crab',
+    '沙盜頭目': 'desert_chief', '沙蠍': 'desert_scorpion', '禿鷲': 'desert_vulture',
+    '竹葉青': 'bamboo_snake', '白衣劍客': 'bamboo_white', '山魈': 'bamboo_ape',
+    '岩魔': 'cliff_golem', '崖鷹': 'cliff_eagle', '風聲劍侍': 'cliff_wind',
     '夜行刀客': 'night_blade', '傘下刺客': 'night_umbrella', '茶攤眼線': 'night_spy',
     '雪原騎客': 'snow_rider', '白刃戍衛': 'snow_guard', '凍傷隱士': 'snow_hermit',
     '守殿棍僧': 'temple_monk', '破戒刀僧': 'temple_rogue', '影廊行者': 'temple_walker',
@@ -226,7 +227,7 @@
       im.onload = () => {
         SPRITE_READY[kind] = true;
         const targetH = /^boss_/.test(kind) ? 122 : 100;
-        KIND_SCALE[kind] = targetH / Math.max(1, im.naturalHeight);
+        KIND_SCALE[kind] = Math.min(targetH / Math.max(1, im.naturalHeight), 150 / Math.max(1, im.naturalWidth));
         ['attack', 'hurt', 'down'].forEach((po) => { const p = new Image(); p.src = spriteUrl(kind, po); });
         if (state && !$('screen-game').classList.contains('hidden')) { try { renderStage(); } catch (e) { /* ignore */ } }
       };
@@ -322,8 +323,8 @@
       minLv: 1,
       mobs: [
         { name: '醉拳混混', hp: 28, atk: 4, def: 1, exp: 6, silver: [3, 7] },
-        { name: '馬賊探子', hp: 34, atk: 5, def: 1, exp: 8, silver: [4, 9] },
-        { name: '賭坊打手', hp: 32, atk: 5, def: 2, exp: 7, silver: [5, 10] },
+        { name: '疤面惡犬', hp: 34, atk: 5, def: 1, exp: 8, silver: [4, 9] },
+        { name: '碩鼠', hp: 32, atk: 5, def: 2, exp: 7, silver: [5, 10] },
       ],
       drops: [
         { id: 'cloth', name: '粗布勁裝', slot: 'armor', def: 1, rare: 0.32 },
@@ -338,8 +339,8 @@
       minLv: 3,
       mobs: [
         { name: '水盜刀客', hp: 55, atk: 8, def: 2, exp: 14, silver: [8, 14] },
-        { name: '黑衣追踪者', hp: 62, atk: 9, def: 2, exp: 16, silver: [9, 16] },
-        { name: '碼頭鏢師', hp: 58, atk: 8, def: 3, exp: 15, silver: [10, 15] },
+        { name: '河蛟', hp: 62, atk: 9, def: 2, exp: 16, silver: [9, 16] },
+        { name: '巨鉗蟹', hp: 58, atk: 8, def: 3, exp: 15, silver: [10, 15] },
       ],
       drops: [
         { id: 'boots', name: '軟底快靴', slot: 'boots', spd: 1, rare: 0.28 },
@@ -354,8 +355,8 @@
       minLv: 6,
       mobs: [
         { name: '沙盜頭目', hp: 95, atk: 13, def: 4, exp: 28, silver: [16, 26] },
-        { name: '駝鈴刺客', hp: 88, atk: 15, def: 3, exp: 30, silver: [18, 28] },
-        { name: '狂沙刀客', hp: 102, atk: 14, def: 4, exp: 32, silver: [20, 30] },
+        { name: '沙蠍', hp: 88, atk: 15, def: 3, exp: 30, silver: [18, 28] },
+        { name: '禿鷲', hp: 102, atk: 14, def: 4, exp: 32, silver: [20, 30] },
       ],
       drops: [
         { id: 'scarf', name: '沙紋披風', slot: 'armor', def: 3, atk: 1, rare: 0.22 },
@@ -369,9 +370,9 @@
       flavor: '竹響三聲，不是風，是人。',
       minLv: 10,
       mobs: [
-        { name: '竹林伏兵', hp: 140, atk: 20, def: 6, exp: 45, silver: [28, 40] },
+        { name: '竹葉青', hp: 140, atk: 20, def: 6, exp: 45, silver: [28, 40] },
         { name: '白衣劍客', hp: 155, atk: 22, def: 5, exp: 50, silver: [30, 45] },
-        { name: '青衣鏢客', hp: 148, atk: 21, def: 7, exp: 48, silver: [32, 42] },
+        { name: '山魈', hp: 148, atk: 21, def: 7, exp: 48, silver: [32, 42] },
       ],
       drops: [
         { id: 'bamboo_sword', name: '青筠劍', slot: 'weapon', atk: 5, spd: 1, rare: 0.18 },
@@ -385,8 +386,8 @@
       flavor: '崖上有碑，碑上無名，只寫：過客慢行。',
       minLv: 15,
       mobs: [
-        { name: '崖魔護法', hp: 220, atk: 30, def: 9, exp: 75, silver: [45, 65] },
-        { name: '無名老怪', hp: 260, atk: 34, def: 10, exp: 90, silver: [55, 80] },
+        { name: '岩魔', hp: 220, atk: 30, def: 9, exp: 75, silver: [45, 65] },
+        { name: '崖鷹', hp: 260, atk: 34, def: 10, exp: 90, silver: [55, 80] },
         { name: '風聲劍侍', hp: 240, atk: 32, def: 8, exp: 82, silver: [50, 72] },
       ],
       drops: [
