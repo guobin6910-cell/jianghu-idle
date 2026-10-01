@@ -23,8 +23,10 @@ SFX 為 **CC0／Public Domain** 素材，經 ffmpeg（libvorbis）轉 Ogg、音�
 
 | 檔名 | 用途 | 來源檔 | 作者／包 | 授權 | 來源 URL |
 |------|------|--------|----------|------|----------|
-| `sfx_hit.ogg` | 普攻命中 | `impactMetal_medium_000.ogg` | Kenney.nl（Impact Sounds） | CC0 | https://kenney.nl/assets/impact-sounds |
-| `sfx_crit.ogg` | 暴擊命中 | `impactPlate_heavy_000.ogg` | Kenney.nl（Impact Sounds） | CC0 | https://kenney.nl/assets/impact-sounds |
+| `sfx_hit.ogg` / `sfx_hit2.ogg` / `sfx_hit3.ogg` | 普攻揮砍（隨機三選一，播放速率微幅隨機） | `sword.4/6/3.ogg`（StarNinjas「20 Sword Sound Effects」） | StarNinjas（OpenGameArt） | CC0 | https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes |
+| `sfx_crit.ogg` | 普攻暴擊（金屬交擊＋揮砍混音） | `sword_clash.2.ogg`＋`sword.6.ogg`（同上） | StarNinjas | CC0 | 同上 |
+| `sfx_skill.ogg` | 武學招式（風聲蓄勢＋劍氣長鳴＋低頻轟，約 1.1 秒，與普攻明顯區分） | `swish-9.wav`（Swishes Sound Pack）＋`sword_clash.8.ogg`＋`sword.2.ogg`＋合成低頻 | OpenGameArt（CC0）／本專案混音 | CC0 | https://opengameart.org/content/swishes-sound-pack |
+| `sfx_qi.ogg` | 凝氣（上揚內力聲，程式合成） | ffmpeg 合成 | 本專案 | 專案自有 | — |
 | `sfx_kill.ogg` | 擊殺 | `impactBell_heavy_002.ogg` | Kenney.nl（Impact Sounds） | CC0 | https://kenney.nl/assets/impact-sounds |
 | `sfx_levelup.ogg` | 升級 | `jingles_PIZZI07.ogg` | Kenney.nl（Music Jingles） | CC0 | https://kenney.nl/assets/music-jingles |
 | `sfx_click.ogg` | UI 點擊 | `pluck_001.ogg` | Kenney.nl（Interface Sounds） | CC0 | https://kenney.nl/assets/interface-sounds （OGA: https://opengameart.org/content/interface-sounds） |

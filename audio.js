@@ -12,6 +12,10 @@
   };
   const SFX_SRC = {
     hit: BASE + 'sfx_hit.ogg',
+    hit2: BASE + 'sfx_hit2.ogg',
+    hit3: BASE + 'sfx_hit3.ogg',
+    skill: BASE + 'sfx_skill.ogg',
+    qi: BASE + 'sfx_qi.ogg',
     crit: BASE + 'sfx_crit.ogg',
     kill: BASE + 'sfx_kill.ogg',
     levelup: BASE + 'sfx_levelup.ogg',
@@ -161,7 +165,9 @@
     });
   }
 
+  const SFX_VARIANTS = { hit: ['hit', 'hit2', 'hit3'] };
   function sfx(id) {
+    if (SFX_VARIANTS[id]) { const v = SFX_VARIANTS[id]; id = v[Math.floor(Math.random() * v.length)]; }
     if (!SFX_SRC[id] || muted) return;
     unlock();
     try {
@@ -177,6 +183,7 @@
       }
       a.volume = effectiveSfxVol();
       a.currentTime = 0;
+      try { a.playbackRate = 0.94 + Math.random() * 0.12; } catch (_) { /* ignore */ }
       const p = a.play();
       if (p && p.catch) p.catch(() => {});
     } catch (_) {

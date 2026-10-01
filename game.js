@@ -1589,7 +1589,7 @@
       state.skillSoftLeft = Math.max(state.skillSoftLeft || 0, 2);
       spawnFloat('運功', 'heal');
       pushLog('施展「' + sk.name + '」：下招威力↑，短暫護體', 'loot');
-      if (Audio()) Audio().sfx('click');
+      if (Audio()) Audio().sfx('qi');
       renderSkillBar();
       save();
       return true;
@@ -1612,7 +1612,7 @@
     const slotEl = $('enemy-slot-' + slot);
     pulseClass(slotEl, 'hit', 300);
     pulseClass($('battle-stage'), 'shake', isCrit ? 340 : 240);
-    if (Audio()) Audio().sfx(isCrit ? 'crit' : 'hit');
+    if (Audio()) Audio().sfx('skill');
     renderCombatBars();
     renderSkillBar();
 
