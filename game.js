@@ -418,9 +418,12 @@
       it.enhFail = 0;
       _a.enhOk += 1;
       _a.maxEnh = Math.max(_a.maxEnh, it.enh);
+      addRumor('enh1');
+      if (it.enh >= 5) addRumor('enh5');
+      if (it.enh >= 10) addRumor('enh10');
+      if (_a.pityHit > 0) addRumor('pity');
       pushLog('強化成功！「' + it.name + '」→ +' + it.enh + '（−' + cost + ' 銀）', 'loot ' + qm.cls);
       if (it.enh === 5 || it.enh === 10) {
-        pushEventLog('傳聞：有人把「' + it.name + '」鍛到 +' + it.enh + '，刃上光華隱隱。', 'rival');
         pushLog('✨「' + it.name + '」強化到 +' + it.enh + '，名號生輝！', 'loot ' + qm.cls);
       }
       if (Audio()) Audio().sfx('levelup');
@@ -1265,6 +1268,7 @@
       state.skillSoftLeft = 0;
       state.goldBodyUntil = 0;
       pushLog('你力竭倒地，調息 3 秒後起身（不損失任何東西）。', 'rival');
+      addRumor('exhaust');
       setHeroPose('hurt', EXHAUST_MS);
       renderStage();
     }
@@ -1652,8 +1656,8 @@
       bossWeapon: !!d.bossWeapon,
     };
 
-    if (q === 'zhen') achStats().gotZhen += 1;
-    if (q === 'jue') achStats().gotJue += 1;
+    if (q === 'zhen') { achStats().gotZhen += 1; addRumor('zhen'); }
+    if (q === 'jue') { achStats().gotJue += 1; addRumor('jue'); addRumor('zhen'); }
     if (shouldAutoSell(item)) {
       const price = qualitySellPrice(item);
       state.silver += price;
@@ -2852,6 +2856,7 @@
     renderZones();
     renderBag();
     renderHero();
+    checkRumors();
     renderQuest();
     renderLore();
 
@@ -3345,6 +3350,9 @@
     { id: 'sell', name: '行囊清一清', desc: '賣出 10 件雜物（手動賣出與一鍵販售）', goal: 10, silver: 500, exp: 0 },
   ];
   const DAILY_BONUS = { name: '今日收工', desc: '五個任務全部領取', silver: 2000, exp: 2000 };
+  function uiIco(n, cls) { return '<img class="ui-ico' + (cls ? ' ' + cls : '') + '" src="assets/ui/' + n + '.webp" alt="" onerror="this.remove()">'; }
+  const QUEST_ICO = { kill: 'quest_kill', rival: 'quest_boss', enh: 'quest_forge', cast: 'quest_skill', sell: 'quest_sell' };
+  const ACH_ICO = { '等級': 'ach_level', '擊殺': 'ach_kill', '名號': 'ach_boss', '強化': 'ach_enhance', '裝備': 'ach_rare', '稱號': 'ach_title' };
   let questSub = 'daily';
   let questSig = '';
 
@@ -3427,7 +3435,7 @@
     const q = ensureQuests();
     const dot = questClaimable();
     if (tab) tab.classList.toggle('has-dot', dot > 0);
-    const sig = [questSub, q.day, state.lv, q.bonus ? 1 : 0, DAILY_QUESTS.map((d) => Math.min(d.goal, q.prog[d.id] || 0) + (q.claimed[d.id] ? 'c' : '')).join(','), achSig()].join('|');
+    const sig = [questSub, q.day, state.lv, (state.rumors || []).length, q.bonus ? 1 : 0, DAILY_QUESTS.map((d) => Math.min(d.goal, q.prog[d.id] || 0) + (q.claimed[d.id] ? 'c' : '')).join(','), achSig()].join('|');
     if (!force && sig === questSig) {
       const t = el.querySelector('#quest-reset');
       if (t) t.textContent = questResetText();
@@ -3442,7 +3450,7 @@
         const rw = [r.silver ? r.silver + ' 銀兩' : '', r.exp ? r.exp + ' 經驗' : ''].filter(Boolean).join(' + ');
         const done = p >= d.goal;
         const claimed = !!q.claimed[d.id];
-        return '<div class="quest-row' + (claimed ? ' claimed' : '') + '">' +
+        return '<div class="quest-row' + (claimed ? ' claimed' : '') + '">' + uiIco(QUEST_ICO[d.id], 'q') + (claimed ? uiIco('badge_done', 'done') : '') +
           '<div class="quest-main"><strong>〈' + escapeHtml(d.name) + '〉</strong> <span class="muted">' + escapeHtml(d.desc) + '</span>' +
           '<div class="bar-wrap thin quest-bar"><div class="bar" style="width:' + (p / d.goal * 100) + '%"></div></div>' +
           '<div class="quest-meta"><span>' + p + ' / ' + d.goal + '</span><span class="muted">獎勵：' + rw + '</span></div></div>' +
@@ -3452,14 +3460,17 @@
       const br = questReward(DAILY_BONUS);
       body = '<div class="quest-head"><span class="muted">每天早上 5 點重置，獎勵隨等級放大（×' + questScale().toFixed(2) + '）</span><span id="quest-reset" class="muted">' + questResetText() + '</span></div>' +
         rows +
-        '<div class="quest-row bonus' + (q.bonus ? ' claimed' : '') + '"><div class="quest-main"><strong>〈' + DAILY_BONUS.name + '〉</strong> <span class="muted">' + DAILY_BONUS.desc + '</span>' +
+        '<div class="quest-row bonus' + (q.bonus ? ' claimed' : '') + '">' + uiIco('quest_alldone', 'q') + (q.bonus ? uiIco('badge_done', 'done') : '') + '<div class="quest-main"><strong>〈' + DAILY_BONUS.name + '〉</strong> <span class="muted">' + DAILY_BONUS.desc + '</span>' +
         '<div class="quest-meta"><span class="muted">獎勵：' + br.silver + ' 銀兩 + ' + br.exp + ' 經驗</span></div></div>' +
         '<button type="button" class="btn' + (allOk && !q.bonus ? ' primary' : '') + '" data-claim="bonus"' + (allOk && !q.bonus ? '' : ' disabled') + '>' + (q.bonus ? '已領取' : '領取') + '</button></div>';
+    } else if (questSub === 'rumor') {
+      body = renderRumorBody();
     } else {
       body = renderAchBody();
     }
-    el.innerHTML = '<div class="subtabs"><button type="button" class="subtab' + (questSub === 'daily' ? ' active' : '') + '" data-sub="daily">每日任務</button>' +
-      '<button type="button" class="subtab' + (questSub === 'ach' ? ' active' : '') + '" data-sub="ach">成就</button></div>' + body;
+    el.innerHTML = '<div class="subtabs"><button type="button" class="subtab' + (questSub === 'daily' ? ' active' : '') + '" data-sub="daily">' + uiIco('tab_quest') + '每日任務</button>' +
+      '<button type="button" class="subtab' + (questSub === 'ach' ? ' active' : '') + '" data-sub="ach">' + uiIco('tab_achieve') + '成就</button>' +
+      '<button type="button" class="subtab' + (questSub === 'rumor' ? ' active' : '') + '" data-sub="rumor">' + uiIco('tab_rumor') + '傳聞錄</button></div>' + body;
     el.querySelectorAll('[data-sub]').forEach((b) => b.addEventListener('click', () => {
       if (Audio()) Audio().sfx('click');
       questSub = b.getAttribute('data-sub');
@@ -3468,6 +3479,58 @@
     el.querySelectorAll('[data-claim]').forEach((b) => b.addEventListener('click', () => claimQuest(b.getAttribute('data-claim'))));
     el.querySelectorAll('[data-ach]').forEach((b) => b.addEventListener('click', () => claimAch(b.getAttribute('data-ach'))));
   }
+  // ===== 傳聞錄（事件觸發解鎖，最多 50 則；名號傳聞沿用 loreTitle） =====
+  const RUMORS = {
+    enh1: '聽說有人在鐵匠鋪敲了一夜，火星濺到天亮。',
+    enh5: '有人把兵器鍛到 +5，劍鞘裡開始有聲音。',
+    enh10: '刃上光華隱隱，連掌櫃都不敢收那把刀。',
+    pity: '鐵匠搖頭說「天意」，下一爐卻成了。',
+    zhen: '行囊裡多了件好東西，賣不賣，是個問題。',
+    jue: '傳說這件兵器，只在最安靜的夜裡出現過。',
+    exhaust: '有人倒在路邊，歇了三息，又笑著站了起來。',
+    rival1: '馬三刀的酒壺空了，江湖裡少了一個說話大聲的人。',
+    rival5: '半個江湖都在傳你的名字，另外半個在打聽。',
+    rival10: '十地名號盡落你手，茶館先生把這段書，多收了兩文錢。',
+    set: '兩件舊物湊在一起，竟像是本來就屬於同一個人。',
+    lv50: '那一天的雲棧，據說連風都停了片刻。',
+  };
+  const RUMOR_ORDER = ['enh1', 'enh5', 'enh10', 'pity', 'zhen', 'jue', 'exhaust', 'rival1', 'rival5', 'rival10', 'set', 'lv50'];
+  const RUMOR_HINT = {
+    enh1: '強化成功一次後聞得', enh5: '把裝備強化到 +5 後聞得', enh10: '把裝備強化到 +10 後聞得', pity: '強化連敗後觸發保底聞得',
+    zhen: '首次得到「珍」品後聞得', jue: '首次得到「絕」品後聞得', exhaust: '首次力竭後聞得', rival1: '擊敗第 1 個名號後聞得',
+    rival5: '擊敗 5 個名號後聞得', rival10: '十個名號全部擊敗後聞得', set: '湊齊套裝 2 件效果後聞得', lv50: '突破 Lv.50 後聞得',
+  };
+  function addRumor(id) {
+    if (!state || !RUMORS[id]) return;
+    if (!Array.isArray(state.rumors)) state.rumors = [];
+    if (state.rumors.some((r) => r.id === id)) return;
+    state.rumors.unshift({ t: Date.now(), id: id });
+    state.rumors = state.rumors.slice(0, 50);
+    pushLog('📜 新傳聞：' + RUMORS[id], 'rival');
+    questSig = '';
+  }
+  function checkRumors() {
+    if (!state) return;
+    const n = rivalCount();
+    if (n >= 1) addRumor('rival1');
+    if (n >= 5) addRumor('rival5');
+    if (n >= 10) addRumor('rival10');
+    if (state.lv >= 50) addRumor('lv50');
+    const c = activeSets(state);
+    if (Object.keys(c).some((k) => c[k] >= 2)) addRumor('set');
+  }
+  function renderRumorBody() {
+    const got = (state.rumors || []);
+    const have = new Set(got.map((r) => r.id));
+    const list = got.map((r) => {
+      const d = new Date(r.t);
+      return '<div class="rumor-line"><span class="muted">' + (d.getMonth() + 1) + '/' + d.getDate() + '</span> ' + escapeHtml(RUMORS[r.id] || '') + '</div>';
+    }).join('');
+    const locked = RUMOR_ORDER.filter((id) => !have.has(id)).map((id) => '<div class="rumor-line locked">？？？<span class="muted">（' + RUMOR_HINT[id] + '）</span></div>').join('');
+    return '<div class="quest-head"><span class="muted">已聞 ' + got.length + ' / ' + RUMOR_ORDER.length + ' 則（最多保留最新 50 則）；名號傳聞請見「閒談」頁</span></div>' +
+      (list || '<p class="muted">尚未聽聞任何傳聞，多走動走動。</p>') + locked;
+  }
+
   // ===== 成就（17 個；無對應系統的獎勵改為銀兩） =====
   function achStats() {
     if (!state.ach || typeof state.ach !== 'object') state.ach = {};
@@ -3512,8 +3575,6 @@
       state.silver += d.silver;
       pushLog('成就〈' + d.name + '〉達成，銀兩 +' + d.silver, 'rival');
     }
-    if (id === 'a11') pushEventLog('傳聞：有人把兵器鍛到 +5，劍鞘裡開始有聲音。', 'rival');
-    if (id === 'a12') pushEventLog('傳聞：刃上光華隱隱，連掌櫃都不敢收那把刀。', 'rival');
     if (Audio()) Audio().sfx('levelup');
     questSig = '';
     renderAll();
@@ -3528,7 +3589,7 @@
       const p = Math.min(d.goal, d.val());
       const ok = p >= d.goal;
       const cl = achClaimed(d);
-      return head + '<div class="quest-row' + (cl ? ' claimed' : '') + '"><div class="quest-main"><strong>〈' + escapeHtml(d.name) + '〉</strong> <span class="muted">' + escapeHtml(d.desc) + '</span>' +
+      return head + '<div class="quest-row' + (cl ? ' claimed' : '') + '">' + uiIco(ACH_ICO[d.cat], 'q') + (cl ? uiIco('badge_done', 'done') : '') + '<div class="quest-main"><strong>〈' + escapeHtml(d.name) + '〉</strong> <span class="muted">' + escapeHtml(d.desc) + '</span>' +
         (d.goal > 1 ? '<div class="bar-wrap thin quest-bar"><div class="bar" style="width:' + (p / d.goal * 100) + '%"></div></div>' : '') +
         '<div class="quest-meta"><span>' + (d.goal > 1 ? p + ' / ' + d.goal : (ok ? '已達成' : '未達成')) + '</span><span class="muted">獎勵：' + achRewardText(d) + (d.note ? d.note : '') + '</span></div></div>' +
         '<button type="button" class="btn' + (ok && !cl ? ' primary' : '') + '" data-ach="' + d.id + '"' + (ok && !cl ? '' : ' disabled') + '>' + (cl ? '已領取' : '領取') + '</button></div>';
@@ -3777,6 +3838,7 @@
     if (!saved.zoneSilverBonus || typeof saved.zoneSilverBonus !== 'object') saved.zoneSilverBonus = null;
     if (!saved.rivalChanceBonus || typeof saved.rivalChanceBonus !== 'object') saved.rivalChanceBonus = null;
     if (!saved.ach || typeof saved.ach !== 'object') saved.ach = {};
+    if (!Array.isArray(saved.rumors)) saved.rumors = [];
     if (typeof saved.teaDayKey !== 'string') saved.teaDayKey = '';
     if (typeof saved.teaDailyCount !== 'number') saved.teaDailyCount = 0;
     if (typeof saved.teaCooldownUntil !== 'number') saved.teaCooldownUntil = 0;
