@@ -109,7 +109,7 @@
       tiers: {
         10: [
           { id: 't10a', name: '裂風強化', desc: '裂風傷害 +25%。', fx: { skillMul: { liefeng: 0.25 } } },
-          { id: 't10b', name: '血刃回氣', desc: '血刃回復傷害的 10% 生命。', real: '施放血刃時獲得 1 次護體（減傷）', fx: { guard: { xueren: 1 } } },
+          { id: 't10b', name: '血刃回氣', desc: '血刃回復傷害的 10% 生命。', fx: { healDmg: { xueren: 0.1 } } },
         ],
         20: [
           { id: 't20a', name: '崩山必暴', desc: '崩山必定暴擊一次。', real: '崩山每次施放必暴擊（傷害 ×1.5）', fx: { critSkill: { bengshan: 1.5 } } },
@@ -117,7 +117,7 @@
         ],
         30: [
           { id: 't30a', name: '殺氣', desc: '每擊殺 5 隻怪攻擊 +5%（可疊 3 層）。', real: '停止掛機後層數清空', fx: { killStack: 3 } },
-          { id: 't30b', name: '刀魂', desc: '生命 +10%。', real: '防禦 +10%', fx: { defPct: 0.1 } },
+          { id: 't30b', name: '刀魂', desc: '生命 +10%。', fx: { hpPct: 0.1 } },
         ],
       },
       ult: { id: 'tiandaozhan', name: '天刀斬', short: '天刀', cd: 30000, desc: '單次 3 倍傷害，打首領時再 +20%。' },
@@ -143,19 +143,19 @@
     },
     chanwu: {
       tag: '防禦型', slogan: '以靜制動，穩到最後。',
-      passive: { name: '以靜制動', desc: '生命 +12%，受到的傷害 −6%。', real: '生命換算為防禦 +12%', fx: { defPct: 0.12, takenMul: -0.06 } },
+      passive: { name: '以靜制動', desc: '生命 +12%，受到的傷害 −6%。', fx: { hpPct: 0.12, takenMul: -0.06 } },
       tiers: {
         10: [
           { id: 'h10a', name: '鐵壁綿長', desc: '鐵壁持續 +40%。', real: '施放鐵壁獲得 2 次護體（減傷）', fx: { guard: { tiebi: 2 } } },
-          { id: 'h10b', name: '禪掌養氣', desc: '禪掌回復 8% 生命。', real: '施放禪掌獲得 1 次護體', fx: { guard: { chanzhang: 1 } } },
+          { id: 'h10b', name: '禪掌養氣', desc: '禪掌回復 8% 生命。', fx: { healPct: { chanzhang: 0.08 } } },
         ],
         20: [
           { id: 'h20a', name: '定心守一', desc: '定心讓下一次受傷 −30%。', fx: { nextHitReduce: { dingxin: 0.3 } } },
-          { id: 'h20b', name: '凝氣回元', desc: '凝氣同時回血 5%。', real: '施放凝氣額外獲得 1 次護體', fx: { guard: { ningqi: 1 } } },
+          { id: 'h20b', name: '凝氣回元', desc: '凝氣同時回血 5%。', fx: { healPct: { ningqi: 0.05 } } },
         ],
         30: [
           { id: 'h30a', name: '金鐘罩', desc: '防禦 +15%。', fx: { defPct: 0.15 } },
-          { id: 'h30b', name: '佛心', desc: '戰鬥中每秒回血 1%。', real: '受到的傷害再 −8%', fx: { takenMul: -0.08 } },
+          { id: 'h30b', name: '佛心', desc: '戰鬥中每秒回血 1%。', fx: { regenCombat: 0.01 } },
         ],
       },
       ult: { id: 'luohan', name: '羅漢金身', short: '金身', cd: 40000, desc: '8 秒內傷害減半並反彈 20% 傷害。' },
@@ -1207,6 +1207,81 @@
     return s;
   }
 
+  // ===== 生命／內力 =====
+  const EXHAUST_MS = 3000;
+  function heroMaxHp(h) {
+    const st = calcStats(h);
+    const mf = martialFx(h);
+    return Math.max(50, Math.floor((60 + h.lv * 15 + st.def * 3) * (1 + (mf.hpPct || 0))));
+  }
+  function heroMaxMp(h) { return 60 + h.lv * 3; }
+  function mpCost(sk) {
+    const pct = sk && sk.kind === 'ult' ? 0.15 : sk && sk.kind === 'buff' ? 0.04 : 0.06;
+    return Math.ceil(heroMaxMp(state) * pct);
+  }
+  function ensureVitals() {
+    if (!state) return;
+    const mh = heroMaxHp(state);
+    const mm = heroMaxMp(state);
+    if (typeof state.hp !== 'number' || isNaN(state.hp)) state.hp = mh;
+    if (typeof state.mp !== 'number' || isNaN(state.mp)) state.mp = mm;
+    state.hp = Math.min(mh, Math.max(0, state.hp));
+    state.mp = Math.min(mm, Math.max(0, state.mp));
+    if (typeof state.exhaustUntil !== 'number') state.exhaustUntil = 0;
+    if (typeof state.lastHurtAt !== 'number') state.lastHurtAt = 0;
+  }
+  function isExhausted() { return !!state && (state.exhaustUntil || 0) > Date.now(); }
+  function healHero(n, quiet) {
+    if (!state || n <= 0) return;
+    ensureVitals();
+    const mh = heroMaxHp(state);
+    const before = state.hp;
+    state.hp = Math.min(mh, state.hp + n);
+    const got = Math.round(state.hp - before);
+    if (got > 0 && !quiet) spawnFloat('+' + got, 'heal');
+  }
+  function heroHurt(dmg) {
+    ensureVitals();
+    state.hp -= dmg;
+    state.lastHurtAt = Date.now();
+    if (state.hp <= 0) {
+      state.hp = 0;
+      state.exhaustUntil = Date.now() + EXHAUST_MS;
+      state.mobs = [];
+      state.mob = null;
+      state.skillSoftLeft = 0;
+      state.goldBodyUntil = 0;
+      pushLog('你力竭倒地，調息 3 秒後起身（不損失任何東西）。', 'rival');
+      setHeroPose('hurt', EXHAUST_MS);
+      renderStage();
+    }
+    renderHeroStatus();
+  }
+  function vitalsTick() {
+    if (!state || $('screen-game').classList.contains('hidden')) return;
+    ensureVitals();
+    const now = Date.now();
+    const dt = Math.min(1, (now - (state._vt || now)) / 1000);
+    state._vt = now;
+    if (state.exhaustUntil) {
+      if (now >= state.exhaustUntil) {
+        state.exhaustUntil = 0;
+        state.hp = Math.floor(heroMaxHp(state) / 2);
+        pushLog('調息完畢，回復半血，繼續上路。', 'win');
+        setHeroPose('idle', 10);
+        renderStage();
+      }
+    } else {
+      const fx = martialFx(state);
+      let rate = now - state.lastHurtAt > 3000 ? 0.01 : 0;
+      if (state.hunting) rate += fx.regenCombat || 0;
+      if (rate > 0) state.hp = Math.min(heroMaxHp(state), state.hp + heroMaxHp(state) * rate * dt);
+      const mm = heroMaxMp(state);
+      state.mp = Math.min(mm, state.mp + mm * (state.hunting ? 0.04 : 0.08) * dt);
+    }
+    renderHeroStatus();
+  }
+
   function incomingDmgFactor() {
     let f = 1;
     if (state.softenLeft > 0 && state.softenPct > 0) f *= 1 - state.softenPct;
@@ -1518,6 +1593,8 @@
     }
     if (ups) {
       pushLog(`升級！目前 Lv.${state.lv}`, 'win');
+      state.hp = heroMaxHp(state);
+      state.mp = heroMaxMp(state);
       if (Audio()) Audio().sfx('levelup');
       openLevelUpModal(fromLv, state.lv);
     }
@@ -1638,6 +1715,8 @@
   function tickCombat() {
     if (!state || !state.hunting) return;
     if (modalOpen) return;
+    ensureVitals();
+    if (isExhausted()) return;
     tryTriggerEvent(Date.now());
     if (modalOpen) return;
     ensureMobs();
@@ -1691,7 +1770,7 @@
     const foe = attackers[0] || mob;
     const hitChance = Math.max(0.2, 0.85 - (stats.spd - 5) * 0.02 - (mfx.dodge || 0));
     if (Math.random() < hitChance) {
-      let mdmg = Math.max(1, foe.atk - stats.def + rand(-1, 1));
+      let mdmg = Math.max(1, Math.ceil(foe.atk * 0.25), foe.atk - stats.def + rand(-1, 1));
       mdmg = Math.max(1, Math.floor(mdmg * incomingDmgFactor()));
       if (state.nextHitReduce > 0) { mdmg = Math.max(1, Math.floor(mdmg * (1 - state.nextHitReduce))); state.nextHitReduce = 0; }
       if (Date.now() < (state.goldBodyUntil || 0)) {
@@ -1704,15 +1783,16 @@
         mdmg = Math.max(1, Math.floor(mdmg * 0.7));
         state.skillSoftLeft -= 1;
       }
-      if (mdmg >= stats.def + 6 && Math.random() < 0.15) {
+      const heavy = Math.random() < 0.15;
+      if (heavy) mdmg = Math.floor(mdmg * 1.5);
+      if (heavy && state.silver > 0) {
         const lose = Math.min(state.silver, rand(1, 3));
         state.silver -= lose;
-        pushLog('「' + foe.name + '」狠狠一擊，銀兩散落 -' + lose);
-        setTimeout(() => fxEnemyAttack('heavy', mobSlotIndex(foe)), 160);
-      } else {
-        pushLog('「' + foe.name + '」攻來，你側身化解');
-        setTimeout(() => fxEnemyAttack('block', mobSlotIndex(foe)), 160);
       }
+      pushLog('「' + foe.name + '」' + (heavy ? '重重一擊' : '攻來') + '，你受創 -' + mdmg, heavy ? 'rival' : '');
+      setTimeout(() => fxEnemyAttack(heavy ? 'heavy' : 'hit', mobSlotIndex(foe), mdmg), 160);
+      heroHurt(mdmg);
+      if (isExhausted()) { save(); return; }
     } else {
       pushLog('你身法一閃，避過「' + foe.name + '」');
       setTimeout(() => fxEnemyAttack('miss', mobSlotIndex(foe)), 160);
@@ -1733,6 +1813,7 @@
     if (_gp.silver) sil = Math.floor(sil * (1 + _gp.silver / 100));
     state.silver += sil;
     state.kills += 1;
+    healHero(heroMaxHp(state) * 0.08, true);
     const _kfx = martialFx(state);
     if (_kfx.killStack) {
       state.killProg = (state.killProg || 0) + 1;
@@ -1805,10 +1886,18 @@
     ensureMobs();
     const mob = syncPrimaryMob();
     if (!mob || mob.hp <= 0) return false;
+    if (isExhausted()) return false;
     if (!skillReady(idx)) return false;
     const skills = heroSkills();
     const sk = skills[idx];
     if (!sk) return false;
+    ensureVitals();
+    const mpNeed = mpCost(sk);
+    if (state.mp < mpNeed) {
+      if (!opts.auto) { pushLog('內力不足（需 ' + mpNeed + '）'); spawnFloat('內力不足', 'miss'); }
+      return false;
+    }
+    state.mp -= mpNeed;
     const fx = martialFx(state);
     const now = Date.now();
 
@@ -1821,6 +1910,7 @@
       const soft = 2 + (fx.ningDur ? 1 : 0) + ((fx.guard && fx.guard.ningqi) || 0);
       state.skillSoftLeft = Math.max(state.skillSoftLeft || 0, soft);
       if (fx.ningDef) state.defBuffUntil = now + 10000;
+      if (fx.healPct && fx.healPct[sk.id]) healHero(heroMaxHp(state) * fx.healPct[sk.id]);
       spawnFloat('運功', 'heal');
       pushLog('施展「' + sk.name + '」：下招威力↑，短暫護體', 'loot');
       if (Audio()) Audio().sfx('qi');
@@ -1879,6 +1969,8 @@
       }
       isCrit = (sk.mult || 1) >= 1.6 || hits >= 3 || critMul > 1;
       pushLog('「' + sk.name + '」對「' + mob.name + '」額外 -' + total, 'loot');
+      if (fx.healDmg && fx.healDmg[sk.id]) healHero(total * fx.healDmg[sk.id]);
+      if (fx.healPct && fx.healPct[sk.id]) healHero(heroMaxHp(state) * fx.healPct[sk.id]);
       const g = fx.guard && fx.guard[sk.id];
       if (g) state.skillSoftLeft = Math.max(state.skillSoftLeft || 0, g);
       if (fx.nextBonus && fx.nextBonus[sk.id]) state.nextAtkBonus = (state.nextAtkBonus || 0) + fx.nextBonus[sk.id];
@@ -1904,11 +1996,12 @@
 
   function tryAutoSkills(stats) {
     // 前 3 格掛機自動施放（冷卻好就放，每次 tick 最多一招）
-    if (martialUlt(state) && skillReady(4)) {
+    if (martialUlt(state) && skillReady(4) && state.mp >= mpCost(martialUlt(state))) {
       if (castSkill(4, { auto: true })) return;
     }
+    const _sks = heroSkills();
     for (let i = 0; i < 3; i++) {
-      if (skillReady(i)) {
+      if (skillReady(i) && _sks[i] && state.mp >= mpCost(_sks[i])) {
         castSkill(i, { auto: true });
         return;
       }
@@ -2235,7 +2328,7 @@
     huntTimer = setInterval(tickCombat, ms);
     if (!window.__skillCdUiTimer) {
       window.__skillCdUiTimer = setInterval(() => {
-        if (state) { renderSkillBar(); renderHeroStatus(); }
+        if (state) renderSkillBar();
       }, 250);
     }
     renderAll();
@@ -2493,6 +2586,7 @@
         if (lab) lab.textContent = i === 0 && !primary ? '等待開打' : '';
         const hp = $('mob-hp-' + i);
         if (hp) hp.style.width = '0%';
+        const hn0 = $('hpname-' + i); if (hn0) hn0.textContent = '';
         continue;
       }
       slot.classList.add('look-' + (mob.look || 'bandit'));
@@ -2518,6 +2612,16 @@
       if (lab) lab.textContent = (mob.isRival ? '名號·' : '') + mob.name;
       const hp = $('mob-hp-' + i);
       if (hp) hp.style.width = Math.max(0, (mob.hp / mob.maxHp) * 100) + '%';
+      const hbox = $('hpb-' + i);
+      if (hbox) {
+        hbox.classList.toggle('hpb-boss', !!mob.isRival);
+        hbox.classList.toggle('hpb-enemy', !mob.isRival);
+        const fr = $('hpf-' + i);
+        const want = 'assets/ui/hpframe_' + (mob.isRival ? 'boss' : 'enemy') + '.webp';
+        if (fr && fr.getAttribute('src') !== want) fr.setAttribute('src', want);
+        const hn = $('hpname-' + i);
+        if (hn) hn.textContent = mob.isRival ? mob.name : '';
+      }
     }
   }
 
@@ -2567,7 +2671,7 @@
     spawnSlash(!!isCrit, false, s);
   }
 
-  function fxEnemyAttack(kind, slot) {
+  function fxEnemyAttack(kind, slot, dmg) {
     const s = slot == null ? 0 : slot;
     pulseClass($('enemy-slot-' + s), 'attacking', 280);
     setSlotPose(s, 'attack', 300);
@@ -2575,7 +2679,7 @@
     if (kind !== 'miss' && kind !== 'block') setHeroPose('hurt', 300);
     if (kind === 'miss') spawnFloat('閃', 'miss enemy-hit');
     else if (kind === 'block') spawnFloat('化', 'miss enemy-hit');
-    else spawnFloat('-!', 'enemy-hit');
+    else spawnFloat(dmg ? '-' + dmg : '-!', 'enemy-hit' + (kind === 'heavy' ? ' hit-crit' : ''));
   }
 
   function fxMobDefeat(slot) {
@@ -2596,6 +2700,26 @@
     spawnFloat('破！', 'kill', s);
   }
 
+  function setBar(fill, pct) {
+    if (!fill) return;
+    const p = Math.max(0, Math.min(100, pct));
+    fill.style.width = p + '%';
+    const gh = fill.previousElementSibling;
+    if (gh && gh.classList.contains('hpb-ghost')) gh.style.width = p + '%';
+  }
+  function renderHeroVitals() {
+    const mh = heroMaxHp(state);
+    const pct = (state.hp / mh) * 100;
+    setBar($('hero-hp-fill'), pct);
+    const num = $('hero-hp-num');
+    if (num) num.textContent = isExhausted() ? '力竭' : Math.ceil(state.hp) + '/' + mh;
+    const hb = $('hpb-hero');
+    if (hb) hb.classList.toggle('low', pct < 30 && !isExhausted());
+    const mp = $('hero-mp-fill');
+    if (mp) mp.style.width = Math.min(100, (state.mp / heroMaxMp(state)) * 100) + '%';
+    const ex = $('hero-exhaust');
+    if (ex) ex.classList.toggle('hidden', !isExhausted());
+  }
   function renderHeroStatus() {
     const box = $('hero-status');
     if (!box || !state) return;
@@ -2606,11 +2730,14 @@
     if (now < (state.goldBodyUntil || 0)) chips.push('金身 ' + Math.ceil((state.goldBodyUntil - now) / 1000) + 's');
     if (state.skillSoftLeft > 0) chips.push('護體×' + state.skillSoftLeft);
     if (state.nextAtkBonus > 0) chips.push('蓄勢');
+    { const _f = martialFx(state); if (_f.opening && state.fightStartAt && now - state.fightStartAt < 3000) chips.push('先手'); }
     if (now < (state.defBuffUntil || 0)) chips.push('防↑');
     if (state.killStacks > 0) chips.push('殺氣×' + state.killStacks);
     if (state.stormStacks > 0 && now < (state.stormUntil || 0)) chips.push('疾風×' + state.stormStacks);
     $('hs-name').textContent = state.name + '  Lv.' + state.lv;
-    $('hs-stats').textContent = '攻 ' + stats.atk + '  防 ' + stats.def + '  速 ' + stats.spd;
+    ensureVitals();
+    $('hs-stats').textContent = '血 ' + Math.ceil(state.hp) + '/' + heroMaxHp(state) + '  攻 ' + stats.atk + '  防 ' + stats.def + '  速 ' + stats.spd;
+    renderHeroVitals();
     $('hs-exp').style.width = Math.min(100, (state.exp / need) * 100) + '%';
     $('hs-buffs').innerHTML = chips.length ? chips.map((c) => '<span class="hs-chip">' + escapeHtml(c) + '</span>').join('') : '<span class="hs-none">無狀態</span>';
   }
@@ -2622,8 +2749,15 @@
       const mob = state.mobs[i];
       const hp = $('mob-hp-' + i);
       if (!hp) continue;
-      if (!mob || mob.hp <= 0) hp.style.width = '0%';
-      else hp.style.width = Math.max(0, (mob.hp / mob.maxHp) * 100) + '%';
+      const num = $('hpn-' + i);
+      const box = $('hpb-' + i);
+      if (!mob || mob.hp <= 0) { setBar(hp, 0); if (num) num.textContent = ''; if (box) box.classList.remove('low'); }
+      else {
+        const pc = (mob.hp / mob.maxHp) * 100;
+        setBar(hp, pc);
+        if (num) num.textContent = Math.max(0, Math.ceil(mob.hp)) + '/' + mob.maxHp;
+        if (box) box.classList.toggle('low', pc < 30);
+      }
     }
     // 相容：若還有舊元素就不報錯
     const nameEl = $('mob-name');
@@ -2726,7 +2860,7 @@
         .map((i) => {
           const sk = skills[i];
           if (!sk && i === 4) {
-            return '<button type="button" class="skill-slot locked-slot" data-skill="4" disabled title="Lv.' + MARTIAL_ULT_LV + ' 解鎖絕學"><span class="sk-lock">🔒</span><span class="sk-name">Lv.' + MARTIAL_ULT_LV + '</span></button>';
+            return '<button type="button" class="skill-slot locked-slot" data-skill="4" disabled title="Lv.' + MARTIAL_ULT_LV + ' 解鎖絕學"><span class="sk-lock">🔒</span><span class="sk-name sk-lv">' + MARTIAL_ULT_LV + '</span></button>';
           }
           const label = sk ? (sk.short || sk.name) : short;
           const sub = sk ? '' : '<span class="sk-school">' + escapeHtml(short) + '</span>';
@@ -3239,6 +3373,8 @@
   function showGame() {
     $('screen-create').classList.add('hidden');
     $('screen-game').classList.remove('hidden');
+    ensureVitals();
+    if (!window.__vitalsTimer) window.__vitalsTimer = setInterval(vitalsTick, 250);
     renderAll();
     if (state.hunting) {
       state.hunting = false;
@@ -3459,6 +3595,7 @@
     if (!Array.isArray(saved.skillCd)) saved.skillCd = [0, 0, 0, 0, 0];
     while (saved.skillCd.length < 5) saved.skillCd.push(0);
     if (!saved.martial || typeof saved.martial !== 'object') saved.martial = { pick: {}, respec: 0 };
+    saved.hp = null; saved.mp = null; saved.exhaustUntil = 0; saved.lastHurtAt = 0;
     if (typeof saved.nextAtkBonus !== 'number') saved.nextAtkBonus = 0;
     if (typeof saved.skillSoftLeft !== 'number') saved.skillSoftLeft = 0;
     return saved;

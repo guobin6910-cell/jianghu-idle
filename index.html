@@ -106,7 +106,7 @@
           <div class="fighters-row iso-field">
             <div class="enemy-party" id="enemy-party">
               <div class="fighter enemy-side enemy-slot empty" id="enemy-slot-0" data-slot="0">
-                <div class="mob-hp-wrap"><div class="mob-hp-bar" id="mob-hp-0"></div></div>
+                <div class="hpb hpb-enemy" id="hpb-0"><div class="hpb-name" id="hpname-0"></div><div class="hpb-box"><div class="hpb-slot"><div class="hpb-ghost"></div><div class="hpb-fill" id="mob-hp-0"></div></div><img class="hpb-frame" id="hpf-0" src="assets/ui/hpframe_enemy.webp" alt="" onerror="this.style.display='none'"></div><div class="hpb-num" id="hpn-0"></div></div>
                 <div class="shadow"></div>
                 <div class="sprite">
                   <img class="combat-sprite" data-sprite src="assets/combat/sprites/enemy_drunk_idle.webp" alt="" draggable="false" />
@@ -114,7 +114,7 @@
                 <div class="fighter-label" data-label>等待開打</div>
               </div>
               <div class="fighter enemy-side enemy-slot empty" id="enemy-slot-1" data-slot="1">
-                <div class="mob-hp-wrap"><div class="mob-hp-bar" id="mob-hp-1"></div></div>
+                <div class="hpb hpb-enemy" id="hpb-1"><div class="hpb-name" id="hpname-1"></div><div class="hpb-box"><div class="hpb-slot"><div class="hpb-ghost"></div><div class="hpb-fill" id="mob-hp-1"></div></div><img class="hpb-frame" id="hpf-1" src="assets/ui/hpframe_enemy.webp" alt="" onerror="this.style.display='none'"></div><div class="hpb-num" id="hpn-1"></div></div>
                 <div class="shadow"></div>
                 <div class="sprite">
                   <img class="combat-sprite" data-sprite src="assets/combat/sprites/enemy_pirate_idle.webp" alt="" draggable="false" />
@@ -122,7 +122,7 @@
                 <div class="fighter-label" data-label></div>
               </div>
               <div class="fighter enemy-side enemy-slot empty" id="enemy-slot-2" data-slot="2">
-                <div class="mob-hp-wrap"><div class="mob-hp-bar" id="mob-hp-2"></div></div>
+                <div class="hpb hpb-enemy" id="hpb-2"><div class="hpb-name" id="hpname-2"></div><div class="hpb-box"><div class="hpb-slot"><div class="hpb-ghost"></div><div class="hpb-fill" id="mob-hp-2"></div></div><img class="hpb-frame" id="hpf-2" src="assets/ui/hpframe_enemy.webp" alt="" onerror="this.style.display='none'"></div><div class="hpb-num" id="hpn-2"></div></div>
                 <div class="shadow"></div>
                 <div class="sprite">
                   <img class="combat-sprite" data-sprite src="assets/combat/sprites/enemy_bandit_idle.webp" alt="" draggable="false" />
@@ -132,6 +132,10 @@
             </div>
 
             <div class="fighter hero-side" id="fighter-hero">
+              <div class="hero-exhaust hidden" id="hero-exhaust"><img src="assets/ui/exhausted.webp" alt="力竭" onerror="this.remove()"></div>
+              <div class="hpb hpb-player" id="hpb-hero"><div class="hpb-box"><div class="hpb-slot"><div class="hpb-ghost"></div><div class="hpb-fill" id="hero-hp-fill"></div></div>
+                <img class="hpb-frame" src="assets/ui/hpframe_player.webp" alt="" onerror="this.style.display='none'"></div>
+                <div class="hpb-mp"><div id="hero-mp-fill"></div></div><div class="hpb-num" id="hero-hp-num"></div></div>
               <div class="shadow"></div>
               <div class="sprite" id="hero-sprite">
                 <img class="combat-sprite hero-combat-sprite" id="hero-art" src="assets/combat/sprites/hero_idle.webp" alt="主角" draggable="false" />

@@ -1620,3 +1620,62 @@ body.modal-open { overflow: hidden; }
   .hero-status .hs-top { font-size: 12px; }
   .hud-name-row strong { max-width: 80px; }
 }
+
+/* 2026-10-01 血條（美術外框 + CSS 殘影／低血閃光） */
+.enemy-slot.empty .hpb { visibility: hidden; }
+.hpb { width: 84px; display: flex; flex-direction: column; align-items: center; margin-bottom: 2px; pointer-events: none; }
+.hpb-boss { width: 116px; }
+.hpb-box { position: relative; width: 100%; }
+.hpb-frame { display: block; width: 100%; height: auto; position: relative; z-index: 2; }
+.hpb-slot { position: absolute; left: 5%; width: 90%; top: 32%; height: 36%; background: #1a0a0a; overflow: hidden; border-radius: 2px; }
+.hpb-boss .hpb-slot { left: 8.125%; width: 83.54%; top: 34.4%; height: 27.9%; }
+.hpb-ghost { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: #fff; opacity: 0.85; transition: width 0.8s ease 0.35s; }
+.hpb-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transition: width 0.15s; }
+.hpb-player .hpb-fill { background: linear-gradient(180deg, #ff6a58, #d02a22); }
+.hpb-enemy .hpb-fill { background: linear-gradient(180deg, #a02a2a, #5c0f0f); }
+.hpb-boss .hpb-fill { background: linear-gradient(180deg, #b82020, #5a0808); }
+.hpb-num { font-size: 10px; line-height: 1.1; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; white-space: nowrap; margin-top: 1px; }
+.hpb-name { font-size: 11px; font-weight: 800; color: #ffd986; text-shadow: 0 1px 2px #000, 0 0 3px #000; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hpb-name:empty { display: none; }
+.hpb-mp { width: 90%; height: 3px; background: #0a1220; border-radius: 2px; margin-top: 1px; overflow: hidden; }
+.hpb-mp div { height: 100%; width: 100%; background: #4aa8ff; transition: width 0.2s; }
+.hpb.low .hpb-box { animation: hp-low 0.7s ease-in-out infinite alternate; }
+.hpb.low .hpb-fill { filter: brightness(1.35); }
+@keyframes hp-low { from { box-shadow: 0 0 0 rgba(255,40,40,0); } to { box-shadow: 0 0 10px 3px rgba(255,40,40,0.95); } }
+.hero-exhaust { position: absolute; left: 50%; top: -14px; transform: translateX(-50%); z-index: 7; width: 112px; pointer-events: none; }
+.hero-exhaust img { width: 100%; height: auto; display: block; }
+.hero-exhaust.hidden { display: none; }
+.dmg-float { color: #ff5a4a; }
+.dmg-float.crit { color: #ffd23a; -webkit-text-stroke: 1px #000; }
+.dmg-float.enemy-hit { left: 68%; top: 38%; color: #ff4a3a; font-size: 20px; -webkit-text-stroke: 0.5px #000; }
+.dmg-float.enemy-hit.hit-crit { color: #ffd23a; font-size: 32px; -webkit-text-stroke: 1px #000; }
+.dmg-float.heal { top: 38%; }
+@media (max-width: 420px) { .hpb { width: 68px; } .hpb-boss { width: 94px; } .hpb-num { font-size: 9px; } }
+
+/* 2026-10-01 小螢幕緊湊化 */
+.martial-node.taken { text-decoration: none; opacity: 0.55; }
+.martial-node.taken strong { text-decoration: line-through; }
+.martial-node.taken span { opacity: 1; }
+.skill-slot.locked-slot .sk-name { overflow: visible; text-overflow: clip; }
+@media (max-width: 420px) {
+  .topbar.hud-bar { flex-wrap: wrap; padding: 6px 8px; gap: 4px 8px; }
+  .hud-avatar { width: 34px; height: 34px; font-size: 15px; }
+  .hud-left { gap: 6px; flex: 1 1 100%; }
+  .hud-name-row { flex-wrap: nowrap; gap: 6px; }
+  .hud-name-row strong { max-width: 130px; }
+  .hud-subrow { flex-wrap: nowrap; gap: 8px; white-space: nowrap; }
+  .hud-subrow #hero-meta { overflow: hidden; text-overflow: ellipsis; max-width: 150px; display: inline-block; }
+  .currencies { flex: 1 1 100%; justify-content: flex-start; }
+  .skill-slots { gap: 2px; }
+  .skill-slot.has-ico .sk-ico { max-width: 40px; }
+  .battle-stage { min-height: 320px; padding-top: 40px; padding-bottom: 70px; }
+  .eq-row, .bag-item { flex-wrap: wrap; }
+  .bag-item > div:first-child { flex: 1 1 100%; min-width: 0; }
+  .bag-item > div:last-child { flex: 1 1 100%; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+  .bag-item .btn, .eq-row .btn { padding: 4px 8px; }
+}
+@media (max-width: 340px) {
+  .skill-bar { gap: 2px; }
+  .skill-auto, .skill-bag { width: 34px; min-width: 34px; font-size: 9px; }
+  .skill-slot.has-ico .sk-name { font-size: 10px; }
+}
