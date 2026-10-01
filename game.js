@@ -266,8 +266,8 @@
     return Math.max(1500, Math.floor((sk.cd || 5000) * (1 + f)));
   }
 
-  function calcPower(stats) {
-    return Math.floor((stats.atk || 0) * 2 + (stats.def || 0) + (stats.spd || 0) * 3);
+  function calcPower(stats, hp) {
+    return Math.floor((stats.atk || 0) * 4 + (stats.def || 0) * 3 + (stats.spd || 0) * 5 + (hp || 0) / 5);
   }
 
   const QUALITY_META = {
@@ -1080,17 +1080,23 @@
   }
 
   const REALMS = [
-    [1, '初入江湖'], [10, '後天境'], [20, '先天境'], [30, '宗師境'], [40, '大宗師'], [50, '武林名宿'],
+    [1, '初窺門徑'], [10, '後天境'], [20, '先天境'], [30, '宗師境'], [40, '大宗師'], [50, '武林名宿'],
   ];
-  /** 境界：依等級分段，十級內再分小成／中成／大成 */
+  const BREAKTHROUGH_TEXT = {
+    10: '氣走小周天，出手總算有了章法。',
+    20: '一招一式不再靠蠻力，旁人開始記住你的名字。',
+    30: '刀劍入手如臂使指，這一關，多少人卡了十年。',
+    40: '心靜，招自然。你已不看對手，只聽風聲。',
+    50: '天地一線開。從今天起，你有了壓箱底的一招。',
+  };
+  /** 境界：每境界十級內分 初成（前3）／小成（中4）／圓滿（後3）；Lv.1~9 與 Lv.50 以上固定名稱 */
   function realmName(lv) {
     let idx = 0;
     for (let i = 0; i < REALMS.length; i++) if (lv >= REALMS[i][0]) idx = i;
     const name = REALMS[idx][1];
-    if (idx === 0) return name;
+    if (idx === 0 || idx === REALMS.length - 1) return name;
     const into = lv - REALMS[idx][0];
-    if (idx === REALMS.length - 1) return name;
-    return name + '・' + (into < 4 ? '小成' : into < 7 ? '中成' : '大成');
+    return name + '・' + (into < 3 ? '初成' : into < 7 ? '小成' : '圓滿');
   }
 
   function rand(a, b) {
@@ -2076,10 +2082,13 @@
       modalOpen = true;
       const root = ensureModalRoot();
       const gained = toLv - fromLv;
+      let bt = 0;
+      Object.keys(BREAKTHROUGH_TEXT).forEach((k) => { if (fromLv < +k && toLv >= +k) bt = Math.max(bt, +k); });
       root.innerHTML =
         '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
         '<div class="modal-card level-modal">' +
-        '<h3>恭喜升級</h3>' +
+        '<h3>' + (bt ? '突破！' : '恭喜升級') + '</h3>' +
+        (bt ? '<p style="text-align:center;color:#ffd986;margin:4px 0"><b>' + realmName(toLv) + '</b><br/>' + BREAKTHROUGH_TEXT[bt] + '</p>' : '') +
         '<p class="muted" style="text-align:center">Lv.' + fromLv + ' → Lv.' + toLv +
         (gained > 1 ? '（連升 ' + gained + ' 級）' : '') + '</p>' +
         '<div class="level-delta">' +
@@ -2761,7 +2770,7 @@
     if (now < (state.defBuffUntil || 0)) chips.push('防↑');
     if (state.killStacks > 0) chips.push('殺氣×' + state.killStacks);
     if (state.stormStacks > 0 && now < (state.stormUntil || 0)) chips.push('疾風×' + state.stormStacks);
-    $('hs-name').textContent = state.name + '  Lv.' + state.lv;
+    $('hs-name').textContent = state.name + '  Lv.' + state.lv + '・' + realmName(state.lv);
     ensureVitals();
     $('hs-stats').textContent = '血 ' + Math.ceil(state.hp) + '/' + heroMaxHp(state) + '  攻 ' + stats.atk + '  防 ' + stats.def + '  速 ' + stats.spd;
     renderHeroVitals();
@@ -2819,7 +2828,7 @@
     if (lvEl) lvEl.textContent = 'Lv.' + state.lv;
     $('hero-meta').textContent = (school ? school.name : '') + '・' + realmName(state.lv);
     const powerEl = $('stat-power');
-    if (powerEl) powerEl.textContent = String(calcPower(stats));
+    if (powerEl) powerEl.textContent = String(calcPower(stats, heroMaxHp(state)));
     const av = $('hud-avatar');
     if (av) {
       const look = state.look || 'a';
