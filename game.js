@@ -2149,7 +2149,7 @@
       ghost.alt = '';
       ghost.draggable = false;
       applySprite(ghost, spr.dataset.kind, 'down');
-      enemyF.appendChild(ghost);
+      (spr.parentElement || enemyF).appendChild(ghost);
       setTimeout(() => ghost.remove(), 700);
     }
     spawnFloat('破！', 'kill', s);
