@@ -1275,6 +1275,7 @@
       state.goldBodyUntil = 0;
       pushLog('你力竭倒地，調息 3 秒後起身（不損失任何東西）。', 'rival');
       addRumor('exhaust');
+      stOnLose();
       setHeroPose('hurt', EXHAUST_MS);
       renderStage();
     }
@@ -1392,6 +1393,7 @@
       skillCd: [0, 0, 0, 0, 0],
       nextAtkBonus: 0,
       skillSoftLeft: 0,
+      story: stNorm({}),
     };
   }
 
@@ -1510,6 +1512,7 @@
       syncPrimaryMob();
       return;
     }
+    if (stBattleOn() && stSpawnBattleMobs()) return;
     const zone = currentZone();
     const scale = 1 + Math.max(0, state.lv - zone.minLv) * 0.05;
     const now = Date.now();
@@ -1745,6 +1748,8 @@
     if (isExhausted()) return;
     tryTriggerEvent(Date.now());
     if (modalOpen) return;
+    stMaybeEvent(Date.now());
+    if (modalOpen) return;
     ensureMobs();
     const stats = buffedStats(calcStats(state));
     const mob = syncPrimaryMob();
@@ -1865,6 +1870,7 @@
       state.mobs = state.mobs.filter((m) => m && m.uid !== mob.uid && m.hp > 0);
     }
     syncPrimaryMob();
+    stOnKill(mob);
     renderCombatBars();
     renderHeroStatus();
     renderStage();
@@ -3444,7 +3450,7 @@
     const q = ensureQuests();
     const dot = questClaimable();
     if (tab) tab.classList.toggle('has-dot', dot > 0);
-    const sig = [questSub, q.day, state.lv, (state.rumors || []).length, q.bonus ? 1 : 0, DAILY_QUESTS.map((d) => Math.min(d.goal, q.prog[d.id] || 0) + (q.claimed[d.id] ? 'c' : '')).join(','), achSig()].join('|');
+    const sig = [questSub, q.day, state.lv, (state.rumors || []).length, q.bonus ? 1 : 0, DAILY_QUESTS.map((d) => Math.min(d.goal, q.prog[d.id] || 0) + (q.claimed[d.id] ? 'c' : '')).join(','), achSig(), stSig()].join('|');
     if (!force && sig === questSig) {
       const t = el.querySelector('#quest-reset');
       if (t) t.textContent = questResetText();
@@ -3472,6 +3478,8 @@
         '<div class="quest-row bonus' + (q.bonus ? ' claimed' : '') + '">' + uiIco('quest_alldone', 'q') + (q.bonus ? uiIco('badge_done', 'done') : '') + '<div class="quest-main"><strong>〈' + DAILY_BONUS.name + '〉</strong> <span class="muted">' + DAILY_BONUS.desc + '</span>' +
         '<div class="quest-meta"><span class="muted">獎勵：' + br.silver + ' 銀兩 + ' + br.exp + ' 經驗</span></div></div>' +
         '<button type="button" class="btn' + (allOk && !q.bonus ? ' primary' : '') + '" data-claim="bonus"' + (allOk && !q.bonus ? '' : ' disabled') + '>' + (q.bonus ? '已領取' : '領取') + '</button></div>';
+    } else if (questSub === 'story') {
+      body = stQuestHtml();
     } else if (questSub === 'rumor') {
       body = renderRumorBody();
     } else {
@@ -3479,7 +3487,8 @@
     }
     el.innerHTML = '<div class="subtabs"><button type="button" class="subtab' + (questSub === 'daily' ? ' active' : '') + '" data-sub="daily">' + uiIco('tab_quest') + '每日任務</button>' +
       '<button type="button" class="subtab' + (questSub === 'ach' ? ' active' : '') + '" data-sub="ach">' + uiIco('tab_achieve') + '成就</button>' +
-      '<button type="button" class="subtab' + (questSub === 'rumor' ? ' active' : '') + '" data-sub="rumor">' + uiIco('tab_rumor') + '傳聞錄</button></div>' + body;
+      '<button type="button" class="subtab' + (questSub === 'rumor' ? ' active' : '') + '" data-sub="rumor">' + uiIco('tab_rumor') + '傳聞錄</button>' +
+      '<button type="button" class="subtab' + (questSub === 'story' ? ' active' : '') + '" data-sub="story">卷宗</button></div>' + body;
     el.querySelectorAll('[data-sub]').forEach((b) => b.addEventListener('click', () => {
       if (Audio()) Audio().sfx('click');
       questSub = b.getAttribute('data-sub');
@@ -3606,8 +3615,7 @@
     return '<div class="quest-head"><span class="muted">已領取 ' + done + ' / ' + ACHS.length + '</span></div>' + rows;
   }
 
-  function renderLore() {
-    const el = $('panel-lore');
+  function loreOldHtml() {
     const rivalLore = ZONES.map((z) => {
       const rival = ZONE_RIVALS[z.id];
       if (!rival) return '';
@@ -3653,8 +3661,7 @@
       })
       .join('');
 
-    el.innerHTML =
-      '<h3>江湖閒談</h3><div class="lore">' +
+    return '<div class="lore-old">' +
       LORE.map(
         (x) => '<p><strong>' + escapeHtml(x.title) + '</strong><br/>' + escapeHtml(x.body) + '</p>'
       ).join('') +
@@ -3664,6 +3671,459 @@
       (events || '<p class="muted">尚無事件紀錄。</p>') +
       '<p class="muted">內容為原創閑話，致敬武俠氛圍，不引用小說原文。</p></div>';
   }
+  // ===================== 章回劇情系統（資料見 story-data.js） =====================
+  const ST = window.JH_STORY || null;
+  const WHO_NAME = { qinghe: '沈青河', old: '獨臂老人', woman: '白衣女子', bf: '黑衣人' };
+  function stNorm(s) {
+    if (!s || typeof s !== 'object') s = {};
+    ['flags', 'rel', 'did', 'traits', 'evDone'].forEach((k) => { if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = {}; });
+    ['completed', 'unlocked', 'history', 'intel', 'items', 'people'].forEach((k) => { if (!Array.isArray(s[k])) s[k] = []; });
+    if (typeof s.chapter !== 'number') s.chapter = 1;
+    if (!s.unlocked.length) s.unlocked = [1];
+    if (typeof s.cur !== 'string') s.cur = null;
+    if (typeof s.entered !== 'string') s.entered = '';
+    if (typeof s.phase !== 'string') s.phase = '';
+    if (typeof s.evCool !== 'number') s.evCool = 0;
+    if (typeof s.waitUntil !== 'number') s.waitUntil = 0;
+    if (typeof s.offlineEvents !== 'number') s.offlineEvents = 0;
+    if (!s.battle || typeof s.battle !== 'object') s.battle = null;
+    s.open = !!s.open;
+    s.started = !!s.started;
+    s.stopAfter = !!s.stopAfter;
+    return s;
+  }
+  function stEnsure() {
+    if (!state || !ST) return null;
+    state.story = stNorm(state.story);
+    return state.story;
+  }
+  function stBattleOn() { return !!(state && state.story && state.story.battle); }
+  function stCtx() {
+    const s = stEnsure();
+    return {
+      f: (k) => !!s.flags[k],
+      r: (k) => s.rel[k] || 0,
+      did: (k) => !!s.did[k],
+      has: (k) => s.intel.indexOf(k) >= 0,
+      t: (k) => s.traits[k] || 0,
+      n: Object.keys(s.did).length,
+    };
+  }
+  function stRelWord(v) {
+    if (v <= -60) return '死敵';
+    if (v <= -20) return '敵視';
+    if (v >= 60) return '親近';
+    if (v >= 30) return '信任';
+    if (v >= 10) return '略有好感';
+    return '陌生';
+  }
+  function stGrantGear(key) {
+    const g = ST.GEAR[key];
+    if (!g) return;
+    const has = state.bag.concat(Object.keys(state.equip).map((k) => state.equip[k])).some((x) => x && x.id === g.id);
+    if (has) return;
+    state.bag.push({
+      uid: g.id + '-' + Date.now() + '-' + Math.random().toString(16).slice(2, 6),
+      id: g.id, name: g.name, slot: g.slot, atk: g.atk || 0, def: g.def || 0, spd: g.spd || 0,
+      quality: 'liang', keep: true, fromRival: false, enh: 0, affixes: [], story: true,
+    });
+    pushLog('得到劇情裝備「' + g.name + '」', 'loot q-liang');
+  }
+  function stApply(e) {
+    if (!e) return;
+    const s = stEnsure();
+    (e.f || []).forEach((k) => { s.flags[k] = true; });
+    Object.keys(e.r || {}).forEach((k) => { s.rel[k] = Math.max(-100, Math.min(100, (s.rel[k] || 0) + e.r[k] * 10)); });
+    Object.keys(e.t || {}).forEach((k) => { s.traits[k] = (s.traits[k] || 0) + e.t[k]; });
+    (e.intel || []).forEach((k) => {
+      if (s.intel.indexOf(k) < 0) { s.intel.push(k); const it = ST.INTEL[k]; if (it) pushEventLog('得知情報：' + it[0], 'story'); }
+    });
+    (e.item || []).forEach((k) => { if (s.items.indexOf(k) < 0) s.items.push(k); });
+    (e.gear || []).forEach(stGrantGear);
+    (e.people || []).forEach((k) => { if (s.people.indexOf(k) < 0) s.people.push(k); });
+    if (e.silver) state.silver = Math.max(0, state.silver + e.silver);
+    if (e.chivalry) state.chivalry += e.chivalry;
+    if (e.heal) { ensureVitals(); state.hp = heroMaxHp(state); }
+    if (e.phase) {
+      s.phase = e.phase;
+      if (e.phase === 'waiting') s.waitUntil = state.kills + 30;
+    }
+    if (e.complete && s.completed.indexOf(e.complete) < 0) s.completed.push(e.complete);
+  }
+  function stHist(place, text) {
+    const s = stEnsure();
+    s.history.push({ t: Date.now(), ch: s.chapter, place: place || '', text });
+    if (s.history.length > 80) s.history = s.history.slice(-80);
+  }
+  const stRes = (v, c) => (typeof v === 'function' ? v(c) : v);
+  const stSfx = () => { if (Audio()) Audio().sfx('click'); };
+
+  function stModal(fn) {
+    enqueueModal(() => {
+      if (modalOpen) { modalQueue.push(() => stModal(fn)); return; }
+      modalOpen = true;
+      document.body.classList.add('modal-open');
+      fn();
+    });
+  }
+  function stPaint(inner, bind) {
+    const root = ensureModalRoot();
+    root.innerHTML = '<div class="modal-backdrop st-backdrop" role="dialog" aria-modal="true"><div class="modal-card st-card">' + inner + '</div></div>';
+    const card = root.querySelector('.st-card');
+    if (bind) bind(card);
+  }
+  function stSceneHtml(bg, place, img) {
+    if (!bg && !place && !img) return '';
+    return '<div class="st-scene' + (bg ? '' : ' st-nobg') + '">' +
+      (bg ? '<div class="st-bg" style="background-image:url(assets/story/' + bg + '.webp)"></div>' : '') +
+      (place ? '<span class="st-place">' + escapeHtml(place) + '</span>' : '') +
+      (img ? '<img class="st-portrait" src="assets/story/' + img + '.webp" alt="" onerror="this.remove()">' : '') + '</div>';
+  }
+  function stBtns(btns) {
+    return btns.map((b, k) => '<button type="button" class="btn ' + (b.cls || 'primary') + '" data-b="' + k + '"' + (b.dis ? ' disabled' : '') + '>' + escapeHtml(b.label) + '</button>').join('');
+  }
+  function stBindBtns(card, btns) {
+    card.querySelectorAll('[data-b]').forEach((el) => {
+      el.addEventListener('click', () => { stSfx(); const b = btns[+el.getAttribute('data-b')]; if (b && b.fn) b.fn(); });
+    });
+  }
+  function stDraw(m, i) {
+    const pg = m.pages[i];
+    const p = typeof pg === 'string' ? { t: pg } : pg;
+    const last = i >= m.pages.length - 1;
+    const img = p.who && ST.PORTRAIT[p.who] ? ST.PORTRAIT[p.who] : '';
+    const btns = last ? m.buttons : [{ label: '繼續', fn: () => stDraw(m, i + 1) }];
+    const inner = stSceneHtml(m.bg, m.place, img) +
+      '<div class="st-body">' + (p.who && WHO_NAME[p.who] ? '<div class="st-who">' + WHO_NAME[p.who] + '</div>' : '') +
+      '<div class="st-text' + (m.center ? ' st-center' : '') + '">' + escapeHtml(p.t || '') + '</div></div>' +
+      '<div class="st-foot">' + (m.pages.length > 1 ? '<span class="st-pg">' + (i + 1) + ' / ' + m.pages.length + '</span>' : '') + stBtns(btns) + '</div>';
+    stPaint(inner, (card) => stBindBtns(card, btns));
+  }
+  function stClose() {
+    const s = stEnsure();
+    closeModal();
+    if (s && s.stopAfter && !s.cur && !s.battle) {
+      s.stopAfter = false;
+      if (state.hunting) stopHunt();
+    }
+    save();
+    renderAll();
+  }
+  function stResume() {
+    const s = stEnsure();
+    if (!s || !s.cur || s.battle) return;
+    stModal(() => stGoto(s.cur));
+  }
+  function stBegin() {
+    const s = stEnsure();
+    s.started = true; s.cur = 'prologue'; s.entered = ''; s.open = true;
+    save();
+    stResume();
+  }
+  function stGoto(id) {
+    const s = stEnsure();
+    if (!id || id === '__close') { s.cur = null; s.open = false; stClose(); return; }
+    s.cur = id; s.open = true;
+    if (id === 'zx_hub') { s.entered = id; save(); stDrawHub(); return; }
+    const n = ST.NODES[id];
+    if (!n) { s.cur = null; stClose(); return; }
+    if (s.entered !== id) { stApply(n.e); s.entered = id; }
+    save();
+    const c = stCtx();
+    const pages = (typeof n.pages === 'function' ? n.pages(c) : n.pages).concat(n.tail || []);
+    let buttons;
+    if (n.battle) {
+      buttons = [{ label: n.battle.label || '戰鬥開始', fn: () => stStartBattle(n) }];
+    } else if (n.choices) {
+      buttons = n.choices.filter((ch) => !ch.show || ch.show(c)).map((ch) => ({ label: ch.label, fn: () => stChoose(n, ch) }));
+    } else {
+      const nx = typeof n.next === 'function' ? n.next(c) : n.next;
+      buttons = [{ label: '繼續', fn: () => stGoto(nx) }];
+    }
+    stDraw({ bg: n.bg, place: n.place, center: n.center, pages, buttons }, 0);
+  }
+  function stChoose(n, ch) {
+    const s = stEnsure();
+    const c0 = stCtx();
+    const e = ch.eFn ? ch.eFn(c0) : ch.e;
+    const res = ch.resFn ? ch.resFn(c0) : stRes(ch.res, c0);
+    stApply(e);
+    stHist(n.place, n.place ? n.place + '：' + ch.label : ch.label);
+    const c = stCtx();
+    const nx = ch.next !== undefined ? (typeof ch.next === 'function' ? ch.next(c) : ch.next) : (typeof n.next === 'function' ? n.next(c) : n.next);
+    s.cur = (!nx || nx === '__close') ? null : nx;
+    save();
+    if (res && res.length) {
+      stDraw({ bg: n.bg, place: n.place, pages: res, buttons: [{ label: '繼續', fn: () => stGoto(nx) }] }, 0);
+    } else stGoto(nx);
+  }
+
+  // ---- 戰鬥節點（沿用既有自動戰鬥） ----
+  function stStartBattle(n) {
+    const s = stEnsure();
+    s.battle = { count: n.battle.count, left: n.battle.count, name: n.battle.name, win: n.battle.win, lose: n.battle.lose };
+    s.cur = null; s.open = false;
+    const was = !!state.hunting;
+    s.stopAfter = !was;
+    save();
+    closeModal();
+    state.mobs = []; state.mob = null;
+    if (!was) {
+      startHunt();
+      if (!state.hunting) { state.zoneId = 'inn'; startHunt(); }
+    } else ensureMobs();
+    pushLog('【劇情】' + n.battle.name + '攔住了去路！', 'rival');
+    renderAll();
+    save();
+  }
+  function stSpawnBattleMobs() {
+    const s = state && state.story;
+    if (!s || !s.battle || s.battle.left <= 0) return false;
+    const zone = currentZone();
+    const k = zone.mobs.length;
+    const avg = zone.mobs.reduce((a, m) => ({ hp: a.hp + m.hp, atk: a.atk + m.atk, def: a.def + m.def, exp: a.exp + m.exp, s0: a.s0 + m.silver[0], s1: a.s1 + m.silver[1] }), { hp: 0, atk: 0, def: 0, exp: 0, s0: 0, s1: 0 });
+    const base = { name: s.battle.name, hp: avg.hp / k, atk: avg.atk / k * 1.1, def: avg.def / k, exp: avg.exp / k * 1.5, silver: [Math.floor(avg.s0 / k), Math.floor(avg.s1 / k) + 3] };
+    const scale = (1 + Math.max(0, state.lv - zone.minLv) * 0.05) * 0.75;
+    const pack = [];
+    const cnt = Math.min(3, s.battle.left);
+    for (let i = 0; i < cnt; i++) {
+      const m = buildMobFromBase(base, scale, { zoneId: zone.id, glyph: '羽', look: 'bandit', desc: '黑羽盟的追兵。' });
+      m.uid += 's' + i;
+      m.storyBattle = true;
+      pack.push(m);
+    }
+    state.mobs = pack;
+    syncPrimaryMob();
+    return true;
+  }
+  function stOnKill(mob) {
+    const s = stEnsure();
+    if (!s) return;
+    if (mob && mob.storyBattle && s.battle) {
+      s.battle.left -= 1;
+      if (s.battle.left <= 0) {
+        s.cur = s.battle.win; s.open = true; s.entered = ''; s.battle = null;
+        save();
+        setTimeout(stResume, 900);
+      }
+      return;
+    }
+    stCheck();
+  }
+  function stOnLose() {
+    const s = stEnsure();
+    if (!s || !s.battle) return;
+    s.cur = s.battle.lose; s.open = true; s.entered = ''; s.battle = null;
+    save();
+    setTimeout(stResume, 1200);
+  }
+  // 三日之期（以擊敗數計）到了 → 自動帶出醉仙樓
+  function stCheck() {
+    const s = stEnsure();
+    if (!s || s.cur || s.battle || s.phase !== 'waiting') return;
+    if (state.kills < s.waitUntil) return;
+    s.cur = 'zx_enter'; s.open = true; s.entered = '';
+    pushEventLog('三日之期已到，醉仙樓之約。', 'story');
+    save();
+    setTimeout(stResume, 700);
+  }
+
+  // ---- 醉仙樓 hub ----
+  let stArea = '一樓';
+  function stDrawHub(area) {
+    const s = stEnsure();
+    if (area) stArea = area;
+    const c = stCtx();
+    const acts = ST.ZX_ACTIONS.filter((a) => a.area === stArea);
+    const need = 3;
+    const ready = c.n >= need;
+    const btns = [
+      { label: ready ? '赴約（後院）' : '再留意幾處（' + c.n + ' / ' + need + '）', fn: () => stGoto('qh_meet'), dis: !ready },
+      { label: '先離開', cls: 'ghost', fn: () => { s.open = false; save(); stClose(); } },
+    ];
+    const inner = stSceneHtml('scene_zuixian', '醉仙樓', '') +
+      '<div class="st-body"><div class="st-hub-tabs">' + ST.ZX_AREAS.map((a) => '<button type="button" class="subtab' + (a === stArea ? ' active' : '') + '" data-area="' + a + '">' + a + '</button>').join('') + '</div>' +
+      '<div class="st-acts">' + acts.map((a) => '<button type="button" class="btn st-act' + (s.did[a.id] ? ' seen' : '') + '" data-act="' + a.id + '">' + (s.did[a.id] ? '✓ ' : '') + escapeHtml(a.label) + '</button>').join('') + '</div>' +
+      '<div class="muted st-hint">' + (ready ? '你已摸清不少線索，也可以隨時赴約。' : '先在樓裡走走看看，至少留意三處再赴約。') + '</div></div>' +
+      '<div class="st-foot">' + stBtns(btns) + '</div>';
+    stPaint(inner, (card) => {
+      stBindBtns(card, btns);
+      card.querySelectorAll('[data-area]').forEach((b) => b.addEventListener('click', () => { stSfx(); stDrawHub(b.getAttribute('data-area')); }));
+      card.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => { stSfx(); stDoAction(b.getAttribute('data-act')); }));
+    });
+  }
+  function stDoAction(id) {
+    const s = stEnsure();
+    const a = ST.ZX_ACTIONS.find((x) => x.id === id);
+    if (!a) return;
+    const c0 = stCtx();
+    const back = [{ label: '返回', fn: () => stDrawHub() }];
+    if (a.cost && !s.did[id] && state.silver < a.cost) {
+      stDraw({ bg: 'scene_zuixian', place: '醉仙樓・' + a.area, pages: ['你摸了摸錢袋，銀兩不夠。'], buttons: back }, 0);
+      return;
+    }
+    const pages = typeof a.pages === 'function' ? a.pages(c0) : a.pages;
+    if (!s.did[id]) {
+      const e = a.eFn ? a.eFn(c0) : a.e;
+      stApply(e);
+      s.did[id] = true;
+      stHist('醉仙樓', '醉仙樓・' + a.area + '：' + a.label.replace(/（.*?）/, ''));
+      save();
+    }
+    stDraw({ bg: 'scene_zuixian', place: '醉仙樓・' + a.area, pages, buttons: back }, 0);
+  }
+
+  // ---- 掛機江湖事件 ----
+  function stMaybeEvent(now) {
+    const s = stEnsure();
+    if (!s || !s.flags.qh_leave_done || s.battle || modalOpen) return;
+    if (!s.evCool) { s.evCool = now + 4 * 60000; return; }
+    if (now < s.evCool) return;
+    if (Math.random() > 0.03) return;
+    const c = stCtx();
+    const pool = ST.EVENTS.filter((ev) => (ev.id === 'ev_fight' || !s.evDone[ev.id]) && ev.when(c));
+    if (!pool.length) { s.evCool = now + 5 * 60000; return; }
+    s.evCool = now + (12 + Math.random() * 10) * 60000;
+    stOpenEvent(pick(pool));
+  }
+  function stOpenEvent(ev) {
+    const s = stEnsure();
+    stModal(() => {
+      const c = stCtx();
+      const pages = typeof ev.pages === 'function' ? ev.pages(c) : ev.pages;
+      const btns = ev.choices.map((ch) => ({
+        label: ch.label,
+        cls: 'primary',
+        fn: () => {
+          const c1 = stCtx();
+          const e = ch.eFn ? ch.eFn(c1) : ch.e;
+          const res = stRes(ch.res, c1);
+          stApply(e);
+          s.evDone[ev.id] = true;
+          stHist('江湖事件', ev.title + '：' + ch.label);
+          pushEventLog('江湖事件「' + ev.title + '」：' + ch.label, 'story');
+          save();
+          stDraw({ place: ev.title, pages: [res || '你繼續趕路。'], buttons: [{ label: '收下', fn: stClose }] }, 0);
+        },
+      }));
+      stDraw({ place: '江湖事件・' + ev.title, pages: pages || [''], buttons: btns }, 0);
+    });
+  }
+  function stOffline(usedMs) {
+    const s = stEnsure();
+    if (!s || !s.flags.qh_leave_done || usedMs < 20 * 60000) return null;
+    const n = Math.min(6, Math.floor(usedMs / 3600000) + 1);
+    const pool = ST.OFFLINE_LINES.slice();
+    const lines = [];
+    for (let i = 0; i < Math.min(3, n) && pool.length; i++) lines.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    s.offlineEvents += n;
+    lines.forEach((l) => pushEventLog(l, 'story'));
+    return { n, lines };
+  }
+
+  // ---- 介面：江湖閒談 / 卷宗 ----
+  let loreSub = 'now';
+  function stLeftKills() {
+    const s = stEnsure();
+    return Math.max(0, s.waitUntil - state.kills);
+  }
+  function stNowHtml() {
+    const s = stEnsure();
+    const ch = ST.CHAPTERS[s.chapter];
+    let status = '';
+    let act = '';
+    if (s.battle) status = '眼前正有一場惡戰，先打完再說。';
+    else if (s.cur) { status = '故事停在半途，繼續吧。'; act = '<button type="button" class="btn primary full" data-st="resume">繼續故事</button>'; }
+    else if (!s.started && !s.flags.qh_leave_done) { status = '一段江湖故事正等著你。'; act = '<button type="button" class="btn primary full" data-st="begin">踏入江湖（序章）</button>'; }
+    else if (s.phase === 'waiting') status = '「三日後，醉仙樓。」還需擊敗 ' + stLeftKills() + ' 名對手，約定之日就到了。';
+    else if (s.phase === 'heifeng') { status = '黑風嶺就在鎮外，隨時能去看看。'; act = '<button type="button" class="btn primary full" data-st="hf">前往黑風嶺</button>'; }
+    else if (s.phase === 'done') status = '第一章已完。第二章《洛陽舊事》尚在路上。';
+    else status = '江湖暫時平靜。';
+    const recent = (state.eventLog || []).slice(0, 5).map((x) => '<div class="event-line">' + escapeHtml(x.msg) + '</div>').join('');
+    return '<div class="st-now"><img class="st-now-ico" src="assets/story/icon_juanzong.webp" alt="" onerror="this.remove()"><div><strong>' + escapeHtml(ch.title) + '</strong><br/><span class="muted">' + escapeHtml(ch.sub) + '</span></div></div>' +
+      '<p class="st-status">' + status + '</p>' + act +
+      (s.offlineEvents ? '<p class="muted">離線期間，江湖共發生過 ' + s.offlineEvents + ' 件事。</p>' : '') +
+      '<h4 class="st-h">近日江湖</h4>' + (recent || '<p class="muted">尚無事件。</p>');
+  }
+  function stPeopleHtml() {
+    const s = stEnsure();
+    if (!s.people.length) return '<p class="muted">還沒遇見值得記下的人。</p>';
+    return s.people.map((k) => {
+      const p = ST.PEOPLE[k];
+      if (!p) return '';
+      const v = s.rel[k] || 0;
+      return '<div class="st-person"><img src="assets/story/' + p.img + '.webp" alt="" onerror="this.remove()"><div><strong>' + escapeHtml(p.name) + '</strong> <span class="st-rel r' + (v >= 10 ? 'pos' : v <= -20 ? 'neg' : 'neu') + '">' + stRelWord(v) + '</span><br/><span class="muted">' + escapeHtml(p.desc) + '</span></div></div>';
+    }).join('');
+  }
+  function stIntelHtml() {
+    const s = stEnsure();
+    const rows = s.intel.map((k) => {
+      const it = ST.INTEL[k];
+      return it ? '<p><strong>' + escapeHtml(it[0]) + '</strong><br/>' + escapeHtml(it[1]) + '</p>' : '';
+    }).join('');
+    return '<h4 class="st-h">江湖情報</h4>' + (rows || '<p class="muted">暫無情報。多聽、多看，自會有所得。</p>') + '<h4 class="st-h">舊聞軼事</h4>' + loreOldHtml();
+  }
+  function stChaptersHtml() {
+    const s = stEnsure();
+    return Object.keys(ST.CHAPTERS).map((k) => {
+      const ch = ST.CHAPTERS[k];
+      const done = s.completed.indexOf('ch' + k) >= 0;
+      const open = s.unlocked.indexOf(+k) >= 0 && !ch.locked;
+      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? (s.started || s.flags.qh_leave_done ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
+    }).join('');
+  }
+  function stResumeHtml() {
+    const s = stEnsure();
+    const rows = ST.RESUME.filter((r) => s.flags[r[0]]).map((r) => '<li>' + escapeHtml(r[1]) + '</li>').join('');
+    const pend = ST.RESUME_PENDING.filter((r) => !s.flags[r[0]]).map((r) => '<li class="muted">？？？（' + escapeHtml(r[1]) + '）</li>').join('');
+    const items = s.items.map((k) => { const it = ST.ITEMS[k]; return it ? '<li>' + escapeHtml(it[0]) + '：<span class="muted">' + escapeHtml(it[1]) + '</span></li>' : ''; }).join('');
+    const hist = s.history.slice(-12).reverse().map((h) => '<li>' + escapeHtml(h.text) + '</li>').join('');
+    return '<p class="muted">這裡只記下你做過的事，不評對錯。</p>' +
+      '<h4 class="st-h">江湖履歷</h4><ul class="st-list">' + (rows || '<li class="muted">尚無。</li>') + pend + '</ul>' +
+      '<h4 class="st-h">重要物品</h4><ul class="st-list">' + (items || '<li class="muted">尚無。</li>') + '</ul>' +
+      '<h4 class="st-h">你的抉擇</h4><ul class="st-list">' + (hist || '<li class="muted">尚無。</li>') + '</ul>';
+  }
+  function renderLore() {
+    const el = $('panel-lore');
+    if (!el || !state) return;
+    const s = stEnsure();
+    const tab = $('tab-lore');
+    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng');
+    const subs = [['now', '正在發生'], ['ppl', '人物'], ['rum', '傳聞'], ['ch', '章回'], ['res', '履歷']];
+    let body;
+    if (loreSub === 'ppl') body = stPeopleHtml();
+    else if (loreSub === 'rum') body = stIntelHtml();
+    else if (loreSub === 'ch') body = stChaptersHtml();
+    else if (loreSub === 'res') body = stResumeHtml();
+    else body = stNowHtml();
+    el.innerHTML = '<h3>江湖閒談</h3><div class="subtabs st-subs">' +
+      subs.map((x) => '<button type="button" class="subtab' + (loreSub === x[0] ? ' active' : '') + '" data-lsub="' + x[0] + '">' + x[1] + '</button>').join('') +
+      '</div><div class="lore">' + body + '</div>';
+    el.querySelectorAll('[data-lsub]').forEach((b) => b.addEventListener('click', () => { stSfx(); loreSub = b.getAttribute('data-lsub'); renderLore(); }));
+    el.querySelectorAll('[data-st]').forEach((b) => b.addEventListener('click', () => {
+      stSfx();
+      const k = b.getAttribute('data-st');
+      if (k === 'begin') stBegin();
+      else if (k === 'resume') { s.open = true; stResume(); }
+      else if (k === 'hf') { s.cur = 'hf_enter'; s.open = true; s.entered = ''; save(); stResume(); }
+    }));
+  }
+  function stQuestHtml() {
+    const s = stEnsure();
+    const c = stCtx();
+    const rows = ST.QUESTS.filter((q) => !q.show || q.show(c)).map((q) => {
+      const d = !!q.done(c);
+      return '<div class="quest-row' + (d ? ' claimed' : '') + '"><div class="quest-main"><strong>〈' + escapeHtml(q.text) + '〉</strong></div><span class="st-q ' + (d ? 'done' : 'doing') + '">' + (d ? '已了結' : '進行中') + '</span></div>';
+    }).join('');
+    return '<div class="quest-head"><span class="muted">' + escapeHtml(ST.CHAPTERS[s.chapter].title) + '</span></div>' + (rows || '<p class="muted">尚無卷宗。到「江湖閒談」踏入江湖吧。</p>');
+  }
+  function stSig() {
+    const s = state && state.story;
+    if (!s) return '';
+    return Object.keys(s.flags).length + ':' + s.phase + ':' + (s.cur || '');
+  }
+
+  // __END_ENGINE__
 
   function showGame() {
     $('screen-create').classList.add('hidden');
@@ -3674,6 +4134,12 @@
     if (state.hunting) {
       state.hunting = false;
       startHunt();
+    }
+    if (ST) {
+      const s = stEnsure();
+      if (s.cur && !s.battle) stResume();
+      else if (!s.started && !s.flags.qh_leave_done) stBegin();
+      else stCheck();
     }
   }
 
@@ -3741,6 +4207,7 @@
       syncMuteBtn();
       save();
       showGame();
+      if (ST) stBegin();
     });
 
     const huntBtn = $('btn-hunt');
@@ -3821,6 +4288,7 @@
       saved.equip = { weapon: null, armor: null, boots: null, ring: null };
     }
     if (!Array.isArray(saved.bag)) saved.bag = [];
+    saved.story = stNorm(saved.story);
     const _fix = (it) => { if (it && typeof it === 'object') { if (typeof it.enh !== 'number') it.enh = 0; if (!Array.isArray(it.affixes)) it.affixes = []; } };
     saved.bag.forEach(_fix);
     Object.keys(saved.equip).forEach((k) => _fix(saved.equip[k]));
@@ -3977,6 +4445,7 @@
       kills, expGain, silver: silGain + dropSilver,
       fromLv, toLv: state.lv, bagAdded, byQ,
       zoneName: zone.name,
+      story: stOffline(usedMs),
     };
   }
 
@@ -4011,6 +4480,7 @@
         '<div class="level-delta">' + (r.bagAdded > 0 ? '獲得裝備 ' + r.bagAdded + ' 件' : '沒有撿到新裝備') +
         (rare.length ? '<br/><b style="color:#ffd23a">其中 ' + rare.join('、') + '</b>' : '') +
         '<br/><span class="muted">離線效率 ' + Math.round(OFFLINE_EFFICIENCY * 100) + '%，高於此區等級收益遞減；不含名號對手與茶樓事件。</span></div>' +
+        (r.story ? '<div class="level-delta st-off"><b>你離線期間，江湖發生了 ' + r.story.n + ' 件事</b><br/>' + r.story.lines.map(escapeHtml).join('<br/>') + '</div>' : '') +
         '<p class="muted" style="text-align:center;margin:6px 0">' + bye + '</p>' +
         '<button type="button" class="btn primary full" data-close>收下</button>' +
         '</div></div>';
@@ -4059,6 +4529,7 @@
         }
         startHunt();
       }
+      stCheck();
     } else {
       showCreate();
     }
