@@ -216,12 +216,15 @@
     rival_mist: 'boss_mist', rival_sky: 'boss_sky',
   };
   const SPRITE_READY = {};
+  const KIND_SCALE = {}; // 專屬圖：以待機圖高度定出統一縮放，四幀共用，腳底對齊
   function probeSprites() {
     const kinds = Object.keys(MOB_KIND).map((k) => MOB_KIND[k]).concat(Object.keys(RIVAL_KIND).map((k) => RIVAL_KIND[k]));
     kinds.forEach((kind) => {
       const im = new Image();
       im.onload = () => {
         SPRITE_READY[kind] = true;
+        const targetH = /^boss_/.test(kind) ? 122 : 100;
+        KIND_SCALE[kind] = targetH / Math.max(1, im.naturalHeight);
         ['attack', 'hurt', 'down'].forEach((po) => { const p = new Image(); p.src = spriteUrl(kind, po); });
         if (state && !$('screen-game').classList.contains('hidden')) { try { renderStage(); } catch (e) { /* ignore */ } }
       };
@@ -252,8 +255,10 @@
       img.onerror = () => { img.onerror = null; if (pose !== 'idle') img.src = spriteUrl(kind, 'idle'); };
       img.onload = () => {
         if (img.dataset.kind !== kind) return;
-        img.style.width = Math.round(img.naturalWidth * sc) + 'px';
-        img.style.height = Math.round(img.naturalHeight * sc) + 'px';
+        const k = KIND_SCALE[kind] || sc;
+        img.style.maxWidth = 'none';
+        img.style.width = Math.round(img.naturalWidth * k) + 'px';
+        img.style.height = Math.round(img.naturalHeight * k) + 'px';
       };
       img.src = spriteUrl(kind, pose);
     }
@@ -2034,7 +2039,7 @@
         const h = tintKey ? strHash(tintKey) : 0;
         slot.style.setProperty('--hue', tintKey ? ((h % 12) * 30) + 'deg' : '0deg');
         slot.style.setProperty('--sat', tintKey ? String(0.85 + (h % 5) * 0.08) : '1');
-        slot.style.setProperty('--sz', mob.isRival ? '1.28' : String(0.92 + (strHash(mob.name || '') % 4) * 0.05));
+        slot.style.setProperty('--sz', tintKey ? (mob.isRival ? '1.28' : String(0.92 + (strHash(mob.name || '') % 4) * 0.05)) : '1');
       }
       if (state.hunting) slot.classList.add('idle');
       if (mob.isRival) {
