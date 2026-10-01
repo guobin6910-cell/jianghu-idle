@@ -2504,7 +2504,7 @@
     const jitterX = rand(-4, 6) + sideX;
     const jitterY = rand(-6, 10);
     el.style.left = (pos.left + jitterX) + '%';
-    el.style.top = (pos.top + jitterY) + '%';
+    el.style.top = (pos.top + jitterY + (onHero ? 12 : 10)) + '%';
     fx.appendChild(el);
     setTimeout(() => el.remove(), 900);
   }

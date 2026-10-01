@@ -1575,7 +1575,7 @@ body.modal-open { overflow: hidden; }
 .martial-node span { font-size: 12px; opacity: 0.85; }
 .martial-node em { display: block; font-style: normal; font-size: 11px; opacity: 0.7; }
 .martial-node.sel { border-color: #e8c050; background: #3a3018; }
-.martial-node:disabled:not(.sel) { opacity: 0.45; cursor: not-allowed; }
+.martial-node:disabled:not(.sel):not(.taken) { opacity: 0.45; cursor: not-allowed; }
 
 /* 2026-10-01 美術回報修正 */
 .eq-row .eq-left { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
@@ -1700,3 +1700,7 @@ body.modal-open { overflow: hidden; }
 @media (max-width: 340px) {
   .hero-status .hs-stats { font-size: 11px; }
 }
+
+.martial-node.taken:disabled:not(.sel) { opacity: 0.85; }
+@keyframes float-up-short { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -26px) scale(1.1); } }
+.dmg-float.enemy-hit, .dmg-float.heal { animation-name: float-up-short; }
