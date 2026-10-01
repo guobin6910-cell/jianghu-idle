@@ -1,5 +1,7 @@
 (() => {
   const SAVE_KEY = 'jianghu-idle-v1';
+  // 驗收用：網址加 ?debug=boss → 每次遇敵必出該區名號頭目、不受每日／冷卻限制、各區免等級限制（不影響正式玩法）
+  const DEBUG_BOSS = /[?&]debug=boss\b/.test(location.search);
   let audioSilent = false;
   const Audio = () => (audioSilent ? null : (typeof window !== 'undefined' && window.JianghuAudio) || null);
   function syncMuteBtn() {
@@ -1061,7 +1063,9 @@
     }
     const rival = ZONE_RIVALS[zone.id];
     let spawnRival = false;
-    if (rival && canSpawnRival(zone.id, now)) {
+    if (rival && DEBUG_BOSS) {
+      spawnRival = true;
+    } else if (rival && canSpawnRival(zone.id, now)) {
       let chance = 0.03 + Math.random() * 0.02; // 3%～5%
       const rcb = state.rivalChanceBonus;
       if (rcb && rcb.zoneId === state.zoneId && now < (rcb.until || 0)) {
@@ -1750,7 +1754,7 @@
   function startHunt() {
     if (!state) return;
     const zone = currentZone();
-    if (state.lv < zone.minLv) {
+    if (!DEBUG_BOSS && state.lv < zone.minLv) {
       pushLog(`等級不足，需 Lv.${zone.minLv} 才能掛此處`);
       return;
     }
@@ -2294,7 +2298,7 @@
     el.innerHTML =
       '<h3>行走地圖</h3>' +
       ZONES.map((z) => {
-        const locked = state.lv < z.minLv;
+        const locked = !DEBUG_BOSS && state.lv < z.minLv;
         const active = state.zoneId === z.id;
         const rival = ZONE_RIVALS[z.id];
         const beaten = !!(state.zoneBossFlags && state.zoneBossFlags[z.id]);
@@ -2348,7 +2352,7 @@
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-zone');
         const z = ZONES.find((x) => x.id === id);
-        if (!z || state.lv < z.minLv) return;
+        if (!z || (!DEBUG_BOSS && state.lv < z.minLv)) return;
         if (state.hunting) stopHunt();
         else if (Audio()) Audio().sfx('click');
         state.zoneId = id;
