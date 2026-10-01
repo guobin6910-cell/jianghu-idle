@@ -2626,7 +2626,9 @@
         hbox.classList.toggle('hpb-boss', !!mob.isRival);
         hbox.classList.toggle('hpb-enemy', !mob.isRival);
         const fr = $('hpf-' + i);
-        const want = 'assets/ui/hpframe_' + (mob.isRival ? 'boss' : 'enemy') + '.webp';
+        const small = !mob.isRival && window.innerWidth <= 480;
+        hbox.classList.toggle('hpb-small', small);
+        const want = 'assets/ui/hpframe_' + (mob.isRival ? 'boss' : (small ? 'enemy_small' : 'enemy')) + '.webp';
         if (fr && fr.getAttribute('src') !== want) fr.setAttribute('src', want);
         const hn = $('hpname-' + i);
         if (hn) hn.textContent = mob.isRival ? mob.name : '';

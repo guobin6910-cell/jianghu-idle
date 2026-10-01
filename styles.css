@@ -1704,3 +1704,14 @@ body.modal-open { overflow: hidden; }
 .martial-node.taken:disabled:not(.sel) { opacity: 0.85; }
 @keyframes float-up-short { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -26px) scale(1.1); } }
 .dmg-float.enemy-hit, .dmg-float.heal { animation-name: float-up-short; }
+
+/* 手機專用小外框 216×56（空窗 x26-190 y18-38） */
+.hpb-small .hpb-box { height: auto; }
+.hpb-small .hpb-frame { height: auto; object-fit: initial; }
+.hpb-small .hpb-slot { left: 12.04%; width: 75.93%; top: 32.14%; height: 37.5%; }
+.martial-node.taken, .martial-node.taken:disabled { cursor: default; }
+.dmg-float:not(.enemy-hit):not(.heal):not(.skill-name):not(.miss) { animation-name: float-side; }
+@keyframes float-side {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + 34px), -12px) scale(1.12); }
+}
