@@ -1590,3 +1590,33 @@ body.modal-open { overflow: hidden; }
 .skill-slot.has-ico .sk-ico { position: static; inset: auto; width: 100%; max-width: 64px; aspect-ratio: 1; height: auto; border-radius: 0; flex: 0 0 auto; }
 .skill-slot.has-ico .sk-ico + .sk-name, .skill-slot.has-ico .sk-name { position: static; font-size: 12px; line-height: 1.2; color: var(--gold); text-shadow: none; max-width: 100%; }
 .skill-slot.has-ico .cd-mask { border-radius: 0; }
+
+/* 2026-10-01 戰鬥主角狀態列＋武學細修 */
+.hero-status { margin: 4px 0 2px; padding: 6px 10px; border: 1px solid rgba(226,199,128,0.3); border-radius: 10px; background: rgba(20,16,10,0.85); }
+.hero-status .hs-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-size: 13px; color: var(--gold); }
+.hero-status .hs-stats { font-size: 12px; color: #d8d0b8; white-space: nowrap; }
+.hero-status .hs-bar { margin: 4px 0; height: 6px; }
+.hero-status .hs-buffs { display: flex; flex-wrap: wrap; gap: 4px; min-height: 18px; }
+.hs-chip { font-size: 11px; padding: 0 7px; border-radius: 999px; background: #3a3018; border: 1px solid #e8c050; color: #ffe08a; }
+.hs-none { font-size: 11px; color: var(--muted); }
+.hud-avatar .hud-badge-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.skill-slot.locked-slot { border-radius: 10px; aspect-ratio: auto; opacity: 0.5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-style: dashed; }
+.skill-slot.locked-slot .sk-lock { font-size: 18px; }
+.skill-slot.locked-slot .sk-name { font-size: 11px; color: var(--muted); }
+.martial-node em { font-size: 12px !important; opacity: 1 !important; color: #e6d9b0; }
+.martial-node.taken { text-decoration: line-through; opacity: 0.4; }
+.martial-node.lockd { opacity: 0.55; border-style: dashed; }
+.martial-node.sel { opacity: 1 !important; }
+@media (max-width: 420px) {
+  .skill-bar { gap: 4px; }
+  .skill-auto, .skill-bag { width: 40px; min-width: 40px; padding: 4px 2px; font-size: 10px; }
+  .skill-slots { gap: 3px; }
+  .skill-slot.has-ico .sk-name, .skill-slot.has-ico .sk-ico + .sk-name { font-size: 11px; }
+  .skill-slot.has-ico .sk-ico { max-width: 48px; }
+  .skill-slot .sk-name { font-size: 11px; }
+}
+@media (max-width: 340px) {
+  .skill-slot.has-ico .sk-name, .skill-slot.has-ico .sk-ico + .sk-name, .skill-slot .sk-name { font-size: 10px; }
+  .hero-status .hs-top { font-size: 12px; }
+  .hud-name-row strong { max-width: 80px; }
+}

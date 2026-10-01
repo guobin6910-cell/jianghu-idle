@@ -101,7 +101,7 @@
           { id: 'c30b', name: '劍心不亂', desc: '受傷 −10%。', fx: { takenMul: -0.1 } },
         ],
       },
-      ult: { id: 'wanjian', name: '萬劍歸宗', cd: 45000, desc: '一次打出所有劍招傷害的 2.5 倍。' },
+      ult: { id: 'wanjian', name: '萬劍歸宗', short: '萬劍', cd: 45000, desc: '一次打出所有劍招傷害的 2.5 倍。' },
     },
     tiandao: {
       tag: '均衡型', slogan: '一刀斬斷，不留後路。',
@@ -120,7 +120,7 @@
           { id: 't30b', name: '刀魂', desc: '生命 +10%。', real: '防禦 +10%', fx: { defPct: 0.1 } },
         ],
       },
-      ult: { id: 'tiandaozhan', name: '天刀斬', cd: 30000, desc: '單次 3 倍傷害，打首領時再 +20%。' },
+      ult: { id: 'tiandaozhan', name: '天刀斬', short: '天刀', cd: 30000, desc: '單次 3 倍傷害，打首領時再 +20%。' },
     },
     wuzong: {
       tag: '身法型', slogan: '來去無影，快到對手摸不著。',
@@ -139,7 +139,7 @@
           { id: 'w30b', name: '幻步', desc: '閃避 +8%。', fx: { dodge: 0.08 } },
         ],
       },
-      ult: { id: 'wuying', name: '無影百殺', cd: 40000, desc: '連續 6 擊，每擊 60% 攻擊，速度越高越強。' },
+      ult: { id: 'wuying', name: '無影百殺', short: '百殺', cd: 40000, desc: '連續 6 擊，每擊 60% 攻擊，速度越高越強。' },
     },
     chanwu: {
       tag: '防禦型', slogan: '以靜制動，穩到最後。',
@@ -158,7 +158,7 @@
           { id: 'h30b', name: '佛心', desc: '戰鬥中每秒回血 1%。', real: '受到的傷害再 −8%', fx: { takenMul: -0.08 } },
         ],
       },
-      ult: { id: 'luohan', name: '羅漢金身', cd: 40000, desc: '8 秒內傷害減半並反彈 20% 傷害。' },
+      ult: { id: 'luohan', name: '羅漢金身', short: '金身', cd: 40000, desc: '8 秒內傷害減半並反彈 20% 傷害。' },
     },
   };
   function martialState(hero) {
@@ -235,19 +235,19 @@
       '<div class="martial-passive"><strong>被動「' + escapeHtml(M.passive.name) + '」</strong><div class="muted">' + escapeHtml(M.passive.desc) + (M.passive.real ? '（實裝：' + escapeHtml(M.passive.real) + '）' : '') + '</div></div>';
     MARTIAL_TIERS.forEach((t) => {
       const locked = state.lv < t;
-      h += '<div class="martial-tier"><div class="muted">Lv.' + t + ' 二選一' + (locked ? '（未達）' : '') + '</div><div class="martial-opts">';
+      h += '<div class="martial-tier"><div class="muted">' + (locked ? '🔒 ' : '') + 'Lv.' + t + ' 二選一' + (locked ? '（等級未到）' : '') + '</div><div class="martial-opts">';
       M.tiers[t].forEach((n, i) => {
         const sel = ms.pick[t] === i;
         const taken = (ms.pick[t] === 0 || ms.pick[t] === 1) && !sel;
-        h += '<button type="button" class="martial-node' + (sel ? ' sel' : '') + '" data-mpick="' + t + ':' + i + '"' + (locked || taken ? ' disabled' : '') + '>' +
-          '<strong>' + escapeHtml(n.name) + '</strong><span>' + escapeHtml(n.desc) + (n.real ? '<em>（實裝：' + escapeHtml(n.real) + '）</em>' : '') + '</span></button>';
+        h += '<button type="button" class="martial-node' + (sel ? ' sel' : '') + (taken ? ' taken' : '') + (locked ? ' lockd' : '') + '" data-mpick="' + t + ':' + i + '"' + (locked || taken ? ' disabled' : '') + '>' +
+          '<strong>' + (sel ? '✓ ' : locked ? '🔒 ' : '') + escapeHtml(n.name) + (taken ? '（已選另一個）' : '') + '</strong><span>' + escapeHtml(n.desc) + (n.real ? '<em>（實裝：' + escapeHtml(n.real) + '）</em>' : '') + '</span></button>';
       });
       h += '</div></div>';
     });
     const ultOn = state.lv >= MARTIAL_ULT_LV;
     h += '<div class="martial-ult' + (ultOn ? ' on' : '') + '"><strong>Lv.' + MARTIAL_ULT_LV + ' 絕學「' + escapeHtml(ult.name) + '」' + (ultOn ? '（已領悟，技能列第 5 格）' : '（未達）') + '</strong><div class="muted">' + escapeHtml(ult.desc) + '</div></div>';
     const picked = Object.keys(ms.pick).length;
-    h += '<button type="button" class="btn ghost" id="btn-respec"' + (picked ? '' : ' disabled') + '>重選武學（' + respecCost() + ' 銀）</button></div>';
+    h += '<button type="button" class="btn ghost" id="btn-respec"' + (picked ? '' : ' disabled') + '>' + (picked ? '重選武學（' + respecCost() + ' 銀）' : '尚未選擇武學') + '</button></div>';
     return h;
   }
 
@@ -1758,6 +1758,7 @@
     }
     syncPrimaryMob();
     renderCombatBars();
+    renderHeroStatus();
     renderStage();
     renderZoneProgress();
 
@@ -2234,7 +2235,7 @@
     huntTimer = setInterval(tickCombat, ms);
     if (!window.__skillCdUiTimer) {
       window.__skillCdUiTimer = setInterval(() => {
-        if (state) renderSkillBar();
+        if (state) { renderSkillBar(); renderHeroStatus(); }
       }, 250);
     }
     renderAll();
@@ -2595,6 +2596,24 @@
     spawnFloat('破！', 'kill', s);
   }
 
+  function renderHeroStatus() {
+    const box = $('hero-status');
+    if (!box || !state) return;
+    const stats = buffedStats(calcStats(state));
+    const need = expToNext(state.lv);
+    const now = Date.now();
+    const chips = [];
+    if (now < (state.goldBodyUntil || 0)) chips.push('金身 ' + Math.ceil((state.goldBodyUntil - now) / 1000) + 's');
+    if (state.skillSoftLeft > 0) chips.push('護體×' + state.skillSoftLeft);
+    if (state.nextAtkBonus > 0) chips.push('蓄勢');
+    if (now < (state.defBuffUntil || 0)) chips.push('防↑');
+    if (state.killStacks > 0) chips.push('殺氣×' + state.killStacks);
+    if (state.stormStacks > 0 && now < (state.stormUntil || 0)) chips.push('疾風×' + state.stormStacks);
+    $('hs-name').textContent = state.name + '  Lv.' + state.lv;
+    $('hs-stats').textContent = '攻 ' + stats.atk + '  防 ' + stats.def + '  速 ' + stats.spd;
+    $('hs-exp').style.width = Math.min(100, (state.exp / need) * 100) + '%';
+    $('hs-buffs').innerHTML = chips.length ? chips.map((c) => '<span class="hs-chip">' + escapeHtml(c) + '</span>').join('') : '<span class="hs-none">無狀態</span>';
+  }
   function renderCombatBars() {
     if (!state) return;
     if (!Array.isArray(state.mobs)) state.mobs = [];
@@ -2645,7 +2664,14 @@
       const look = state.look || 'a';
       av.className = 'hud-avatar school-' + (state.school || 'cangjian') + ' look-' + look;
       const lookDef = LOOKS.find((x) => x.id === look);
-      av.textContent = lookDef ? lookDef.glyph : (state.name || '俠').charAt(0);
+      const glyph = lookDef ? lookDef.glyph : (state.name || '俠').charAt(0);
+      av.textContent = glyph;
+      const bimg = document.createElement('img');
+      bimg.className = 'hud-badge-img';
+      bimg.alt = '';
+      bimg.src = 'assets/icons/school_' + (state.school || 'cangjian') + '.webp';
+      bimg.onerror = function () { bimg.remove(); };
+      bimg.onload = function () { av.textContent = ''; av.appendChild(bimg); };
     }
     $('stat-silver').textContent = String(state.silver);
     $('stat-chivalry').textContent = String(state.chivalry);
@@ -2660,6 +2686,7 @@
     $('zone-name').textContent = zone.name;
     $('zone-flavor').textContent = zone.flavor;
     renderCombatBars();
+    renderHeroStatus();
     renderStage();
     renderZoneProgress();
     renderLog();
@@ -2689,22 +2716,25 @@
     const now = Date.now();
     if (!state.skillCd) state.skillCd = [0, 0, 0, 0, 0];
     // 初次建立按鈕
-    const wkey = (state.school || '') + ':' + skills.length;
+    const wkey = (state.school || '') + ':' + skills.length + ':5';
     if (!wrap.dataset.bound || wrap.dataset.school !== wkey) {
       wrap.dataset.bound = '1';
       wrap.dataset.school = wkey;
-      wrap.style.gridTemplateColumns = 'repeat(' + Math.max(4, skills.length) + ', 1fr)';
+      wrap.style.gridTemplateColumns = 'repeat(5, 1fr)';
       const short = schoolShort(state.school);
-      wrap.innerHTML = skills.map((_, i) => i)
+      wrap.innerHTML = [0, 1, 2, 3, 4]
         .map((i) => {
           const sk = skills[i];
-          const label = sk ? sk.name : short;
+          if (!sk && i === 4) {
+            return '<button type="button" class="skill-slot locked-slot" data-skill="4" disabled title="Lv.' + MARTIAL_ULT_LV + ' 解鎖絕學"><span class="sk-lock">🔒</span><span class="sk-name">Lv.' + MARTIAL_ULT_LV + '</span></button>';
+          }
+          const label = sk ? (sk.short || sk.name) : short;
           const sub = sk ? '' : '<span class="sk-school">' + escapeHtml(short) + '</span>';
           return (
             '<button type="button" class="skill-slot' + (sk && sk.id ? ' has-ico' : '') + '" data-skill="' +
             i +
             '" title="' +
-            escapeHtml(label) +
+            escapeHtml(sk ? sk.name : label) +
             '">' +
             (sk && sk.id ? '<img class="sk-ico" src="assets/icons/skill_' + sk.id + '.webp" alt="" onerror="this.remove()">' : '') +
             '<span class="sk-name">' +
@@ -2735,7 +2765,7 @@
       const until = state.skillCd[idx] || 0;
       const left = Math.max(0, until - now);
       const sk = skills[idx];
-      const cdMs = skillCdMs(sk);
+      const cdMs = sk ? skillCdMs(sk) : 1;
       const mask = btn.querySelector('.cd-mask');
       const cdText = btn.querySelector('.cd-text');
       if (left > 0) {
@@ -2745,7 +2775,7 @@
         if (cdText) cdText.textContent = Math.ceil(left / 1000);
       } else {
         btn.classList.remove('on-cd');
-        btn.disabled = !state.hunting;
+        btn.disabled = !state.hunting || !sk;
         if (mask) mask.style.height = '0%';
         if (cdText) cdText.textContent = '';
       }
