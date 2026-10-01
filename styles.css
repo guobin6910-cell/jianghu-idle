@@ -276,7 +276,7 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 
 .tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 6px;
   margin: 10px 0;
 }
@@ -1722,3 +1722,19 @@ body.modal-open { overflow: hidden; }
   .enemy-slot .hpb:not(.hpb-boss) { width: 54px; }
   .hpb-small .hpb-box { height: auto; }
 }
+
+/* 2026-10-01 任務頁 */
+.tab { position: relative; }
+.tab.has-dot::after { content: ''; position: absolute; top: 4px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: #ff4a3a; box-shadow: 0 0 6px #ff4a3a; }
+.subtabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.subtab { flex: 1; border: 1px solid var(--line); background: #1b2418; color: var(--muted); border-radius: 8px; padding: 7px 4px; cursor: pointer; }
+.subtab.active { color: var(--gold); border-color: var(--gold); background: #2a2614; }
+.quest-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.quest-row { display: flex; gap: 8px; align-items: center; padding: 8px; margin-bottom: 6px; border: 1px solid var(--line); border-radius: 10px; background: rgba(0,0,0,0.18); }
+.quest-row.claimed { opacity: 0.55; }
+.quest-row.bonus { border-color: #8a7a3a; }
+.quest-main { flex: 1; min-width: 0; font-size: 13px; }
+.quest-bar { height: 6px; margin: 5px 0 3px; }
+.quest-meta { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; flex-wrap: wrap; }
+.quest-row .btn { flex: 0 0 auto; min-width: 64px; }
+@media (max-width: 420px) { .tab { font-size: 13px; padding: 8px 2px; } }

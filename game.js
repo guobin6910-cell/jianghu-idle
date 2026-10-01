@@ -409,6 +409,7 @@
     if (state.silver < cost) { pushLog('銀兩不足，強化「' + it.name + '」需 ' + cost + ' 銀。'); renderBag(); return; }
     const rate = enhRate(it);
     state.silver -= cost;
+    bumpQuest('enh');
     const qm = qualityMeta(it.quality);
     if (Math.random() < rate) {
       it.enh = enhLv(it) + 1;
@@ -1821,6 +1822,7 @@
     if (_gp.silver) sil = Math.floor(sil * (1 + _gp.silver / 100));
     state.silver += sil;
     state.kills += 1;
+    bumpQuest('kill');
     healHero(heroMaxHp(state) * 0.08, true);
     const _kfx = martialFx(state);
     if (_kfx.killStack) {
@@ -1831,7 +1833,7 @@
     const gotExp = Math.floor(mob.exp * bonusExp * (1 + _gp.exp / 100));
     gainExp(gotExp);
     const wasRival = !!mob.isRival;
-    if (wasRival) onRivalDefeated(mob);
+    if (wasRival) { onRivalDefeated(mob); bumpQuest('rival'); }
     pushLog('擊敗「' + mob.name + '」！經驗 +' + gotExp + '，銀兩 +' + sil, wasRival ? 'rival' : 'win');
     if (Audio()) Audio().sfx('kill');
     const lootGot = tryDrop(wasRival);
@@ -1906,6 +1908,7 @@
       return false;
     }
     state.mp -= mpNeed;
+    bumpQuest('cast');
     const fx = martialFx(state);
     const now = Date.now();
 
@@ -2388,6 +2391,7 @@
     const qm = qualityMeta(item.quality);
     const price = qualitySellPrice(item);
     state.silver += price;
+    bumpQuest('sell');
     state.bag.splice(idx, 1);
     pushLog('手動售出「' + item.name + '」（' + qm.label + '）＋' + price + ' 銀', 'loot ' + qm.cls);
     renderAll();
@@ -2443,6 +2447,7 @@
       return;
     }
     state.bag = keep;
+    bumpQuest('sell', sold);
     state.silver += silverGain;
     const label = mode === 'fan_liang' ? '凡＋良' : '凡';
     pushLog('一鍵販售（' + label + '）出 ' + sold + ' 件，＋' + silverGain + ' 銀', 'loot');
@@ -2840,6 +2845,7 @@
     renderZones();
     renderBag();
     renderHero();
+    renderQuest();
     renderLore();
 
     const bh = $('btn-hunt');
@@ -3322,6 +3328,144 @@
     if (soft) soft.addEventListener('click', spendChivalrySoften);
   }
 
+
+  // ===== 2026-10-01 每日任務（每天 05:00 重置，一天 5 個；獎勵 × (1 + 等級/20)） =====
+  const DAILY_QUESTS = [
+    { id: 'kill', name: '活動筋骨', desc: '擊殺 30 隻怪', goal: 30, silver: 800, exp: 0 },
+    { id: 'rival', name: '討個說法', desc: '擊敗 1 次區域名號', goal: 1, silver: 600, exp: 800 },
+    { id: 'enh', name: '鍛一把好刀', desc: '強化裝備 3 次（成敗都算）', goal: 3, silver: 1000, exp: 0 },
+    { id: 'cast', name: '招式不能生', desc: '施放武學 20 次', goal: 20, silver: 0, exp: 600 },
+    { id: 'sell', name: '行囊清一清', desc: '賣出 10 件雜物（手動賣出與一鍵販售）', goal: 10, silver: 500, exp: 0 },
+  ];
+  const DAILY_BONUS = { name: '今日收工', desc: '五個任務全部領取', silver: 2000, exp: 2000 };
+  let questSub = 'daily';
+  let questSig = '';
+
+  function questDayKey() { return dayKey(Date.now() - 5 * 3600 * 1000); }
+  function ensureQuests() {
+    if (!state) return null;
+    const k = questDayKey();
+    if (!state.quests || state.quests.day !== k) {
+      state.quests = { day: k, prog: {}, claimed: {}, bonus: false };
+    }
+    if (!state.quests.prog) state.quests.prog = {};
+    if (!state.quests.claimed) state.quests.claimed = {};
+    return state.quests;
+  }
+  function bumpQuest(id, n) {
+    const q = ensureQuests();
+    if (!q) return;
+    q.prog[id] = (q.prog[id] || 0) + (n || 1);
+  }
+  function questScale() { return 1 + (state.lv || 1) / 20; }
+  function questReward(def, mult) {
+    const m = mult == null ? questScale() : mult;
+    return { silver: Math.floor(def.silver * m), exp: Math.floor(def.exp * m) };
+  }
+  function questDone(def) {
+    const q = ensureQuests();
+    return (q.prog[def.id] || 0) >= def.goal;
+  }
+  function questAllClaimed() {
+    const q = ensureQuests();
+    return DAILY_QUESTS.every((d) => q.claimed[d.id]);
+  }
+  function questClaimable() {
+    if (!state) return 0;
+    const q = ensureQuests();
+    let n = DAILY_QUESTS.filter((d) => questDone(d) && !q.claimed[d.id]).length;
+    if (questAllClaimed() && !q.bonus) n += 1;
+    return n;
+  }
+  function giveReward(r, label) {
+    if (r.silver) state.silver += r.silver;
+    const bits = [];
+    if (r.silver) bits.push('銀兩 +' + r.silver);
+    if (r.exp) bits.push('經驗 +' + r.exp);
+    pushLog('領取〈' + label + '〉：' + bits.join('，'), 'win');
+    if (r.exp) gainExp(r.exp);
+    if (Audio()) Audio().sfx('drop');
+  }
+  function claimQuest(id) {
+    const q = ensureQuests();
+    if (id === 'bonus') {
+      if (q.bonus || !questAllClaimed()) return;
+      q.bonus = true;
+      giveReward(questReward(DAILY_BONUS), DAILY_BONUS.name);
+      pushEventLog('今天沒白跑。', 'event');
+    } else {
+      const def = DAILY_QUESTS.find((d) => d.id === id);
+      if (!def || q.claimed[id] || !questDone(def)) return;
+      q.claimed[id] = true;
+      giveReward(questReward(def), def.name);
+    }
+    questSig = '';
+    renderAll();
+    save();
+  }
+  function questResetText() {
+    const now = new Date();
+    const next = new Date(now);
+    next.setHours(5, 0, 0, 0);
+    if (next <= now) next.setDate(next.getDate() + 1);
+    const ms = next - now;
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    return '距重置 ' + h + ' 小時 ' + m + ' 分';
+  }
+  function renderQuest(force) {
+    const el = $('panel-quest');
+    const tab = $('tab-quest');
+    if (!el || !state) return;
+    const q = ensureQuests();
+    const dot = questClaimable();
+    if (tab) tab.classList.toggle('has-dot', dot > 0);
+    const sig = [questSub, q.day, state.lv, q.bonus ? 1 : 0, DAILY_QUESTS.map((d) => Math.min(d.goal, q.prog[d.id] || 0) + (q.claimed[d.id] ? 'c' : '')).join(','), achSig()].join('|');
+    if (!force && sig === questSig) {
+      const t = el.querySelector('#quest-reset');
+      if (t) t.textContent = questResetText();
+      return;
+    }
+    questSig = sig;
+    let body = '';
+    if (questSub === 'daily') {
+      const rows = DAILY_QUESTS.map((d) => {
+        const p = Math.min(d.goal, q.prog[d.id] || 0);
+        const r = questReward(d);
+        const rw = [r.silver ? r.silver + ' 銀兩' : '', r.exp ? r.exp + ' 經驗' : ''].filter(Boolean).join(' + ');
+        const done = p >= d.goal;
+        const claimed = !!q.claimed[d.id];
+        return '<div class="quest-row' + (claimed ? ' claimed' : '') + '">' +
+          '<div class="quest-main"><strong>〈' + escapeHtml(d.name) + '〉</strong> <span class="muted">' + escapeHtml(d.desc) + '</span>' +
+          '<div class="bar-wrap thin quest-bar"><div class="bar" style="width:' + (p / d.goal * 100) + '%"></div></div>' +
+          '<div class="quest-meta"><span>' + p + ' / ' + d.goal + '</span><span class="muted">獎勵：' + rw + '</span></div></div>' +
+          '<button type="button" class="btn' + (done && !claimed ? ' primary' : '') + '" data-claim="' + d.id + '"' + (done && !claimed ? '' : ' disabled') + '>' + (claimed ? '已領取' : '領取') + '</button></div>';
+      }).join('');
+      const allOk = questAllClaimed();
+      const br = questReward(DAILY_BONUS);
+      body = '<div class="quest-head"><span class="muted">每天早上 5 點重置，獎勵隨等級放大（×' + questScale().toFixed(2) + '）</span><span id="quest-reset" class="muted">' + questResetText() + '</span></div>' +
+        rows +
+        '<div class="quest-row bonus' + (q.bonus ? ' claimed' : '') + '"><div class="quest-main"><strong>〈' + DAILY_BONUS.name + '〉</strong> <span class="muted">' + DAILY_BONUS.desc + '</span>' +
+        '<div class="quest-meta"><span class="muted">獎勵：' + br.silver + ' 銀兩 + ' + br.exp + ' 經驗</span></div></div>' +
+        '<button type="button" class="btn' + (allOk && !q.bonus ? ' primary' : '') + '" data-claim="bonus"' + (allOk && !q.bonus ? '' : ' disabled') + '>' + (q.bonus ? '已領取' : '領取') + '</button></div>';
+    } else {
+      body = renderAchBody();
+    }
+    el.innerHTML = '<div class="subtabs"><button type="button" class="subtab' + (questSub === 'daily' ? ' active' : '') + '" data-sub="daily">每日任務</button>' +
+      '<button type="button" class="subtab' + (questSub === 'ach' ? ' active' : '') + '" data-sub="ach">成就</button></div>' + body;
+    el.querySelectorAll('[data-sub]').forEach((b) => b.addEventListener('click', () => {
+      if (Audio()) Audio().sfx('click');
+      questSub = b.getAttribute('data-sub');
+      renderQuest(true);
+    }));
+    el.querySelectorAll('[data-claim]').forEach((b) => b.addEventListener('click', () => claimQuest(b.getAttribute('data-claim'))));
+    el.querySelectorAll('[data-ach]').forEach((b) => b.addEventListener('click', () => claimAch(b.getAttribute('data-ach'))));
+  }
+  // 成就（第二階段實作）
+  function achSig() { return ''; }
+  function renderAchBody() { return '<p class="muted">成就即將開放。</p>'; }
+  function claimAch() {}
+
   function renderLore() {
     const el = $('panel-lore');
     const rivalLore = ZONES.map((z) => {
@@ -3479,7 +3623,7 @@
           const on = t.getAttribute('data-tab') === 'bag';
           t.classList.toggle('active', on);
         });
-        ['zones', 'bag', 'hero', 'lore'].forEach((p) => {
+        ['zones', 'bag', 'hero', 'quest', 'lore'].forEach((p) => {
           const el = $('panel-' + p);
           if (el) el.classList.toggle('hidden', p !== 'bag');
         });
@@ -3523,7 +3667,7 @@
         document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
         tab.classList.add('active');
         const id = tab.getAttribute('data-tab');
-        ['zones', 'bag', 'hero', 'lore'].forEach((p) => {
+        ['zones', 'bag', 'hero', 'quest', 'lore'].forEach((p) => {
           $('panel-' + p).classList.toggle('hidden', p !== id);
         });
       });
