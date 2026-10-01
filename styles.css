@@ -1642,7 +1642,7 @@ body.modal-open { overflow: hidden; }
 .hpb.low .hpb-box { animation: hp-low 0.7s ease-in-out infinite alternate; }
 .hpb.low .hpb-fill { filter: brightness(1.35); }
 @keyframes hp-low { from { box-shadow: 0 0 0 rgba(255,40,40,0); } to { box-shadow: 0 0 10px 3px rgba(255,40,40,0.95); } }
-.hero-exhaust { position: absolute; left: 50%; top: -14px; transform: translateX(-50%); z-index: 7; width: 112px; pointer-events: none; }
+.hero-exhaust { position: absolute; left: 50%; top: -52px; opacity: 0.92; transform: translateX(-50%); z-index: 7; width: 112px; pointer-events: none; }
 .hero-exhaust img { width: 100%; height: auto; display: block; }
 .hero-exhaust.hidden { display: none; }
 .dmg-float { color: #ff5a4a; }
@@ -1650,7 +1650,7 @@ body.modal-open { overflow: hidden; }
 .dmg-float.enemy-hit { left: 68%; top: 38%; color: #ff4a3a; font-size: 20px; -webkit-text-stroke: 0.5px #000; }
 .dmg-float.enemy-hit.hit-crit { color: #ffd23a; font-size: 32px; -webkit-text-stroke: 1px #000; }
 .dmg-float.heal { top: 38%; }
-@media (max-width: 420px) { .hpb { width: 68px; } .hpb-boss { width: 94px; } .hpb-num { font-size: 9px; } }
+@media (max-width: 420px) { .hpb { width: 68px; } .hpb-boss { width: 94px; } .hpb-num { font-size: 10px; } }
 
 /* 2026-10-01 小螢幕緊湊化 */
 .martial-node.taken { text-decoration: none; opacity: 0.55; }
@@ -1678,4 +1678,25 @@ body.modal-open { overflow: hidden; }
   .skill-bar { gap: 2px; }
   .skill-auto, .skill-bag { width: 34px; min-width: 34px; font-size: 9px; }
   .skill-slot.has-ico .sk-name { font-size: 10px; }
+}
+
+/* 2026-10-01 血條實測修正 */
+.hpb-box { border-radius: 7px; }
+.enemy-slot .hpb { transform: translateY(var(--hpdy, 0px)); }
+.hpb-enemy .hpb-box { height: 14px; }
+.hpb-enemy .hpb-frame { height: 100%; object-fit: fill; }
+.hs-top strong { min-width: 0; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hs-top .hs-stats { flex: 0 0 auto; }
+.martial-node.taken { opacity: 0.85; }
+.martial-node.taken strong { color: #b8ac88; }
+.martial-node.taken span, .martial-node.taken em { color: #e6d9b0; }
+@media (max-width: 420px) {
+  .enemy-slot .hpb:not(.hpb-boss) { width: 54px; }
+  .enemy-slot .hpb-boss { width: 90px; }
+  .hpb-enemy .hpb-box { height: 14px; }
+  .enemy-slot[data-slot="2"] { left: 46%; }
+  .enemy-slot[data-slot="1"] { left: 8%; }
+}
+@media (max-width: 340px) {
+  .hero-status .hs-stats { font-size: 11px; }
 }

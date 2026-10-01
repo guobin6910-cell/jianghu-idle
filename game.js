@@ -573,6 +573,12 @@
   function spriteUrl(kind, pose) {
     return 'assets/combat/sprites/' + (kind === 'hero' ? 'hero_' : 'enemy_' + kind + '_') + pose + '.webp';
   }
+  // 敵人血條貼頭：精靈框固定 120px、圖腳底對齊，血條依實際圖高下移
+  function setHpGap(img, h) {
+    const slot = img.closest && img.closest('.enemy-slot');
+    const bar = slot && slot.querySelector('.hpb');
+    if (bar) bar.style.setProperty('--hpdy', Math.max(-40, 120 - h - 4) + 'px');
+  }
   function applySprite(img, kind, pose) {
     if (!img) return;
     const sc = kind === 'hero' ? SPRITE_SCALE.hero : SPRITE_SCALE.enemy;
@@ -584,6 +590,7 @@
       img.src = spriteUrl(kind, pose);
       img.style.width = Math.round(sz[0] * sc) + 'px';
       img.style.height = Math.round(sz[1] * sc) + 'px';
+      if (kind !== 'hero' && pose === 'idle') setHpGap(img, Math.round(sz[1] * sc));
     } else {
       // 專屬圖：依圖檔實際尺寸換算；缺幀退回該怪待機圖
       img.onerror = () => { img.onerror = null; if (pose !== 'idle') img.src = spriteUrl(kind, 'idle'); };
@@ -593,6 +600,7 @@
         img.style.maxWidth = 'none';
         img.style.width = Math.round(img.naturalWidth * k) + 'px';
         img.style.height = Math.round(img.naturalHeight * k) + 'px';
+        if (kind !== 'hero' && pose === 'idle') setHpGap(img, Math.round(img.naturalHeight * k));
       };
       img.src = spriteUrl(kind, pose);
     }
@@ -2492,7 +2500,8 @@
     el.textContent = text;
     const onHero = /enemy-hit|heal/.test(kinds);
     const pos = onHero ? heroIsoPos() : slotIsoPos(slot == null ? 0 : slot);
-    const jitterX = rand(-8, 10);
+    const sideX = /skill-name/.test(kinds) ? 0 : (onHero ? 14 : 9);
+    const jitterX = rand(-4, 6) + sideX;
     const jitterY = rand(-6, 10);
     el.style.left = (pos.left + jitterX) + '%';
     el.style.top = (pos.top + jitterY) + '%';
