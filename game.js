@@ -170,7 +170,7 @@
   };
 
   const MOB_GLYPH = [
-    [/犬|狼/, '🐺'], [/鼠/, '🐀'], [/蛟|鮫/, '🐊'], [/蟹/, '🦀'], [/蠍/, '🦂'], [/鷲|鷹|鳥/, '🦅'], [/蛇|竹葉青/, '🐍'], [/魈|猿/, '🐒'], [/岩魔|石/, '🪨'],
+    [/犬|狼/, '🐺'], [/狐/, '🦊'], [/魂|魄|紙紮/, '👻'], [/獅/, '🦁'], [/海妖/, '🦑'], [/鼠/, '🐀'], [/蛟|鮫/, '🐊'], [/蟹/, '🦀'], [/蠍/, '🦂'], [/鷲|鷹|鳥/, '🦅'], [/蛇|竹葉青/, '🐍'], [/魈|猿/, '🐒'], [/岩魔|石/, '🪨'],
     [/醉|賭|混/, '🥴'], [/馬賊|沙盜|盜/, '🗡️'], [/水|潮|船|碼頭/, '🌊'],
     [/黑衣|刺客|影|追踪/, '🥷'], [/劍/, '⚔️'], [/刀/, '🔪'], [/僧|寺|禪/, '🥋'],
     [/雪|寒|凍/, '❄️'], [/崖|絕|風|雲|天/, '🦅'], [/傘|夜|街/, '🌂'],
@@ -207,11 +207,11 @@
     '沙盜頭目': 'desert_chief', '沙蠍': 'desert_scorpion', '禿鷲': 'desert_vulture',
     '竹葉青': 'bamboo_snake', '白衣劍客': 'bamboo_white', '山魈': 'bamboo_ape',
     '岩魔': 'cliff_golem', '崖鷹': 'cliff_eagle', '風聲劍侍': 'cliff_wind',
-    '夜行刀客': 'night_blade', '傘下刺客': 'night_umbrella', '茶攤眼線': 'night_spy',
-    '雪原騎客': 'snow_rider', '白刃戍衛': 'snow_guard', '凍傷隱士': 'snow_hermit',
-    '守殿棍僧': 'temple_monk', '破戒刀僧': 'temple_rogue', '影廊行者': 'temple_walker',
-    '潮汐劍客': 'mist_tide', '霧中刀影': 'mist_shadow', '孤嶼船主': 'mist_boatman',
-    '雲棧護法': 'sky_guard', '絕嶺瞎子': 'sky_blind', '天風老叟': 'sky_elder',
+    '夜行刀客': 'night_blade', '紙紮鬼': 'night_paper', '狐妖': 'night_fox',
+    '雪原騎客': 'snow_rider', '雪狼': 'snow_wolf', '冰魄': 'snow_wraith',
+    '守殿棍僧': 'temple_monk', '石獅精': 'temple_lion', '遊魂': 'temple_ghost',
+    '潮汐劍客': 'mist_tide', '海妖': 'mist_kraken', '霧鮫': 'mist_shark',
+    '雲棧護法': 'sky_guard', '雷鳥': 'sky_thunderbird', '雲蛟': 'sky_wyvern',
   };
   const RIVAL_KIND = {
     rival_inn: 'boss_inn', rival_river: 'boss_river', rival_desert: 'boss_desert', rival_bamboo: 'boss_bamboo',
@@ -403,8 +403,8 @@
       minLv: 18,
       mobs: [
         { name: '夜行刀客', hp: 300, atk: 40, def: 12, exp: 110, silver: [70, 95] },
-        { name: '傘下刺客', hp: 280, atk: 44, def: 10, exp: 118, silver: [75, 100] },
-        { name: '茶攤眼線', hp: 265, atk: 38, def: 11, exp: 105, silver: [65, 90] },
+        { name: '紙紮鬼', hp: 280, atk: 44, def: 10, exp: 118, silver: [75, 100] },
+        { name: '狐妖', hp: 265, atk: 38, def: 11, exp: 105, silver: [65, 90] },
       ],
       drops: [
         { id: 'lantern_cloak', name: '雨巷披氅', slot: 'armor', def: 5, spd: 1, rare: 0.14 },
@@ -420,8 +420,8 @@
       minLv: 22,
       mobs: [
         { name: '雪原騎客', hp: 380, atk: 52, def: 15, exp: 150, silver: [95, 130] },
-        { name: '白刃戍衛', hp: 410, atk: 50, def: 17, exp: 160, silver: [100, 140] },
-        { name: '凍傷隱士', hp: 360, atk: 56, def: 13, exp: 155, silver: [98, 135] },
+        { name: '雪狼', hp: 410, atk: 50, def: 17, exp: 160, silver: [100, 140] },
+        { name: '冰魄', hp: 360, atk: 56, def: 13, exp: 155, silver: [98, 135] },
       ],
       drops: [
         { id: 'frost_blade', name: '霜痕長刀', slot: 'weapon', atk: 9, def: 1, rare: 0.11 },
@@ -437,8 +437,8 @@
       minLv: 28,
       mobs: [
         { name: '守殿棍僧', hp: 520, atk: 68, def: 22, exp: 210, silver: [140, 185] },
-        { name: '破戒刀僧', hp: 490, atk: 74, def: 18, exp: 220, silver: [145, 195] },
-        { name: '影廊行者', hp: 540, atk: 70, def: 20, exp: 230, silver: [150, 200] },
+        { name: '石獅精', hp: 490, atk: 74, def: 18, exp: 220, silver: [145, 195] },
+        { name: '遊魂', hp: 540, atk: 70, def: 20, exp: 230, silver: [150, 200] },
       ],
       drops: [
         { id: 'temple_armor', name: '灰袍戎衣', slot: 'armor', def: 8, atk: 2, rare: 0.1 },
@@ -454,8 +454,8 @@
       minLv: 35,
       mobs: [
         { name: '潮汐劍客', hp: 680, atk: 88, def: 26, exp: 300, silver: [200, 270] },
-        { name: '霧中刀影', hp: 650, atk: 94, def: 24, exp: 315, silver: [210, 280] },
-        { name: '孤嶼船主', hp: 720, atk: 90, def: 28, exp: 330, silver: [220, 300] },
+        { name: '海妖', hp: 650, atk: 94, def: 24, exp: 315, silver: [210, 280] },
+        { name: '霧鮫', hp: 720, atk: 90, def: 28, exp: 330, silver: [220, 300] },
       ],
       drops: [
         { id: 'tide_sword', name: '汐聲劍', slot: 'weapon', atk: 12, spd: 2, rare: 0.09 },
@@ -472,8 +472,8 @@
       minLv: 42,
       mobs: [
         { name: '雲棧護法', hp: 900, atk: 112, def: 34, exp: 420, silver: [280, 360] },
-        { name: '絕嶺瞎子', hp: 860, atk: 120, def: 30, exp: 440, silver: [290, 380] },
-        { name: '天風老叟', hp: 980, atk: 118, def: 36, exp: 460, silver: [310, 400] },
+        { name: '雷鳥', hp: 860, atk: 120, def: 30, exp: 440, silver: [290, 380] },
+        { name: '雲蛟', hp: 980, atk: 118, def: 36, exp: 460, silver: [310, 400] },
       ],
       drops: [
         { id: 'sky_boots', name: '雲步履', slot: 'boots', spd: 5, def: 3, rare: 0.08 },
