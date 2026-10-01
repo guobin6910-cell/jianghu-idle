@@ -78,8 +78,192 @@
     ],
   };
 
+  // ===== 武學系統（門派被動／Lv.10・20・30 二選一／Lv.50 絕學／重選）=====
+  // 文案與數值來自創意提供者。※遊戲目前沒有玩家血條，「生命／回血／受傷」類效果換算成防禦、減傷與護體次數（real 欄說明）。
+  const MARTIAL_TIERS = [10, 20, 30];
+  const MARTIAL_ULT_LV = 50;
+  const MARTIAL_RESPEC_BASE = 1000;
+  const MARTIAL = {
+    cangjian: {
+      tag: '攻擊型', slogan: '劍出如虹，快攻搶先。',
+      passive: { name: '劍出如虹', desc: '戰鬥開始前 3 秒，攻擊 +10%。', fx: { opening: 0.1 } },
+      tiers: {
+        10: [
+          { id: 'c10a', name: '連斬強化', desc: '連斬多一段傷害 +30%。', fx: { skillMul: { lianzhan: 0.3 } } },
+          { id: 'c10b', name: '御劍疾', desc: '御劍冷卻 −20%。', fx: { cdMul: { yujian: -0.2 } } },
+        ],
+        20: [
+          { id: 'c20a', name: '破空穿甲', desc: '破空無視 15% 防禦。', fx: { ignoreDef: { pokong: 0.15 } } },
+          { id: 'c20b', name: '凝氣綿長', desc: '凝氣增益時間 +30%。', real: '護體次數 2→3', fx: { ningDur: 0.3 } },
+        ],
+        30: [
+          { id: 'c30a', name: '暴風劍意', desc: '連擊時攻擊每次 +3%（最多 5 層）。', real: '每次施放招式疊一層，8 秒內有效', fx: { storm: 5 } },
+          { id: 'c30b', name: '劍心不亂', desc: '受傷 −10%。', fx: { takenMul: -0.1 } },
+        ],
+      },
+      ult: { id: 'wanjian', name: '萬劍歸宗', cd: 45000, desc: '一次打出所有劍招傷害的 2.5 倍。' },
+    },
+    tiandao: {
+      tag: '均衡型', slogan: '一刀斬斷，不留後路。',
+      passive: { name: '斬草除根', desc: '對血量低於 50% 的敵人，傷害 +12%。', fx: { lowHp: 0.12 } },
+      tiers: {
+        10: [
+          { id: 't10a', name: '裂風強化', desc: '裂風傷害 +25%。', fx: { skillMul: { liefeng: 0.25 } } },
+          { id: 't10b', name: '血刃回氣', desc: '血刃回復傷害的 10% 生命。', real: '施放血刃時獲得 1 次護體（減傷）', fx: { guard: { xueren: 1 } } },
+        ],
+        20: [
+          { id: 't20a', name: '崩山必暴', desc: '崩山必定暴擊一次。', real: '崩山每次施放必暴擊（傷害 ×1.5）', fx: { critSkill: { bengshan: 1.5 } } },
+          { id: 't20b', name: '凝氣護體', desc: '凝氣同時加防禦 10%。', real: '施放凝氣後 10 秒防禦 +10%', fx: { ningDef: 0.1 } },
+        ],
+        30: [
+          { id: 't30a', name: '殺氣', desc: '每擊殺 5 隻怪攻擊 +5%（可疊 3 層）。', real: '停止掛機後層數清空', fx: { killStack: 3 } },
+          { id: 't30b', name: '刀魂', desc: '生命 +10%。', real: '防禦 +10%', fx: { defPct: 0.1 } },
+        ],
+      },
+      ult: { id: 'tiandaozhan', name: '天刀斬', cd: 30000, desc: '單次 3 倍傷害，打首領時再 +20%。' },
+    },
+    wuzong: {
+      tag: '身法型', slogan: '來去無影，快到對手摸不著。',
+      passive: { name: '來去無影', desc: '速度 +10%，第一擊必中。', real: '每場戰鬥第一擊必定暴擊', fx: { spdPct: 0.1, firstCrit: 1 } },
+      tiers: {
+        10: [
+          { id: 'w10a', name: '連環再一段', desc: '連環多一段。', fx: { hitsPlus: { lianhuan: 1 } } },
+          { id: 'w10b', name: '影襲疾', desc: '影襲冷卻 −25%。', fx: { cdMul: { yingxi: -0.25 } } },
+        ],
+        20: [
+          { id: 'w20a', name: '遁影蓄勢', desc: '遁影後下一擊 +50%。', fx: { nextBonus: { dunying: 0.5 } } },
+          { id: 'w20b', name: '遁影綿長', desc: '遁影持續時間 +40%。', real: '施放遁影獲得 2 次護體（減傷）', fx: { guard: { dunying: 2 } } },
+        ],
+        30: [
+          { id: 'w30a', name: '暗器如雨', desc: '連擊傷害 +20%。', real: '所有多段招式傷害 +20%', fx: { multiHit: 0.2 } },
+          { id: 'w30b', name: '幻步', desc: '閃避 +8%。', fx: { dodge: 0.08 } },
+        ],
+      },
+      ult: { id: 'wuying', name: '無影百殺', cd: 40000, desc: '連續 6 擊，每擊 60% 攻擊，速度越高越強。' },
+    },
+    chanwu: {
+      tag: '防禦型', slogan: '以靜制動，穩到最後。',
+      passive: { name: '以靜制動', desc: '生命 +12%，受到的傷害 −6%。', real: '生命換算為防禦 +12%', fx: { defPct: 0.12, takenMul: -0.06 } },
+      tiers: {
+        10: [
+          { id: 'h10a', name: '鐵壁綿長', desc: '鐵壁持續 +40%。', real: '施放鐵壁獲得 2 次護體（減傷）', fx: { guard: { tiebi: 2 } } },
+          { id: 'h10b', name: '禪掌養氣', desc: '禪掌回復 8% 生命。', real: '施放禪掌獲得 1 次護體', fx: { guard: { chanzhang: 1 } } },
+        ],
+        20: [
+          { id: 'h20a', name: '定心守一', desc: '定心讓下一次受傷 −30%。', fx: { nextHitReduce: { dingxin: 0.3 } } },
+          { id: 'h20b', name: '凝氣回元', desc: '凝氣同時回血 5%。', real: '施放凝氣額外獲得 1 次護體', fx: { guard: { ningqi: 1 } } },
+        ],
+        30: [
+          { id: 'h30a', name: '金鐘罩', desc: '防禦 +15%。', fx: { defPct: 0.15 } },
+          { id: 'h30b', name: '佛心', desc: '戰鬥中每秒回血 1%。', real: '受到的傷害再 −8%', fx: { takenMul: -0.08 } },
+        ],
+      },
+      ult: { id: 'luohan', name: '羅漢金身', cd: 40000, desc: '8 秒內傷害減半並反彈 20% 傷害。' },
+    },
+  };
+  function martialState(hero) {
+    if (!hero.martial || typeof hero.martial !== 'object') hero.martial = { pick: {}, respec: 0 };
+    if (!hero.martial.pick) hero.martial.pick = {};
+    return hero.martial;
+  }
+  function martialPickedNodes(hero) {
+    const M = MARTIAL[hero.school];
+    if (!M) return [];
+    const ms = martialState(hero);
+    const out = [];
+    MARTIAL_TIERS.forEach((t) => {
+      const i = ms.pick[t];
+      if (hero.lv >= t && (i === 0 || i === 1) && M.tiers[t][i]) out.push(M.tiers[t][i]);
+    });
+    return out;
+  }
+  function mergeFx(into, src) {
+    Object.keys(src).forEach((k) => {
+      const v = src[k];
+      if (v && typeof v === 'object') {
+        into[k] = into[k] || {};
+        Object.keys(v).forEach((kk) => { into[k][kk] = (into[k][kk] || 0) + v[kk]; });
+      } else into[k] = (into[k] || 0) + v;
+    });
+  }
+  function martialFx(hero) {
+    const fx = {};
+    const M = MARTIAL[hero.school];
+    if (!M) return fx;
+    mergeFx(fx, M.passive.fx);
+    martialPickedNodes(hero).forEach((n) => mergeFx(fx, n.fx));
+    return fx;
+  }
+  function martialUlt(hero) {
+    const M = MARTIAL[hero.school];
+    return M && hero.lv >= MARTIAL_ULT_LV ? Object.assign({ kind: 'ult', mult: 1 }, M.ult) : null;
+  }
+  function respecCost() { return MARTIAL_RESPEC_BASE * Math.pow(2, martialState(state).respec || 0); }
+  function pickMartial(tier, idx) {
+    if (!state || state.lv < tier) return;
+    const ms = martialState(state);
+    if (ms.pick[tier] === idx) return;
+    if (ms.pick[tier] === 0 || ms.pick[tier] === 1) { pushLog('該境界已選定，需「重選武學」才能更換。'); renderAll(); return; }
+    ms.pick[tier] = idx;
+    const n = MARTIAL[state.school].tiers[tier][idx];
+    pushLog('領悟武學「' + n.name + '」！', 'rival');
+    if (Audio()) Audio().sfx('levelup');
+    renderAll();
+    save();
+  }
+  function respecMartial() {
+    const ms = martialState(state);
+    if (!Object.keys(ms.pick).length) return;
+    const cost = respecCost();
+    if (state.silver < cost) { pushLog('重選武學需 ' + cost + ' 銀，銀兩不足。'); renderAll(); return; }
+    state.silver -= cost;
+    ms.pick = {};
+    ms.respec = (ms.respec || 0) + 1;
+    pushLog('散去功力、重選武學（−' + cost + ' 銀）。', 'loot');
+    if (Audio()) Audio().sfx('spend');
+    renderAll();
+    save();
+  }
+  function martialHtml() {
+    const M = MARTIAL[state.school];
+    if (!M) return '';
+    const ms = martialState(state);
+    const ult = M.ult;
+    let h = '<h3 style="margin-top:12px">武學</h3><div class="martial-box">' +
+      '<div class="martial-head"><img class="school-badge" src="assets/icons/school_' + state.school + '.webp" alt="" onerror="this.remove()">' +
+      '<div><strong>' + escapeHtml(schoolShort(state.school)) + '・' + M.tag + '</strong><div class="muted">' + escapeHtml(M.slogan) + '</div></div></div>' +
+      '<div class="martial-passive"><strong>被動「' + escapeHtml(M.passive.name) + '」</strong><div class="muted">' + escapeHtml(M.passive.desc) + (M.passive.real ? '（實裝：' + escapeHtml(M.passive.real) + '）' : '') + '</div></div>';
+    MARTIAL_TIERS.forEach((t) => {
+      const locked = state.lv < t;
+      h += '<div class="martial-tier"><div class="muted">Lv.' + t + ' 二選一' + (locked ? '（未達）' : '') + '</div><div class="martial-opts">';
+      M.tiers[t].forEach((n, i) => {
+        const sel = ms.pick[t] === i;
+        const taken = (ms.pick[t] === 0 || ms.pick[t] === 1) && !sel;
+        h += '<button type="button" class="martial-node' + (sel ? ' sel' : '') + '" data-mpick="' + t + ':' + i + '"' + (locked || taken ? ' disabled' : '') + '>' +
+          '<strong>' + escapeHtml(n.name) + '</strong><span>' + escapeHtml(n.desc) + (n.real ? '<em>（實裝：' + escapeHtml(n.real) + '）</em>' : '') + '</span></button>';
+      });
+      h += '</div></div>';
+    });
+    const ultOn = state.lv >= MARTIAL_ULT_LV;
+    h += '<div class="martial-ult' + (ultOn ? ' on' : '') + '"><strong>Lv.' + MARTIAL_ULT_LV + ' 絕學「' + escapeHtml(ult.name) + '」' + (ultOn ? '（已領悟，技能列第 5 格）' : '（未達）') + '</strong><div class="muted">' + escapeHtml(ult.desc) + '</div></div>';
+    const picked = Object.keys(ms.pick).length;
+    h += '<button type="button" class="btn ghost" id="btn-respec"' + (picked ? '' : ' disabled') + '>重選武學（' + respecCost() + ' 銀）</button></div>';
+    return h;
+  }
+
   function getSchoolSkills(schoolId) {
     return SCHOOL_SKILLS[schoolId] || SCHOOL_SKILLS.cangjian;
+  }
+  /** 含已領悟絕學（第 5 格）。 */
+  function heroSkills() {
+    const base = getSchoolSkills(state.school);
+    const u = martialUlt(state);
+    return u ? base.concat([u]) : base;
+  }
+  function skillCdMs(sk) {
+    if (!sk) return 5000;
+    const f = ((martialFx(state).cdMul || {})[sk.id]) || 0;
+    return Math.max(1500, Math.floor((sk.cd || 5000) * (1 + f)));
   }
 
   function calcPower(stats) {
@@ -160,8 +344,8 @@
     if (it.bossWeapon && ICON_WEAPONS.indexOf(it.id) >= 0) f = 'weapon_' + it.id;
     else if (ICON_ITEMS.indexOf(it.id) >= 0) f = 'item_' + it.id;
     else if (it.id === 'umbrella_bone_spike' && ICON_WEAPONS.indexOf(it.id) >= 0) f = 'weapon_' + it.id;
-    if (!f) return '';
-    return '<span class="item-ico"><img src="assets/icons/' + f + '.webp" alt="" onerror="this.remove()"><img class="frame" src="assets/icons/frame_' + (it.quality || 'fan') + '.webp" alt="" onerror="this.remove()"></span>';
+    if (!f) return '<span class="item-ico-ph"></span>';
+    return '<span class="item-ico"><img src="assets/icons/' + f + '.webp" alt="" onerror="var p=this.parentNode;if(p)p.remove()"><img class="frame" src="assets/icons/frame_' + (it.quality || 'fan') + '.webp" alt="" onerror="this.remove()"></span>';
   }
   function rollAffixes(q) {
     const n = AFFIX_COUNT[q] || 0;
@@ -1001,8 +1185,19 @@
     }
   }
 
+  function martialDynamic(s) {
+    const fx = martialFx(state);
+    const now = Date.now();
+    let am = 1;
+    if (fx.opening && state.fightStartAt && now - state.fightStartAt < 3000) am += fx.opening;
+    if (fx.storm && now < (state.stormUntil || 0)) am += 0.03 * Math.min(fx.storm, state.stormStacks || 0);
+    if (fx.killStack) am += 0.05 * Math.min(fx.killStack, state.killStacks || 0);
+    s.atk = Math.floor(s.atk * am);
+    if (fx.ningDef && now < (state.defBuffUntil || 0)) s.def = Math.floor(s.def * (1 + fx.ningDef));
+    return s;
+  }
   function buffedStats(base) {
-    const s = { ...base };
+    const s = martialDynamic({ ...base });
     const b = state.combatBuff;
     if (!b || b.kind === 'soften') return s;
     if (b.kind === 'atk') s.atk = Math.floor(s.atk * (1 + (b.pct || 0)));
@@ -1017,6 +1212,9 @@
     if (state.softenLeft > 0 && state.softenPct > 0) f *= 1 - state.softenPct;
     const b = state.combatBuff;
     if (b && b.vuln) f *= 1 + b.vuln;
+    const fx = martialFx(state);
+    if (fx.takenMul) f *= Math.max(0.3, 1 + fx.takenMul);
+    if (Date.now() < (state.goldBodyUntil || 0)) f *= 0.5;
     return f;
   }
 
@@ -1041,9 +1239,10 @@
       spd += itemBase(it, 'spd');
     }
     const gp = gearPct(hero);
+    const mf = martialFx(hero);
     atk = Math.floor(atk * (1 + gp.atk / 100));
-    def = Math.floor(def * (1 + gp.def / 100));
-    spd = Math.floor(spd * (1 + gp.spd / 100));
+    def = Math.floor(def * (1 + gp.def / 100 + (mf.defPct || 0)));
+    spd = Math.floor(spd * (1 + gp.spd / 100 + (mf.spdPct || 0)));
     return { atk, def, spd };
   }
 
@@ -1091,7 +1290,7 @@
       teaCooldownUntil: 0,
       eventLogSeen: 0,
       settings: { muted: false, bgmVol: 0.28, sfxVol: 0.55, autoSell: 'fan', bulkSell: 'fan' },
-      skillCd: [0, 0, 0, 0],
+      skillCd: [0, 0, 0, 0, 0],
       nextAtkBonus: 0,
       skillSoftLeft: 0,
     };
@@ -1453,8 +1652,16 @@
     if (state.combatBuff && state.combatBuff.kind === 'exp') {
       bonusExp += state.combatBuff.pct || 0;
     }
-    const hitRoll = rand(-1, 2);
+    const mfx = martialFx(state);
+    let hitRoll = rand(-1, 2);
+    let forcedCrit = false;
+    if (!state.firstHitDone) {
+      state.firstHitDone = true;
+      if (mfx.firstCrit) { forcedCrit = true; hitRoll = 2; }
+    }
     let dmg = Math.max(1, stats.atk - mob.def + hitRoll);
+    if (forcedCrit) dmg = Math.floor(dmg * 1.5);
+    dmg = Math.max(1, Math.floor(dmg * lowHpMul(mob)));
     if (state.nextAtkBonus > 0) {
       dmg = Math.max(1, Math.floor(dmg * (1 + state.nextAtkBonus)));
       state.nextAtkBonus = 0;
@@ -1482,10 +1689,17 @@
     // 場上存活敵人輪流／主目標反擊
     const attackers = aliveMobs();
     const foe = attackers[0] || mob;
-    const hitChance = Math.max(0.35, 0.85 - (stats.spd - 5) * 0.02);
+    const hitChance = Math.max(0.2, 0.85 - (stats.spd - 5) * 0.02 - (mfx.dodge || 0));
     if (Math.random() < hitChance) {
       let mdmg = Math.max(1, foe.atk - stats.def + rand(-1, 1));
       mdmg = Math.max(1, Math.floor(mdmg * incomingDmgFactor()));
+      if (state.nextHitReduce > 0) { mdmg = Math.max(1, Math.floor(mdmg * (1 - state.nextHitReduce))); state.nextHitReduce = 0; }
+      if (Date.now() < (state.goldBodyUntil || 0)) {
+        const refl = Math.max(1, Math.floor(foe.atk * 0.2));
+        foe.hp -= refl;
+        pushLog('金身反震，「' + foe.name + '」受創 -' + refl, 'loot');
+        if (foe.hp <= 0) { finishMobKill(foe, 1); return; }
+      }
       if (state.skillSoftLeft > 0) {
         mdmg = Math.max(1, Math.floor(mdmg * 0.7));
         state.skillSoftLeft -= 1;
@@ -1519,6 +1733,11 @@
     if (_gp.silver) sil = Math.floor(sil * (1 + _gp.silver / 100));
     state.silver += sil;
     state.kills += 1;
+    const _kfx = martialFx(state);
+    if (_kfx.killStack) {
+      state.killProg = (state.killProg || 0) + 1;
+      if (state.killProg >= 5) { state.killProg = 0; state.killStacks = Math.min(_kfx.killStack, (state.killStacks || 0) + 1); }
+    }
     bumpZoneKill();
     const gotExp = Math.floor(mob.exp * bonusExp * (1 + _gp.exp / 100));
     gainExp(gotExp);
@@ -1552,6 +1771,7 @@
     state.mob = null;
     setTimeout(() => {
       if (!state || !state.hunting) return;
+      resetFightMarks();
       ensureMobs();
       renderAll();
       save();
@@ -1564,8 +1784,17 @@
   }
 
   function setSkillCd(idx, ms) {
-    if (!state.skillCd) state.skillCd = [0, 0, 0, 0];
+    if (!state.skillCd) state.skillCd = [0, 0, 0, 0, 0];
     state.skillCd[idx] = Date.now() + ms;
+  }
+
+  function lowHpMul(mob) {
+    const f = martialFx(state).lowHp || 0;
+    return f && mob.hp < mob.maxHp * 0.5 ? 1 + f : 1;
+  }
+  function resetFightMarks() {
+    state.fightStartAt = Date.now();
+    state.firstHitDone = false;
   }
 
   function castSkill(idx, opts) {
@@ -1576,17 +1805,21 @@
     const mob = syncPrimaryMob();
     if (!mob || mob.hp <= 0) return false;
     if (!skillReady(idx)) return false;
-    const skills = getSchoolSkills(state.school);
+    const skills = heroSkills();
     const sk = skills[idx];
     if (!sk) return false;
+    const fx = martialFx(state);
+    const now = Date.now();
 
-    setSkillCd(idx, sk.cd || 5000);
+    setSkillCd(idx, skillCdMs(sk));
     spawnFloat(sk.name, 'skill-name', mobSlotIndex(mob));
     pulseClass(document.querySelector('.skill-slot[data-skill="' + idx + '"]'), 'flash', 280);
 
     if (sk.kind === 'buff') {
       state.nextAtkBonus = 0.35;
-      state.skillSoftLeft = Math.max(state.skillSoftLeft || 0, 2);
+      const soft = 2 + (fx.ningDur ? 1 : 0) + ((fx.guard && fx.guard.ningqi) || 0);
+      state.skillSoftLeft = Math.max(state.skillSoftLeft || 0, soft);
+      if (fx.ningDef) state.defBuffUntil = now + 10000;
       spawnFloat('運功', 'heal');
       pushLog('施展「' + sk.name + '」：下招威力↑，短暫護體', 'loot');
       if (Audio()) Audio().sfx('qi');
@@ -1596,17 +1829,60 @@
     }
 
     const stats = buffedStats(calcStats(state));
-    const hits = sk.hits || 1;
-    let total = 0;
     const slot = mobSlotIndex(mob);
-    for (let i = 0; i < hits; i++) {
-      const roll = rand(0, 2);
-      let dmg = Math.max(1, Math.floor((stats.atk - mob.def + roll) * (sk.mult || 1.3)));
-      total += dmg;
-      mob.hp -= dmg;
+    let total = 0;
+    let isCrit = false;
+
+    if (sk.kind === 'ult' && sk.id === 'luohan') {
+      state.goldBodyUntil = now + 8000;
+      state.skillSoftLeft = Math.max(state.skillSoftLeft || 0, 3);
+      spawnFloat('金身', 'heal');
+      pushLog('施展絕學「' + sk.name + '」：8 秒內受創減半，並反彈部分傷害！', 'rival');
+      if (Audio()) Audio().sfx('rival');
+      renderSkillBar();
+      save();
+      return true;
     }
-    const isCrit = (sk.mult || 1) >= 1.6 || hits >= 3;
-    pushLog('「' + sk.name + '」對「' + mob.name + '」額外 -' + total, 'loot');
+
+    const eff = Math.max(1, stats.atk - mob.def);
+    if (sk.kind === 'ult') {
+      if (sk.id === 'wanjian') {
+        const sw = getSchoolSkills(state.school).filter((x) => x.kind !== 'buff');
+        const sum = sw.reduce((a, x) => a + (x.mult || 1) * (x.hits || 1), 0);
+        total = Math.max(1, Math.floor(eff * sum * 2.5));
+      } else if (sk.id === 'tiandaozhan') {
+        total = Math.max(1, Math.floor(eff * 3 * (mob.isRival ? 1.2 : 1)));
+      } else if (sk.id === 'wuying') {
+        const per = 0.6 * (1 + stats.spd * 0.01);
+        for (let i = 0; i < 6; i++) total += Math.max(1, Math.floor(eff * per));
+      }
+      total = Math.floor(total * lowHpMul(mob));
+      mob.hp -= total;
+      isCrit = true;
+      pushLog('絕學「' + sk.name + '」對「' + mob.name + '」造成 -' + total, 'rival');
+    } else {
+      let hits = (sk.hits || 1) + ((fx.hitsPlus && fx.hitsPlus[sk.id]) || 0);
+      let mul = 1 + ((fx.skillMul && fx.skillMul[sk.id]) || 0);
+      if (hits > 1 && fx.multiHit) mul *= 1 + fx.multiHit;
+      const dEff = mob.def * (1 - ((fx.ignoreDef && fx.ignoreDef[sk.id]) || 0));
+      const critMul = (fx.critSkill && fx.critSkill[sk.id]) || 1;
+      if (fx.storm) {
+        state.stormStacks = (now < (state.stormUntil || 0) ? state.stormStacks || 0 : 0) + 1;
+        state.stormUntil = now + 8000;
+      }
+      for (let i = 0; i < hits; i++) {
+        const roll = rand(0, 2);
+        let dmg = Math.max(1, Math.floor((stats.atk - dEff + roll) * (sk.mult || 1.3) * mul * critMul * lowHpMul(mob)));
+        total += dmg;
+        mob.hp -= dmg;
+      }
+      isCrit = (sk.mult || 1) >= 1.6 || hits >= 3 || critMul > 1;
+      pushLog('「' + sk.name + '」對「' + mob.name + '」額外 -' + total, 'loot');
+      const g = fx.guard && fx.guard[sk.id];
+      if (g) state.skillSoftLeft = Math.max(state.skillSoftLeft || 0, g);
+      if (fx.nextBonus && fx.nextBonus[sk.id]) state.nextAtkBonus = (state.nextAtkBonus || 0) + fx.nextBonus[sk.id];
+      if (fx.nextHitReduce && fx.nextHitReduce[sk.id]) state.nextHitReduce = fx.nextHitReduce[sk.id];
+    }
     spawnFloat('-' + total, isCrit ? 'crit skill' : 'skill', slot);
     spawnSlash(!!isCrit, true, slot);
     const slotEl = $('enemy-slot-' + slot);
@@ -1627,6 +1903,9 @@
 
   function tryAutoSkills(stats) {
     // 前 3 格掛機自動施放（冷卻好就放，每次 tick 最多一招）
+    if (martialUlt(state) && skillReady(4)) {
+      if (castSkill(4, { auto: true })) return;
+    }
     for (let i = 0; i < 3; i++) {
       if (skillReady(i)) {
         castSkill(i, { auto: true });
@@ -1942,6 +2221,7 @@
       Audio().playBgm(want);
     }
     state.hunting = true;
+    resetFightMarks();
     ensureMobs();
     pushLog(`在「${zone.name}」開始掛機…（自動戰鬥中）`);
     const bh = $('btn-hunt');
@@ -1964,6 +2244,8 @@
   function stopHunt() {
     if (!state) return;
     state.hunting = false;
+    state.killStacks = 0;
+    state.killProg = 0;
     if (huntTimer) {
       clearInterval(huntTimer);
       huntTimer = null;
@@ -2403,21 +2685,23 @@
   function renderSkillBar() {
     const wrap = $('skill-slots');
     if (!wrap || !state) return;
-    const skills = getSchoolSkills(state.school);
+    const skills = heroSkills();
     const now = Date.now();
-    if (!state.skillCd) state.skillCd = [0, 0, 0, 0];
+    if (!state.skillCd) state.skillCd = [0, 0, 0, 0, 0];
     // 初次建立按鈕
-    if (!wrap.dataset.bound || wrap.dataset.school !== state.school) {
+    const wkey = (state.school || '') + ':' + skills.length;
+    if (!wrap.dataset.bound || wrap.dataset.school !== wkey) {
       wrap.dataset.bound = '1';
-      wrap.dataset.school = state.school || '';
+      wrap.dataset.school = wkey;
+      wrap.style.gridTemplateColumns = 'repeat(' + Math.max(4, skills.length) + ', 1fr)';
       const short = schoolShort(state.school);
-      wrap.innerHTML = [0, 1, 2, 3]
+      wrap.innerHTML = skills.map((_, i) => i)
         .map((i) => {
           const sk = skills[i];
           const label = sk ? sk.name : short;
           const sub = sk ? '' : '<span class="sk-school">' + escapeHtml(short) + '</span>';
           return (
-            '<button type="button" class="skill-slot" data-skill="' +
+            '<button type="button" class="skill-slot' + (sk && sk.id ? ' has-ico' : '') + '" data-skill="' +
             i +
             '" title="' +
             escapeHtml(label) +
@@ -2451,7 +2735,7 @@
       const until = state.skillCd[idx] || 0;
       const left = Math.max(0, until - now);
       const sk = skills[idx];
-      const cdMs = (sk && sk.cd) || 5000;
+      const cdMs = skillCdMs(sk);
       const mask = btn.querySelector('.cd-mask');
       const cdText = btn.querySelector('.cd-text');
       if (left > 0) {
@@ -2642,8 +2926,8 @@
         }
         const qm = qualityMeta(it.quality);
         return (
-          '<div class="row eq-row ' + qm.cls + '"><span>' + labels[slot] + '</span><span>' +
-          iconHtml(it) + nameHtml(it) + '<span class="q-badge">' + qm.label + '</span>' +
+          '<div class="row eq-row ' + qm.cls + '"><span class="eq-left">' + iconHtml(it) + '<span class="eq-lab">' + labels[slot] + '</span></span><span class="eq-right">' +
+          nameHtml(it) + '<span class="q-badge">' + qm.label + '</span>' +
           (it.bossWeapon ? '<span class="q-badge">首領專屬</span>' : '') +
           (gearLine(it) ? '<div class="muted">' + escapeHtml(gearLine(it)) + '</div>' : '') +
           enhBtn(it) + '</span></div>'
@@ -2815,6 +3099,7 @@
       '<p class="muted" style="margin-top:8px">' +
       escapeHtml(buffLine) +
       '</p>' +
+      martialHtml() +
       '<h3 style="margin-top:12px">俠義可花</h3>' +
       '<p class="muted">稱號 ' +
       CHIVALRY_COST.title +
@@ -2840,6 +3125,11 @@
       ZONES.length +
       ' 區；名號對手日限 1、同區冷卻 4 時。</p>';
 
+    el.querySelectorAll('[data-mpick]').forEach((b) =>
+      b.addEventListener('click', () => { const [t, i] = b.getAttribute('data-mpick').split(':'); pickMartial(Number(t), Number(i)); })
+    );
+    const respecBtn = el.querySelector('#btn-respec');
+    if (respecBtn) respecBtn.addEventListener('click', respecMartial);
     el.querySelectorAll('[data-title]').forEach((b) =>
       b.addEventListener('click', () => spendChivalryTitle(b.getAttribute('data-title')))
     );
@@ -3136,9 +3426,9 @@
     saved.mob = null;
     saved.mobs = [];
     if (!saved.zoneKills || typeof saved.zoneKills !== 'object') saved.zoneKills = {};
-    if (!Array.isArray(saved.skillCd) || saved.skillCd.length !== 4) {
-      saved.skillCd = [0, 0, 0, 0];
-    }
+    if (!Array.isArray(saved.skillCd)) saved.skillCd = [0, 0, 0, 0, 0];
+    while (saved.skillCd.length < 5) saved.skillCd.push(0);
+    if (!saved.martial || typeof saved.martial !== 'object') saved.martial = { pick: {}, respec: 0 };
     if (typeof saved.nextAtkBonus !== 'number') saved.nextAtkBonus = 0;
     if (typeof saved.skillSoftLeft !== 'number') saved.skillSoftLeft = 0;
     return saved;

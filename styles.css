@@ -1563,3 +1563,30 @@ body.modal-open { overflow: hidden; }
 .enh-glow.enh-10 { color: #ff9a5a; text-shadow: 0 0 8px rgba(255,120,60,1), 0 0 14px rgba(255,200,90,0.8); }
 .skill-slot .sk-ico { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; border-radius: 50%; }
 .skill-slot .sk-ico + .sk-name { position: absolute; left: 0; right: 0; bottom: 1px; z-index: 2; font-size: 10px; color: #fff; text-shadow: 0 1px 3px #000, 0 0 4px #000; text-align: center; }
+
+.martial-box { border: 1px solid rgba(226,199,128,0.3); border-radius: 10px; padding: 10px; }
+.martial-head { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+.martial-head .school-badge { width: 44px; height: 44px; object-fit: contain; }
+.martial-passive, .martial-ult { margin: 6px 0; padding: 6px 8px; border-radius: 8px; background: rgba(0,0,0,0.2); }
+.martial-ult.on { border: 1px solid #e8c050; box-shadow: 0 0 8px rgba(232,192,80,0.4); }
+.martial-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+.martial-node { appearance: none; text-align: left; border: 1px solid rgba(226,199,128,0.35); border-radius: 8px; background: #221e16; color: inherit; padding: 8px; cursor: pointer; font: inherit; }
+.martial-node strong { display: block; color: var(--gold); font-size: 13px; }
+.martial-node span { font-size: 12px; opacity: 0.85; }
+.martial-node em { display: block; font-style: normal; font-size: 11px; opacity: 0.7; }
+.martial-node.sel { border-color: #e8c050; background: #3a3018; }
+.martial-node:disabled:not(.sel) { opacity: 0.45; cursor: not-allowed; }
+
+/* 2026-10-01 美術回報修正 */
+.eq-row .eq-left { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.eq-row .eq-left .item-ico, .eq-row .eq-left .item-ico-ph { margin-right: 0; flex: 0 0 40px; }
+.item-ico-ph { display: inline-block; width: 40px; height: 40px; margin-right: 6px; flex: 0 0 40px; }
+.bag-item .item-ico-ph { display: none; }
+.eq-row .eq-lab { min-width: 2em; }
+.eq-row .eq-right { text-align: right; min-width: 0; }
+.q-badge { white-space: nowrap; }
+@media (max-width: 340px) { .bag-item .q-badge, .eq-row .q-badge { font-size: 9px; padding: 0 4px; margin-left: 3px; } }
+.skill-slot.has-ico { border-radius: 10px; aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; padding: 3px 2px 4px; overflow: hidden; }
+.skill-slot.has-ico .sk-ico { position: static; inset: auto; width: 100%; max-width: 64px; aspect-ratio: 1; height: auto; border-radius: 0; flex: 0 0 auto; }
+.skill-slot.has-ico .sk-ico + .sk-name, .skill-slot.has-ico .sk-name { position: static; font-size: 12px; line-height: 1.2; color: var(--gold); text-shadow: none; max-width: 100%; }
+.skill-slot.has-ico .cd-mask { border-radius: 0; }
