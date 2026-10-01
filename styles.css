@@ -1715,3 +1715,10 @@ body.modal-open { overflow: hidden; }
   0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
   100% { opacity: 0; transform: translate(calc(-50% + 34px), -12px) scale(1.12); }
 }
+
+.hpb-small .hpb-frame { aspect-ratio: 216 / 56; }
+.hpb-enemy .hpb-frame { aspect-ratio: 480 / 53; }
+@media (max-width: 480px) {
+  .enemy-slot .hpb:not(.hpb-boss) { width: 54px; }
+  .hpb-small .hpb-box { height: auto; }
+}
