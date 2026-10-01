@@ -670,6 +670,20 @@
     return Math.floor(36 + lv * lv * 16 + lv * 10);
   }
 
+  const REALMS = [
+    [1, '初入江湖'], [10, '後天境'], [20, '先天境'], [30, '宗師境'], [40, '大宗師'], [50, '武林名宿'],
+  ];
+  /** 境界：依等級分段，十級內再分小成／中成／大成 */
+  function realmName(lv) {
+    let idx = 0;
+    for (let i = 0; i < REALMS.length; i++) if (lv >= REALMS[i][0]) idx = i;
+    const name = REALMS[idx][1];
+    if (idx === 0) return name;
+    const into = lv - REALMS[idx][0];
+    if (idx === REALMS.length - 1) return name;
+    return name + '・' + (into < 4 ? '小成' : into < 7 ? '中成' : '大成');
+  }
+
   function rand(a, b) {
     return a + Math.floor(Math.random() * (b - a + 1));
   }
@@ -2094,7 +2108,7 @@
     $('hero-name').textContent = titleBit + state.name;
     const lvEl = $('hero-lv');
     if (lvEl) lvEl.textContent = 'Lv.' + state.lv;
-    $('hero-meta').textContent = school ? school.name : '';
+    $('hero-meta').textContent = (school ? school.name : '') + '・' + realmName(state.lv);
     const powerEl = $('stat-power');
     if (powerEl) powerEl.textContent = String(calcPower(stats));
     const av = $('hud-avatar');
@@ -2465,6 +2479,7 @@
       '</span></div>' +
       '<div class="row"><span>等級</span><span>Lv.' +
       state.lv +
+      '（' + realmName(state.lv) + '）' +
       '</span></div>' +
       '<div class="row"><span>戰績</span><span>擊敗 ' +
       state.kills +
@@ -2810,7 +2825,7 @@
   // —— 離線收益 ——
   const OFFLINE_CAP_MS = 8 * 3600 * 1000; // 最多結算 8 小時
   const OFFLINE_MIN_MS = 90 * 1000; // 離開不足 90 秒不結算
-  const OFFLINE_EFFICIENCY = 0.6; // 離線效率 60%（不含名號對手與茶樓事件）
+  const OFFLINE_EFFICIENCY = 0.4; // 離線效率 40%（不含名號對手與茶樓事件）
   const OFFLINE_MAX_DROP_ROLLS = 400;
 
   function fmtDuration(ms) {
@@ -2838,14 +2853,16 @@
     );
     avg.hp /= n; avg.def /= n; avg.exp /= n; avg.s /= n;
     const dmg = Math.max(1, stats.atk - avg.def + 0.5);
-    const ticksPerKill = Math.ceil(avg.hp / dmg) + 1;
+    const ticksPerKill = Math.ceil(avg.hp / dmg) + 3; // 含刷新與走位空檔
     const tickMs = Math.max(650, 1400 - stats.spd * 40);
-    const kills = Math.min(5000, Math.floor((usedMs * OFFLINE_EFFICIENCY) / (ticksPerKill * tickMs)));
+    const kills = Math.min(3000, Math.floor((usedMs * OFFLINE_EFFICIENCY) / (ticksPerKill * tickMs)));
     if (kills < 1) return null;
 
     const fromLv = state.lv;
-    const expGain = Math.floor(kills * avg.exp);
-    let silGain = Math.floor(kills * avg.s);
+    // 等級遠高於此區時收益遞減（鼓勵換地圖）
+    const gapMult = 1 / (1 + Math.max(0, state.lv - zone.minLv) * 0.06);
+    const expGain = Math.floor(kills * avg.exp * gapMult);
+    let silGain = Math.floor(kills * avg.s * gapMult);
     state.exp += expGain;
     while (state.exp >= expToNext(state.lv)) {
       state.exp -= expToNext(state.lv);
@@ -2910,9 +2927,9 @@
         '<div><span>經驗</span><b>+' + r.expGain + '</b></div>' +
         '<div><span>銀兩</span><b>+' + r.silver + '</b></div>' +
         '</div>' +
-        (r.toLv > r.fromLv ? '<div class="level-delta">境界提升：Lv.' + r.fromLv + ' → <b>Lv.' + r.toLv + '</b></div>' : '') +
+        (r.toLv > r.fromLv ? '<div class="level-delta">境界提升：Lv.' + r.fromLv + ' → <b>Lv.' + r.toLv + '</b>（' + realmName(r.toLv) + '）</div>' : '') +
         '<div class="level-delta">' + (r.bagAdded > 0 ? '行囊新增 ' + r.bagAdded + ' 件裝備' + (qLines ? '<br/>' + qLines : '') : '沒有撿到新裝備') +
-        '<br/><span class="muted">離線效率 60%，不含名號對手與茶樓事件。</span></div>' +
+        '<br/><span class="muted">離線效率 40%，高於此區等級收益遞減；不含名號對手與茶樓事件。</span></div>' +
         '<button type="button" class="btn primary full" data-close>收下</button>' +
         '</div></div>';
       root.querySelector('[data-close]').onclick = () => {
