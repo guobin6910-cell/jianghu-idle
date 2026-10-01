@@ -1405,6 +1405,7 @@
 
   function closeModal() {
     modalOpen = false;
+    document.body.classList.remove('modal-open');
     const root = document.getElementById('modal-root');
     if (root) root.innerHTML = '';
     if (modalQueue.length) {
@@ -2892,8 +2893,9 @@
         return;
       }
       modalOpen = true;
+      document.body.classList.add('modal-open');
       const root = ensureModalRoot();
-      const qLines = Object.keys(r.byQ).map((q) => {
+      const qLines = ['fan', 'liang', 'zhen', 'jue'].filter((q) => r.byQ[q] > 0).map((q) => {
         const m = qualityMeta(q);
         return '<span class="' + m.cls + '">' + m.label + ' ×' + r.byQ[q] + '</span>';
       }).join('　');
