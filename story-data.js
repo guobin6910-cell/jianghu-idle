@@ -8,15 +8,17 @@
   const S = {};
   S.CHAPTERS = {
     1: { id: 1, title: '第一章・青石風雲', sub: '雨落青石，少年入局。' },
-    2: { id: 2, title: '第二章・洛陽舊事', sub: '十五年前，洛陽城。', locked: true },
+    2: { id: 2, title: '第二章・洛陽舊事', sub: '十五年前，有些事情不該被忘記。' },
+    3: { id: 3, title: '第三章・沈家舊門', sub: '', locked: true },
   };
   S.PORTRAIT = {
-    qinghe: 'portrait_shen_qinghe', old: 'portrait_old_swordsman', woman: 'portrait_white_lady', bf: 'portrait_blackfeather',
+    qinghe: 'portrait_shen_qinghe', old: 'portrait_old_swordsman', woman: 'portrait_white_lady', bf: 'portrait_blackfeather', su: 'portrait_su_wantang',
   };
   S.PEOPLE = {
     qinghe: { name: '沈青河', img: 'portrait_shen_qinghe', desc: '雨夜撞上你的少年。身世只透露了一半。' },
     oldSwordsman: { name: '獨臂老人', img: 'portrait_old_swordsman', desc: '醉仙樓二樓獨酌的老人，桌邊放著一柄斷劍。' },
     mysteriousWoman: { name: '戴斗笠的白衣女子', img: 'portrait_white_lady', desc: '倚窗看雨的女子，似乎也在等一個人。' },
+    suWantang: { name: '蘇晚棠', img: 'portrait_su_wantang', norel: true, desc: '洛陽舊書坊的掌櫃。安靜、話少，看見玉佩時神色變了。' },
     blackfeather: { name: '黑羽盟', img: 'portrait_blackfeather', desc: '左手戴黑護腕、以黑羽為記的神秘勢力。' },
   };
   S.INTEL = {
@@ -31,9 +33,11 @@
     jade_back: ['玉佩背面的小字', '「十五年前，洛陽城。」'],
   };
   S.ITEMS = {
-    jade: ['染血玉佩', '沈青河留下的玉佩，血跡未乾。'],
-    bf_token: ['黑羽令', '黑羽盟的信物，沉甸甸的黑鐵牌。'],
+    jade: ['染血玉佩', '沈青河留下的玉佩，血跡未乾。', 'icon_jade_pendant'],
+    bf_token: ['黑羽令', '黑羽盟的信物，沉甸甸的黑鐵牌。', 'icon_blackfeather'],
     rain_tube: ['「雨停了」竹筒', '白衣女子託你轉交的小竹筒。'],
+    bf_shard: ['黑羽殘片', '洛陽夜巷中，黑羽追兵身上掉落的一小片黑鐵羽片。', 'icon_blackfeather_shard'],
+    shen_note: ['沈家舊宅紙條', '「沈家舊宅，洛水之畔。」', 'icon_old_note'],
     bracer: ['黑護腕', '從黑風嶺死者腕上取下的黑護腕。'],
   };
   S.GEAR = {
@@ -404,6 +408,222 @@
     choices: [{ label: '繼續江湖', next: '__close' }],
   };
 
+  // ===== 第二章・洛陽舊事（小幅版：沿用同一套節點、戰鬥與存檔） =====
+  N.ch2_open = {
+    bg: 'scene_luoyang', place: '洛陽城',
+    pages: [
+      '離開青石鎮後，你一路向北。',
+      '幾日後，洛陽城出現在眼前。\n\n這座城比你想像中更熱鬧。',
+      '叫賣聲、車馬聲、酒肆裡的笑聲，混成一片。\n\n可是當你從懷裡摸出那枚玉佩時，心裡卻忽然沉了一下。\n\n說不出的不安。',
+      '你決定先去哪裡？',
+    ],
+    e: { f: ['ch2_started'], chapter: 2, phase: 'ch2' },
+    choices: [
+      { label: '前往客棧', next: 'ch2_inn' },
+      { label: '前往茶樓', next: 'ch2_tea_in_a' },
+      { label: '在城中四處走走', next: 'ch2_walk' },
+    ],
+  };
+  N.ch2_inn = {
+    bg: 'scene_luoyang', place: '洛陽・悅來客棧',
+    pages: [
+      '客棧不大，櫃檯後的小二正在打瞌睡。\n\n你要了一間房，順口問了句：「這城裡，有沒有什麼老事可聽？」',
+      '小二一下子清醒了，上下打量你。\n\n「客官，老事這種東西，客棧裡聽不到。」\n\n他壓低聲音，朝街對面努了努嘴。\n\n「想聽，去對面茶樓。坐一個下午，比我說十句都多。」',
+    ],
+    choices: [{ label: '走去茶樓', next: 'ch2_tea_in_b' }],
+  };
+  N.ch2_walk = {
+    bg: 'scene_luoyang', place: '洛陽・街市',
+    pages: [
+      '你沿著街慢慢走。\n\n賣糖人的、補鍋的、說書的……每一樣都熱鬧。\n\n只有城東那面老告示牆，被人刮得乾乾淨淨，一個字也不剩。',
+      '你在牆前站了一會兒。\n\n旁邊賣餛飩的老漢瞥你一眼：「別看了，十幾年前就這樣。」\n\n他沒再往下說，只把湯勺在鍋沿敲了兩下。',
+      '你抬頭，看見街角那間茶樓的門簾被風掀起，裡頭傳來低低的說話聲。',
+    ],
+    choices: [{ label: '走進茶樓', next: 'ch2_tea_in_c' }],
+  };
+  N.ch2_tea_in_a = {
+    bg: 'scene_luoyang', place: '洛陽・茶樓',
+    pages: ['你推門進了茶樓。\n\n樓下坐了七八桌，茶香混著瓜子味。你挑了靠窗的位置坐下。'],
+    next: 'ch2_tea',
+  };
+  N.ch2_tea_in_b = {
+    bg: 'scene_luoyang', place: '洛陽・茶樓',
+    pages: ['你照小二的話，走進對面茶樓。\n\n茶博士端上一壺熱茶，沒多問，像是早就見慣了打聽事情的人。'],
+    next: 'ch2_tea',
+  };
+  N.ch2_tea_in_c = {
+    bg: 'scene_luoyang', place: '洛陽・茶樓',
+    pages: ['你掀簾進去。\n\n方才聽到的低語，是從裡頭傳來的。你挑了離聲音最近的位置坐下。'],
+    next: 'ch2_tea',
+  };
+  N.ch2_tea = {
+    bg: 'scene_luoyang', place: '洛陽・茶樓',
+    pages: [
+      '鄰桌兩名江湖人士正在低聲說話。',
+      '「十五年前的洛陽，你聽過嗎？」',
+      '另一人立刻按住酒杯，聲音壓得更低：\n\n「別提那件事。」',
+    ],
+    choices: [
+      { label: '上前詢問十五年前的事', next: 'ch2_tea_ask' },
+      { label: '假裝沒聽見', next: 'ch2_tea_ignore' },
+      { label: '先觀察兩人', next: 'ch2_tea_watch' },
+    ],
+  };
+  N.ch2_tea_ask = {
+    bg: 'scene_luoyang', place: '洛陽・茶樓',
+    pages: [
+      '你端著茶走過去。\n\n「兩位剛才說的十五年前，是什麼事？」',
+      '兩人同時抬頭。\n\n其中一人的手，已經悄悄移到腰邊。\n\n「這位朋友，喝茶就好。」',
+      '你沒有退。\n\n沉默了幾息，另一人終於嘆了口氣，低聲丟下三個字：\n\n「沈家的事。」\n\n說完，兩人起身走了，連茶錢都沒收拾。',
+    ],
+    e: { f: ['ch2_clue_shen'] },
+    next: 'ch2_bookshop_hint_a',
+  };
+  N.ch2_tea_ignore = {
+    bg: 'scene_luoyang', place: '洛陽・茶樓',
+    pages: [
+      '你低頭喝茶，像什麼也沒聽見。\n\n兩人也很快換了話題，聊起今年的雨水和米價。',
+      '你付了茶錢，起身離開。\n\n走到門口，才發現袖口被什麼壓著——\n\n一張折成小方塊的紙條，不知什麼時候落在你桌邊。',
+      '紙條上只有一行字：\n\n「想知道洛陽舊事，去找舊書坊。」',
+    ],
+    e: { f: ['ch2_clue_bookshop'] },
+    next: 'ch2_bookshop',
+  };
+  N.ch2_tea_watch = {
+    bg: 'scene_luoyang', place: '洛陽・茶樓',
+    pages: (c) => [
+      '你沒有出聲，只是把茶杯轉了半圈，目光落在那兩人身上。',
+      '其中一人伸手去拿花生時，袖口往上滑了一寸。\n\n袖內側，繡著一根黑色羽毛。',
+      c.f('noticed_blackfeather')
+        ? '你認得那個標記。\n\n和青石鎮那晚三名黑衣人護腕上的黑羽，一模一樣。'
+        : '你隱約覺得那個標記有些熟悉，卻一時想不起在哪裡見過。',
+      '那人察覺到視線，立刻放下袖子，起身結帳離開。\n\n另一人多看了你一眼，也走了。\n\n桌上留著半碟沒吃完的花生。',
+      '你想起店門口曾有人說，這附近有間舊書坊，專收老事老書。',
+    ],
+    e: { f: ['ch2_clue_bookshop'] },
+    next: 'ch2_bookshop',
+  };
+  N.ch2_bookshop_hint_a = {
+    bg: 'scene_luoyang', place: '洛陽・茶樓',
+    pages: ['你坐著想了很久。\n\n沈家。這個姓，你在雨夜裡聽過。\n\n茶博士收杯子時，像是順口提了一句：\n\n「想翻舊事，去西巷舊書坊。」'],
+    e: { f: ['ch2_clue_bookshop'] },
+    next: 'ch2_bookshop',
+  };
+  N.ch2_bookshop = {
+    bg: 'scene_bookshop', place: '洛陽・舊書坊',
+    pages: [
+      '你推開舊書坊的門。\n\n門後沒有掌櫃熱情的招呼。\n\n只有一股紙張和舊墨的味道。',
+      { t: '一名女子從書堆後抬起頭。\n\n她看了你一眼，目光落到你手中的玉佩上。\n\n原本平靜的神色，第一次有了變化。', who: 'su' },
+      { t: '「……這東西，你從哪裡得到的？」', who: 'su' },
+    ],
+    choices: [
+      { label: '說實話', next: 'ch2_su_truth' },
+      { label: '隱瞞來源', next: 'ch2_su_hide' },
+      { label: '反問她認不認識', next: 'ch2_su_ask' },
+      { label: '不回答', next: 'ch2_su_silent' },
+    ],
+  };
+  N.ch2_su_truth = {
+    bg: 'scene_bookshop', place: '洛陽・舊書坊',
+    pages: (c) => [
+      '「青石鎮的一個雨夜。有人把它留在我手上。」\n\n你把事情說了大概。',
+      c.f('saved_qinghe')
+        ? { t: '「那個少年……他叫什麼？」\n\n你說：「沈青河。」\n\n她垂下眼，手指在櫃檯上輕輕停住。', who: 'su' }
+        : { t: '蘇晚棠聽完，沒有追問。\n\n「你說得很直。這在洛陽，不常見。」', who: 'su' },
+    ],
+    next: 'ch2_su_info',
+  };
+  N.ch2_su_hide = {
+    bg: 'scene_bookshop', place: '洛陽・舊書坊',
+    pages: [
+      { t: '「路上撿的。」\n\n蘇晚棠看了你很久。\n\n「路上撿的東西，不會讓人手指發白。」', who: 'su' },
+      '她沒有拆穿。只是把櫃檯上的燈芯撥亮了些。',
+    ],
+    next: 'ch2_su_info',
+  };
+  N.ch2_su_ask = {
+    bg: 'scene_bookshop', place: '洛陽・舊書坊',
+    pages: [
+      { t: '「你認得它？」\n\n蘇晚棠沒有回答。\n\n過了一會兒，她才說：\n\n「我認得的，不是它。是刻它的人。」', who: 'su' },
+      '她停住，像是說多了。',
+    ],
+    next: 'ch2_su_info',
+  };
+  N.ch2_su_silent = {
+    bg: 'scene_bookshop', place: '洛陽・舊書坊',
+    pages: [
+      '你沒有開口。\n\n蘇晚棠也沒有再問。\n\n書坊裡只剩雨後屋簷滴水的聲音。',
+      { t: '良久，她才輕輕說：\n\n「不說也好。有些事，本來就不該站在門口說。」', who: 'su' },
+    ],
+    next: 'ch2_su_info',
+  };
+  N.ch2_su_info = {
+    bg: 'scene_bookshop', place: '洛陽・舊書坊',
+    pages: [
+      { t: '「十五年前，洛陽有一個沈家。」', who: 'su' },
+      { t: '「一夜之間，人沒了，宅子空了。官府沒有留下完整的記錄。」', who: 'su' },
+      { t: '「江湖上也很少有人再提。」', who: 'su' },
+      { t: '「有人希望所有人，都忘記沈家。」', who: 'su' },
+    ],
+    e: { f: ['ch2_clue_shen'], people: ['suWantang'] },
+    choices: [
+      { label: '追問下去', next: 'ch2_su_more' },
+      { label: '向她道謝，離開', next: 'ch2_night' },
+    ],
+  };
+  N.ch2_su_more = {
+    bg: 'scene_bookshop', place: '洛陽・舊書坊',
+    pages: [{ t: '蘇晚棠把書合上。\n\n「知道得越多，麻煩越多。」\n\n她停了停，又補了半句：\n\n「今晚，別走大路。」', who: 'su' }],
+    next: 'ch2_night',
+  };
+  N.ch2_night = {
+    bg: 'scene_luoyang_night', place: '洛陽・夜巷',
+    pages: [
+      '離開舊書坊時，天已經黑了。\n\n街上的燈一盞接一盞熄滅，原本熱鬧的人聲，像被誰一把掐斷。',
+      '太靜了。\n\n你停下腳步。',
+      { t: '三道黑影從巷口兩側走出來。\n\n「把東西交出來。」', who: 'bf' },
+      '你知道他們要的是什麼。\n\n你握緊手中的兵器。',
+    ],
+    battle: { count: 3, name: '黑羽追兵', win: 'ch2_after', lose: 'ch2_after_lose', label: '戰鬥開始' },
+  };
+  N.ch2_after = {
+    bg: 'scene_luoyang_night', place: '洛陽・夜巷',
+    pages: [
+      '最後一名黑衣人倒下時，腰間掉出一小片黑鐵羽片。\n\n你撿起來：【黑羽殘片】。',
+      '他的衣襟裡還夾著一張紙，被雨氣潤得半濕。\n\n紙上只有一行字：\n\n「沈家舊宅，洛水之畔。」',
+      '洛水。\n\n你不知道洛水邊哪一處是沈家舊宅。\n\n但你知道，有人比你更早知道。',
+    ],
+    e: { item: ['bf_shard', 'shen_note'], f: ['ch2_fought_bf'] },
+    next: 'ch2_end',
+  };
+  N.ch2_after_lose = {
+    bg: 'scene_luoyang_night', place: '洛陽・夜巷',
+    pages: [
+      '你被逼退幾步，肩上吃了一刀。\n\n就在最後一刻，遠處傳來更夫的梆子聲，黑衣人互看一眼，轉身消失在巷子盡頭。',
+      '地上留下一張被雨浸濕的紙。\n\n「沈家舊宅，洛水之畔。」',
+      '洛水。\n\n你把紙塞進懷裡。',
+    ],
+    e: { item: ['shen_note'], f: ['ch2_fought_bf'] },
+    next: 'ch2_end',
+  };
+  N.ch2_end = {
+    bg: 'scene_luoyang_night', place: '洛陽・客棧',
+    pages: [
+      '你回到客棧，關上房門。\n\n窗外的雨又下了起來。',
+      '你拿出玉佩，放在桌上。\n\n月光穿過窗紙，照在玉佩上。',
+      '玉佩上原本模糊的紋路，忽然變得清晰。\n\n你看到了兩個字：\n\n「沈家」。',
+      '原來十五年前的洛陽，真的有人活了下來。',
+      '……\n\n而那個人，也許正在等你。',
+    ],
+    e: { f: ['chapter2Completed'], phase: 'done_ch2', complete: 'ch2' },
+    choices: [{ label: '完', next: 'ch2_final' }],
+  };
+  N.ch2_final = {
+    bg: 'scene_luoyang_night', place: '', center: true,
+    pages: ['【第二章・洛陽舊事　完】\n\n【第三章・沈家舊門】\n🔒 尚未解鎖\n\n新的江湖故事尚未揭開。'],
+    choices: [{ label: '繼續江湖', next: '__close' }],
+  };
+
   // ===== 履歷（只記錄做過什麼，不評斷） =====
   S.RESUME = [
     ['saved_qinghe', '曾在雨夜救下沈青河'], ['investigated_qinghe', '曾在雨夜先問清沈青河的來歷'],
@@ -426,6 +646,7 @@
     { id: 'q_bfinv', text: '黑羽盟的邀請', show: (c) => c.f('joined_bf_invite'), done: (c) => c.f('heifeng_done') },
     { id: 'q_hf', text: '查探黑風嶺', show: (c) => c.f('meet_done'), done: (c) => c.f('heifeng_done') },
     { id: 'q_jade', text: '找出染血玉佩的秘密', show: (c) => c.f('qh_leave_done'), done: (c) => c.f('chapter1_done') },
+    { id: 'q_ch2', text: (c) => (c.f('chapter2Completed') ? '第二章・洛陽舊事　完（第三章・沈家舊門 鎖定）' : '第二章・洛陽舊事：查玉佩背後的十五年前'), show: (c) => c.f('chapter1_done'), done: (c) => c.f('chapter2Completed') },
   ];
 
   // ===== 掛機江湖事件（低機率，不連續彈窗） =====
