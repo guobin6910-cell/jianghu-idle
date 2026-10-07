@@ -9,16 +9,18 @@
   S.CHAPTERS = {
     1: { id: 1, title: '第一章・青石風雲', sub: '雨落青石，少年入局。' },
     2: { id: 2, title: '第二章・洛陽舊事', sub: '十五年前，有些事情不該被忘記。' },
-    3: { id: 3, title: '第三章・沈家舊門', sub: '', locked: true },
+    3: { id: 3, title: '第三章・沈家舊門', sub: '有些門，十五年來從未真正關上。' },
+    4: { id: 4, title: '第四章・白石橋', sub: '', locked: true },
   };
   S.PORTRAIT = {
-    qinghe: 'portrait_shen_qinghe', old: 'portrait_old_swordsman', woman: 'portrait_white_lady', bf: 'portrait_blackfeather', su: 'portrait_su_wantang',
+    qinghe: 'portrait_shen_qinghe', old: 'portrait_old_swordsman', woman: 'portrait_white_lady', bf: 'portrait_blackfeather', su: 'portrait_su_wantang', ruolan: 'portrait_shen_ruolan', ruolan_anon: 'portrait_shen_ruolan',
   };
   S.PEOPLE = {
     qinghe: { name: '沈青河', img: 'portrait_shen_qinghe', desc: '雨夜撞上你的少年。身世只透露了一半。' },
     oldSwordsman: { name: '獨臂老人', img: 'portrait_old_swordsman', desc: '醉仙樓二樓獨酌的老人，桌邊放著一柄斷劍。' },
     mysteriousWoman: { name: '戴斗笠的白衣女子', img: 'portrait_white_lady', desc: '倚窗看雨的女子，似乎也在等一個人。' },
     suWantang: { name: '蘇晚棠', img: 'portrait_su_wantang', norel: true, desc: '洛陽舊書坊的掌櫃。安靜、話少，看見玉佩時神色變了。' },
+    shenRuolan: { name: '沈若蘭', img: 'portrait_shen_ruolan', norel: true, desc: '在沈家舊宅後院遇見的女子。自稱來替故人收拾東西，別的什麼都沒說。' },
     blackfeather: { name: '黑羽盟', img: 'portrait_blackfeather', desc: '左手戴黑護腕、以黑羽為記的神秘勢力。' },
   };
   S.INTEL = {
@@ -31,6 +33,10 @@
     bf_in_zx: ['醉仙樓裡的黑羽', '醉仙樓角落坐著兩個左手戴黑護腕的人。'],
     heifeng_truth: ['黑風嶺真相（一角）', '死者並非同夥內鬨，現場有第三方的痕跡。'],
     jade_back: ['玉佩背面的小字', '「十五年前，洛陽城。」'],
+    ch3_name_yunchuan: ['沈雲川', '沈家舊宅廳堂的家族畫像上，唯一沒被刮掉臉的年輕男子。'],
+    ch3_luoshui: ['洛水不忘', '沈家枯井井壁上刻得很深的四個字。意思不明。'],
+    ch3_true_killer: ['真正的兇手……', '後院暗格裡殘信的最後半行。後面被撕掉了。'],
+    ch3_baishi: ['白石橋', '沈家舊簪內側刻著：「洛水以北，白石橋。」'],
   };
   S.ITEMS = {
     jade: ['染血玉佩', '沈青河留下的玉佩，血跡未乾。', 'icon_jade_pendant'],
@@ -38,6 +44,8 @@
     rain_tube: ['「雨停了」竹筒', '白衣女子託你轉交的小竹筒。'],
     bf_shard: ['黑羽殘片', '洛陽夜巷中，黑羽追兵身上掉落的一小片黑鐵羽片。', 'icon_blackfeather_shard'],
     shen_note: ['沈家舊宅紙條', '「沈家舊宅，洛水之畔。」', 'icon_old_note'],
+    broken_letter: ['殘信', '「若有人看到這封信……不要相信當晚留下來的人。沈家並沒有……真正的兇手……」後半被撕掉了。', 'icon_broken_letter'],
+    shen_hairpin: ['沈家舊簪', '一枚銀色髮簪，簪身極細。對著光看，裡面刻著一行小字：「洛水以北，白石橋。」', 'icon_shen_hairpin'],
     bracer: ['黑護腕', '從黑風嶺死者腕上取下的黑護腕。'],
   };
   S.GEAR = {
@@ -589,8 +597,8 @@
   N.ch2_after = {
     bg: 'scene_luoyang_night', place: '洛陽・夜巷',
     pages: [
-      '最後一名黑衣人倒下時，腰間掉出一小片黑鐵羽片。\n\n你撿起來：【黑羽殘片】。',
-      '他的衣襟裡還夾著一張紙，被雨氣潤得半濕。\n\n紙上只有一行字：\n\n「沈家舊宅，洛水之畔。」',
+      { t: '最後一名黑衣人倒下時，腰間掉出一小片黑鐵羽片。\n\n你撿起來：【黑羽殘片】。', icon: 'icon_blackfeather_shard' },
+      { t: '他的衣襟裡還夾著一張紙，被雨氣潤得半濕。\n\n紙上只有一行字：\n\n「沈家舊宅，洛水之畔。」', icon: 'icon_old_note' },
       '洛水。\n\n你不知道洛水邊哪一處是沈家舊宅。\n\n但你知道，有人比你更早知道。',
     ],
     e: { item: ['bf_shard', 'shen_note'], f: ['ch2_fought_bf'] },
@@ -600,7 +608,7 @@
     bg: 'scene_luoyang_night', place: '洛陽・夜巷',
     pages: [
       '你被逼退幾步，肩上吃了一刀。\n\n就在最後一刻，遠處傳來更夫的梆子聲，黑衣人互看一眼，轉身消失在巷子盡頭。',
-      '地上留下一張被雨浸濕的紙。\n\n「沈家舊宅，洛水之畔。」',
+      { t: '地上留下一張被雨浸濕的紙。\n\n「沈家舊宅，洛水之畔。」', icon: 'icon_old_note' },
       '洛水。\n\n你把紙塞進懷裡。',
     ],
     e: { item: ['shen_note'], f: ['ch2_fought_bf'] },
@@ -620,7 +628,276 @@
   };
   N.ch2_final = {
     bg: 'scene_luoyang_night', place: '', center: true,
-    pages: ['【第二章・洛陽舊事　完】\n\n【第三章・沈家舊門】\n🔒 尚未解鎖\n\n新的江湖故事尚未揭開。'],
+    pages: ['【第二章・洛陽舊事　完】\n\n【第三章・沈家舊門】\n已解鎖\n\n「沈家舊宅，洛水之畔。」'],
+    choices: [{ label: '繼續江湖', next: '__close' }],
+  };
+
+  // ===== 第三章・沈家舊門（輕量：同一套節點、show、battle、e） =====
+  const B3 = { ruins: 'scene_shen_ruins', hall: 'scene_shen_hall', yard: 'scene_shen_backyard', rain: 'scene_shen_ruins_rain' };
+  S.B3 = B3;
+  N.ch3_title = {
+    bg: B3.ruins, place: '', center: true,
+    pages: ['【第三章・沈家舊門】\n\n「有些門，十五年來從未真正關上。」'],
+    e: { f: ['chapter3Started'], chapter: 3, phase: 'ch3' },
+    next: 'ch3_open',
+  };
+  N.ch3_open = {
+    bg: B3.ruins, place: '洛水之畔',
+    pages: (c) => [
+      '洛陽城外，天色將暗。\n\n你沿著洛水一路向南。',
+      '十五年前，這裡曾經有一座宅院。\n\n如今，只剩下荒草與斷牆。',
+      '沒有人願意提起那個地方。\n\n你問過兩個船夫，兩個人都把頭轉開了。',
+      '懷裡那張半濕的紙條，你已經看了很多遍。\n\n「沈家舊宅，洛水之畔。」',
+    ].concat(c.f('ch2_su_more') ? ['你想起蘇晚棠那句話。\n\n「知道得越多，麻煩越多。」\n\n你還是來了。'] : [])
+      .concat(['但你手中的玉佩，卻讓你不得不走下去。']),
+    next: 'ch3_yard',
+  };
+  N.ch3_yard = {
+    bg: B3.ruins, place: '沈家舊宅',
+    pages: (c) => [(c.f('ch3_gate') || c.f('ch3_hall') || c.f('ch3_well_seen'))
+      ? '風從斷牆的缺口吹進來。\n\n還有哪裡沒看？'
+      : '斷牆圍著一片荒院。\n\n大門半倒，廳堂的屋頂塌了一角，院子邊有一口枯井，再往裡是後院。\n\n你要先看哪裡？'],
+    choices: [
+      { label: '大門', next: 'ch3_gate', show: (c) => !c.f('ch3_gate') },
+      { label: '破舊廳堂', next: 'ch3_hall', show: (c) => !c.f('ch3_hall') },
+      { label: '枯井', next: 'ch3_well', show: (c) => !c.f('ch3_well_seen') },
+      { label: '後院', next: (c) => (c.f('ch3_hall') ? 'ch3_back' : 'ch3_hall_pass') },
+    ],
+  };
+  N.ch3_gate = {
+    bg: B3.ruins, place: '沈家舊宅・大門',
+    pages: [
+      '兩扇木門只剩一扇還掛在門框上。\n\n門板中間有一道家徽，被雨水和年月磨得幾乎看不出形狀。',
+      '你把玉佩拿近一點。\n\n「喀。」',
+      '很輕的一聲。玉佩在你掌心裡微微一震。\n\n你等了一會兒。\n\n什麼都沒有發生。',
+      '玉佩與沈家，似乎有某種關聯。',
+    ],
+    e: { f: ['ch3_gate'] },
+    next: 'ch3_yard',
+  };
+  const HALL = [
+    '廳堂裡的桌椅早就被搬空，地上全是碎瓦。\n\n正牆上還掛著一幅家族畫像，畫軸已經發黑。',
+    '畫上五個人，前四個人的臉全被刮掉了。\n\n刮得很用力，連底下的絹都破了。',
+    '只有最右邊一個年輕男子，臉還完好。\n\n他看起來很普通，甚至有點像在忍笑。',
+    '畫像角落有一行小字：\n\n「沈雲川。」',
+    '【獲得線索：沈雲川】',
+  ];
+  N.ch3_hall = { bg: B3.hall, place: '沈家舊宅・廳堂', pages: HALL, e: { f: ['ch3_hall'], intel: ['ch3_name_yunchuan'] }, next: 'ch3_yard' };
+  N.ch3_hall_pass = {
+    bg: B3.hall, place: '沈家舊宅・廳堂',
+    pages: ['要到後院，得先穿過廳堂。\n\n' + HALL[0]].concat(HALL.slice(1)),
+    e: { f: ['ch3_hall'], intel: ['ch3_name_yunchuan'] },
+    next: 'ch3_back',
+  };
+  N.ch3_well = {
+    bg: B3.yard, place: '沈家舊宅・枯井',
+    pages: ['井口長滿青苔，往下看只有黑。\n\n你丟了一顆小石子，很久才聽到一聲悶響。', '什麼都沒有。'],
+    e: { f: ['ch3_well_seen'] },
+    choices: [{ label: '仔細查看', next: 'ch3_well_look' }, { label: '離開', next: 'ch3_yard' }],
+  };
+  N.ch3_well_look = {
+    bg: B3.yard, place: '沈家舊宅・枯井',
+    pages: [
+      '你趴在井沿，伸手摸井壁。\n\n離井口一臂深的地方，指尖碰到一道刻痕。',
+      '你點起火摺子。\n\n四個字，刻得很深：\n\n「洛水不忘。」',
+      '你不知道這句話是什麼意思。\n\n但你知道，刻字的人當時一定很用力。',
+      '【獲得線索：洛水不忘】',
+    ],
+    e: { f: ['ch3_well_mark'], intel: ['ch3_luoshui'] },
+    next: 'ch3_yard',
+  };
+  N.ch3_back = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      '後院中間有一棵大樹，早就枯死了，枝幹像伸向天空的手。',
+      '樹下鋪著一塊石板，邊緣長滿了草。',
+      '你走近時，懷裡的玉佩又震了一下。\n\n這一次，石板底下也傳來「喀」的一聲。',
+      '你撬開石板。\n\n下面是一個小暗格。',
+      '裡面沒有金銀，也沒有秘笈。\n\n只有一封信，被油布包著，邊角已經爛了。',
+    ],
+    next: 'ch3_letter',
+  };
+  N.ch3_letter = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      '「若有人看到這封信……」',
+      '「不要相信當晚留下來的人。」',
+      '「沈家並沒有……」\n\n後面的字被撕掉了。',
+      '信紙最下面，只剩半行：\n\n「真正的兇手……」\n\n然後就斷了。',
+      '你把信看了三遍。\n\n當年那一夜發生的事，也許不是外面傳的那樣。',
+      { t: '【獲得：殘信】', icon: 'icon_broken_letter' },
+    ],
+    e: { f: ['ch3_letter'], item: ['broken_letter'], intel: ['ch3_true_killer'] },
+    next: 'ch3_meet',
+  };
+  N.ch3_meet = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: (c) => {
+      const out = [
+        '「你不該來這裡。」',
+        '你回頭。\n\n枯樹旁站著一個女子，約莫二十五、六歲，衣著樸素，頭髮只用一根銀簪挽著。',
+        '她的神情很冷靜，像是早就在那裡站了很久。',
+        { t: '「別緊張。我只是來替故人收拾一些東西。」', who: 'ruolan_anon' },
+        '她說她姓沈，叫若蘭。\n\n只說了名字，沒說別的。',
+      ];
+      if (c.f('ch2_fought_bf')) {
+        out.push('她的目光落在你手臂上那道還沒好全的刀傷。');
+        out.push({ t: '「你已經和他們交過手了？」', who: 'ruolan' });
+      }
+      out.push({ t: '「你為什麼來這裡？」', who: 'ruolan' });
+      return out;
+    },
+    e: { people: ['shenRuolan'] },
+    choices: [
+      { label: '「我在找沈家。」', next: 'ch3_ans_find' },
+      { label: '「我只是偶然經過。」', next: 'ch3_ans_pass' },
+      { label: '「有人告訴我這裡有秘密。」', next: 'ch3_ans_told' },
+      { label: '「這枚玉佩帶我來的。」', next: 'ch3_ans_jade' },
+    ],
+  };
+  N.ch3_ans_find = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      { t: '「沈家？」\n\n她輕輕笑了一下。\n\n「沈家早就沒了。你找的只是一片荒地。」', who: 'ruolan' },
+      '她說這話的時候，沒有看你，而是看著那棵枯樹。',
+      '然後，她看見了你腰間露出的玉佩。',
+    ],
+    next: 'ch3_demand',
+  };
+  N.ch3_ans_pass = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      { t: '「偶然經過，會撬開別人家的石板？」', who: 'ruolan' },
+      '你一時答不上來。',
+      '她的視線往下移，停在你腰間的玉佩上。',
+    ],
+    next: 'ch3_demand',
+  };
+  N.ch3_ans_told = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      { t: '「誰？」', who: 'ruolan' },
+      '她問得很快，快得不像隨口一問。',
+      '你沒有回答。她也沒有再問，因為她已經看見你腰間的玉佩。',
+    ],
+    next: 'ch3_demand',
+  };
+  N.ch3_ans_jade = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: ['你把玉佩拿出來。', '她的臉色第一次變了。', { t: '「你……從哪裡得到它？」', who: 'ruolan' }],
+    e: { f: ['ch3_said_jade'] },
+    choices: [{ label: '「你認識它？」', next: 'ch3_ans_jade2' }],
+  };
+  N.ch3_ans_jade2 = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: ['她沒有回答。\n\n風吹過枯樹，樹枝互相敲出細碎的聲音。', { t: '過了很久，她才開口。\n\n「這不是你的東西。」', who: 'ruolan' }],
+    next: 'ch3_demand',
+  };
+  N.ch3_demand = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: ['她朝你伸出手。', { t: '「把玉佩給我。」', who: 'ruolan' }],
+    choices: [
+      { label: '交給她', next: 'ch3_give' },
+      { label: '拒絕', next: 'ch3_refuse' },
+      { label: '追問她是誰', next: 'ch3_ask' },
+      { label: '準備拔劍', next: 'ch3_draw' },
+    ],
+  };
+  N.ch3_give = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      '你把玉佩放在她掌心。',
+      '她低頭看了很久，拇指在玉佩背面按了一下。\n\n「喀。」',
+      { t: '她把玉佩還給你。\n\n「謝謝。」', who: 'ruolan' },
+      '她轉身走進斷牆的陰影裡，腳步很輕，一下子就看不見了。',
+      '你低頭看玉佩。\n\n背面靠邊的地方，少了一小塊。\n\n切口很平整，像是本來就可以拆下來。',
+    ],
+    e: { f: ['ch3_gave_jade'] },
+    next: 'ch3_pin',
+  };
+  N.ch3_refuse = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: ['你把玉佩收回懷裡。', { t: '她沒有生氣，只是把手放下。\n\n「那你最好活得久一點。」', who: 'ruolan' }, '她轉身離開，走過大門時，連頭都沒有回。'],
+    e: { f: ['ch3_refused'] },
+    next: 'ch3_pin',
+  };
+  N.ch3_ask = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      '「你到底是誰？」',
+      { t: '「十五年前死掉的人，已經沒有名字。」', who: 'ruolan' },
+      { t: '「活下來的人，也不一定有名字。」', who: 'ruolan' },
+      '她說完就走了。\n\n你沒有攔她，因為你不知道該用什麼理由攔。',
+    ],
+    e: { f: ['ch3_asked_name'] },
+    next: 'ch3_pin',
+  };
+  N.ch3_draw = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      '你的手按上了兵器。',
+      { t: '她往後退了一步。\n\n「我不想與你動手。」', who: 'ruolan' },
+      '話還沒說完，斷牆上傳來瓦片碎裂的聲音。',
+      { t: '三道黑影從牆頭跳下來。\n\n「東西和人，一起帶走。」', who: 'bf' },
+      '你和她同時轉頭。\n\n要對付的不是彼此。',
+    ],
+    e: { f: ['ch3_drew_sword'] },
+    battle: { count: 3, name: '黑羽追兵', win: 'ch3_after_fight', lose: 'ch3_after_fight_lose', label: '戰鬥開始' },
+  };
+  N.ch3_after_fight = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: ['最後一個黑衣人翻過斷牆逃走了。', '你回頭找她。\n\n枯樹下已經沒有人。', '地上留著一枚銀色髮簪，是剛才挽在她頭上的那一根。'],
+    e: { f: ['ch3_fought_bf'] },
+    next: 'ch3_pin_fight',
+  };
+  N.ch3_after_fight_lose = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      '你被逼到枯樹邊，眼看刀就要落下。',
+      '一道銀光從旁邊掠過，黑衣人慘叫一聲，三個人互看一眼，翻牆退走。',
+      '等你站穩，她已經不見了。\n\n地上留著一枚銀色髮簪。',
+    ],
+    e: { f: ['ch3_fought_bf'] },
+    next: 'ch3_pin_fight',
+  };
+  N.ch3_pin = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: ['你正要離開，腳邊有東西反了一下光。', '是一枚銀色髮簪，剛才挽在她頭上的那一根。\n\n不知道是掉的，還是故意留下的。'],
+    next: 'ch3_pin_fight',
+  };
+  N.ch3_pin_fight = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [{ t: '【獲得：沈家舊簪】', icon: 'icon_shen_hairpin' }],
+    e: { item: ['shen_hairpin'] },
+    choices: [{ label: '查看舊簪', next: 'ch3_pin_look' }],
+  };
+  N.ch3_pin_look = {
+    bg: B3.yard, place: '沈家舊宅・後院',
+    pages: [
+      '簪身很細，對著天光轉一圈，你發現裡面是空的。',
+      '簪子內側刻著一行比米粒還小的字：\n\n「洛水以北，白石橋。」',
+      '白石橋。\n\n你沒聽過這個地方。',
+      '【獲得線索：白石橋】',
+    ],
+    e: { intel: ['ch3_baishi'] },
+    next: 'ch3_end',
+  };
+  N.ch3_end = {
+    bg: B3.rain, place: '沈家舊宅・門口',
+    pages: (c) => {
+      const out = ['你走回沈家舊宅門口。\n\n天開始下雨。', '十五年前。\n\n沈家一夜消失。', '有人說他們死了。\n\n有人說他們逃了。', '而現在，你遇見了一個不願承認自己與沈家有關的人。'];
+      if (c.f('ch3_gave_jade')) out.push('你摸了摸玉佩上缺掉的那一角。\n\n她拿走的，到底是什麼？');
+      if (c.f('ch3_well_mark')) out.push('井壁上那四個字，又在你腦中浮了出來。\n\n洛水不忘。');
+      out.push('你看著手中的舊簪。');
+      out.push('如果沈家真的已經不存在……\n\n那麼，她又是誰？');
+      return out;
+    },
+    e: { f: ['chapter3Completed'], phase: 'done_ch3', complete: 'ch3' },
+    choices: [{ label: '完', next: 'ch3_final' }],
+  };
+  N.ch3_final = {
+    bg: B3.rain, place: '', center: true,
+    pages: ['【第三章・沈家舊門　完】\n\n【第四章・白石橋】\n🔒 尚未解鎖\n\n「洛水以北，有一座白石橋。」\n「有人正在那裡等你。」'],
     choices: [{ label: '繼續江湖', next: '__close' }],
   };
 
@@ -646,7 +923,8 @@
     { id: 'q_bfinv', text: '黑羽盟的邀請', show: (c) => c.f('joined_bf_invite'), done: (c) => c.f('heifeng_done') },
     { id: 'q_hf', text: '查探黑風嶺', show: (c) => c.f('meet_done'), done: (c) => c.f('heifeng_done') },
     { id: 'q_jade', text: '找出染血玉佩的秘密', show: (c) => c.f('qh_leave_done'), done: (c) => c.f('chapter1_done') },
-    { id: 'q_ch2', text: (c) => (c.f('chapter2Completed') ? '第二章・洛陽舊事　完（第三章・沈家舊門 鎖定）' : '第二章・洛陽舊事：查玉佩背後的十五年前'), show: (c) => c.f('chapter1_done'), done: (c) => c.f('chapter2Completed') },
+    { id: 'q_ch2', ch: 2, text: (c) => (c.f('chapter2Completed') ? '第二章・洛陽舊事　完' : '第二章・洛陽舊事：查玉佩背後的十五年前'), show: (c) => c.f('chapter1_done'), done: (c) => c.f('chapter2Completed') },
+    { id: 'q_ch3', ch: 3, text: (c) => (c.f('chapter3Completed') ? '第三章・沈家舊門　完（第四章・白石橋 鎖定）' : '第三章・沈家舊門：到洛水邊找沈家舊宅'), show: (c) => c.f('chapter2Completed'), done: (c) => c.f('chapter3Completed') },
   ];
 
   // ===== 掛機江湖事件（低機率，不連續彈窗） =====

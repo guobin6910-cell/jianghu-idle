@@ -3715,7 +3715,7 @@
   }
   // ===================== 章回劇情系統（資料見 story-data.js） =====================
   const ST = window.JH_STORY || null;
-  const WHO_NAME = { qinghe: '沈青河', old: '獨臂老人', woman: '白衣女子', bf: '黑衣人', su: '蘇晚棠' };
+  const WHO_NAME = { qinghe: '沈青河', old: '獨臂老人', woman: '白衣女子', bf: '黑衣人', su: '蘇晚棠', ruolan: '沈若蘭', ruolan_anon: '女子' };
   function stNorm(s) {
     if (!s || typeof s !== 'object') s = {};
     ['flags', 'rel', 'did', 'traits', 'evDone'].forEach((k) => { if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = {}; });
@@ -3723,6 +3723,7 @@
     if (typeof s.chapter !== 'number') s.chapter = 1;
     if (!s.unlocked.length) s.unlocked = [1];
     if ((s.completed.indexOf('ch1') >= 0 || (s.flags && s.flags.chapter1_done)) && s.unlocked.indexOf(2) < 0) s.unlocked.push(2);
+    if ((s.completed.indexOf('ch2') >= 0 || (s.flags && s.flags.chapter2Completed)) && s.unlocked.indexOf(3) < 0) s.unlocked.push(3);
     if (typeof s.cur !== 'string') s.cur = null;
     if (typeof s.entered !== 'string') s.entered = '';
     if (typeof s.phase !== 'string') s.phase = '';
@@ -3839,7 +3840,7 @@
     const btns = last ? m.buttons : [{ label: '繼續', fn: () => stDraw(m, i + 1) }];
     const inner = stSceneHtml(m.bg, m.place, img) +
       '<div class="st-body">' + (p.who && WHO_NAME[p.who] ? '<div class="st-who">' + WHO_NAME[p.who] + '</div>' : '') +
-      '<div class="st-text' + (m.center ? ' st-center' : '') + '">' + escapeHtml(p.t || '') + '</div></div>' +
+      '<div class="st-text' + (m.center ? ' st-center' : '') + '">' + (p.icon ? '<img class="st-got-ico" src="assets/story/' + p.icon + '.webp" alt="" onerror="this.remove()">' : '') + escapeHtml(p.t || '') + '</div></div>' +
       '<div class="st-foot">' + (m.pages.length > 1 ? '<span class="st-pg">' + (i + 1) + ' / ' + m.pages.length + '</span>' : '') + stBtns(btns) + '</div>';
     stPaint(inner, (card) => stBindBtns(card, btns));
   }
@@ -4081,7 +4082,9 @@
     else if (!s.started && !s.flags.qh_leave_done) { status = '一段江湖故事正等著你。'; act = '<button type="button" class="btn primary full" data-st="begin">踏入江湖（序章）</button>'; }
     else if (s.phase === 'waiting') status = '「三日後，醉仙樓。」還需擊敗 ' + stLeftKills() + ' 名對手，約定之日就到了。';
     else if (s.phase === 'heifeng') { status = '黑風嶺就在鎮外，隨時能去看看。'; act = '<button type="button" class="btn primary full" data-st="hf">前往黑風嶺</button>'; }
-    else if (s.phase === 'done_ch2' || s.flags.chapter2Completed) status = '第二章已完。第三章《沈家舊門》尚未揭開。';
+    else if (s.phase === 'done_ch3' || s.flags.chapter3Completed) status = '第三章已完。舊簪裡藏著一行字：洛水以北，白石橋。第四章尚未揭開。';
+    else if (s.flags.chapter3Started || s.phase === 'ch3') { status = '沈家舊宅的事，還沒弄清楚。'; act = '<button type="button" class="btn primary full" data-st="ch3back">回到沈家舊宅</button>'; }
+    else if (s.phase === 'done_ch2' || s.flags.chapter2Completed) { status = '第二章已完。紙條上寫著：沈家舊宅，洛水之畔。'; act = '<button type="button" class="btn primary full" data-st="ch3">前往洛水</button>'; }
     else if (s.flags.ch2_started || s.phase === 'ch2') { status = '洛陽城裡，十五年前的事還沒查完。'; act = '<button type="button" class="btn primary full" data-st="ch2">回到洛陽</button>'; }
     else if (s.phase === 'done' || s.flags.chapter1_done) { status = '第一章已完。玉佩背面那行小字，指向十五年前的洛陽城。'; act = '<button type="button" class="btn primary full" data-st="ch2">前往洛陽（第二章）</button>'; }
     else status = '江湖暫時平靜。';
@@ -4115,7 +4118,7 @@
       const ch = ST.CHAPTERS[k];
       const done = s.completed.indexOf('ch' + k) >= 0;
       const open = s.unlocked.indexOf(+k) >= 0 && !ch.locked;
-      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? ((k === '2' ? s.flags.ch2_started : (s.started || s.flags.qh_leave_done)) ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
+      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? ((k === '3' ? s.flags.chapter3Started : k === '2' ? s.flags.ch2_started : (s.started || s.flags.qh_leave_done)) ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
     }).join('');
   }
   function stResumeHtml() {
@@ -4134,7 +4137,7 @@
     if (!el || !state) return;
     const s = stEnsure();
     const tab = $('tab-lore');
-    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng' || (s.flags.chapter1_done && !s.flags.ch2_started));
+    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng' || (s.flags.chapter1_done && !s.flags.ch2_started) || (s.flags.chapter2Completed && !s.flags.chapter3Started));
     const subs = [['now', '正在發生'], ['ppl', '人物'], ['rum', '傳聞'], ['ch', '章回'], ['res', '履歷']];
     let body;
     if (loreSub === 'ppl') body = stPeopleHtml();
@@ -4151,6 +4154,8 @@
       const k = b.getAttribute('data-st');
       if (k === 'begin') stBegin();
       else if (k === 'resume') { s.open = true; stResume(); }
+      else if (k === 'ch3') { s.cur = 'ch3_title'; s.open = true; s.entered = ''; save(); stResume(); }
+      else if (k === 'ch3back') { s.cur = s.items.indexOf('shen_hairpin') >= 0 ? 'ch3_pin_look' : s.flags.ch3_letter ? 'ch3_meet' : 'ch3_yard'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch2') { s.cur = 'ch2_open'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'hf') { s.cur = 'hf_enter'; s.open = true; s.entered = ''; save(); stResume(); }
     }));
@@ -4158,11 +4163,14 @@
   function stQuestHtml() {
     const s = stEnsure();
     const c = stCtx();
-    const rows = ST.QUESTS.filter((q) => !q.show || q.show(c)).map((q) => {
+    let lastCh = 0;
+    const rows = ST.QUESTS.filter((q) => !q.show || q.show(c)).map((q) => ({ q, ch: q.ch || 1 })).sort((a, b) => b.ch - a.ch).map(({ q, ch }) => {
       const d = !!q.done(c);
-      return '<div class="quest-row' + (d ? ' claimed' : '') + '"><div class="quest-main"><strong>〈' + escapeHtml(typeof q.text === 'function' ? q.text(c) : q.text) + '〉</strong></div><span class="st-q ' + (d ? 'done' : 'doing') + '">' + (d ? '已了結' : '進行中') + '</span></div>';
+      const head = ch !== lastCh && ST.CHAPTERS[ch] ? '<div class="st-qch">' + escapeHtml(ST.CHAPTERS[ch].title) + '</div>' : '';
+      lastCh = ch;
+      return head + '<div class="quest-row' + (d ? ' claimed' : '') + '"><div class="quest-main"><strong>〈' + escapeHtml(typeof q.text === 'function' ? q.text(c) : q.text) + '〉</strong></div><span class="st-q ' + (d ? 'done' : 'doing') + '">' + (d ? '已了結' : '進行中') + '</span></div>';
     }).join('');
-    return '<div class="quest-head"><span class="muted">' + escapeHtml(ST.CHAPTERS[s.chapter].title) + '</span></div>' + (rows || '<p class="muted">尚無卷宗。到「江湖閒談」踏入江湖吧。</p>');
+    return (rows || '<p class="muted">尚無卷宗。到「江湖閒談」踏入江湖吧。</p>');
   }
   function stSig() {
     const s = state && state.story;
