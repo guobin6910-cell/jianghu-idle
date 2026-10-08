@@ -11,11 +11,13 @@
     2: { id: 2, title: '第二章・洛陽舊事', sub: '十五年前，有些事情不該被忘記。' },
     3: { id: 3, title: '第三章・沈家舊門', sub: '有些門，十五年來從未真正關上。' },
     4: { id: 4, title: '第四章・白石橋', sub: '橋下流水依舊，橋上的人卻早已不在。' },
-    5: { id: 5, title: '第五章・無名客', sub: '', locked: true },
+    5: { id: 5, title: '第五章・無名客', sub: '江湖上沒有人知道他的名字，卻有人記得他的故事。' },
+    6: { id: 6, title: '第六章・沈雲川', sub: '', locked: true },
   };
   S.PORTRAIT = {
     qinghe: 'portrait_shen_qinghe', old: 'portrait_old_swordsman', woman: 'portrait_white_lady', bf: 'portrait_blackfeather', su: 'portrait_su_wantang', ruolan: 'portrait_shen_ruolan', ruolan_anon: 'portrait_shen_ruolan',
     baishi: 'portrait_baishi_old',
+    wumingke: 'portrait_wumingke', wumingke_anon: 'portrait_wumingke',
   };
   S.PEOPLE = {
     qinghe: { name: '沈青河', img: 'portrait_shen_qinghe', desc: '雨夜撞上你的少年。身世只透露了一半。' },
@@ -24,6 +26,7 @@
     suWantang: { name: '蘇晚棠', img: 'portrait_su_wantang', norel: true, desc: '洛陽舊書坊的掌櫃。安靜、話少，看見玉佩時神色變了。' },
     shenRuolan: { name: '沈若蘭', img: 'portrait_shen_ruolan', norel: true, desc: '在沈家舊宅後院遇見的女子。自稱來替故人收拾東西，別的什麼都沒說。' },
     baishiOld: { name: '白石老人', img: 'portrait_baishi_old', norel: true, desc: '在白石橋等你的老人。' },
+    wumingke: { name: '無名客', img: 'portrait_wumingke', norel: true, desc: '聽雨巷無名茶館裡，穿灰色長衫的中年人。沒有人知道他的名字。' },
     blackfeather: { name: '黑羽盟', img: 'portrait_blackfeather', desc: '左手戴黑護腕、以黑羽為記的神秘勢力。' },
   };
   S.INTEL = {
@@ -42,6 +45,10 @@
     ch3_baishi: ['白石橋', '沈家舊簪內側刻著：「洛水以北，白石橋。」'],
     ch4_mark: ['奇怪的刻痕', '白石橋正中央一塊白石上，有一道很淡的刀痕，旁邊刻著「十五」。'],
     ch4_three: ['三個人走過白石橋', '白石老人說：十五年前那天晚上，有三個人從橋上走過。其中兩個再也沒有回來，第三個活了下來。'],
+    ch5_dock15: ['碼頭老人知道十五年前的事情', '城南碼頭的船夫一聽到「十五年前」，臉色就變了。'],
+    ch5_tingyu: ['聽雨巷', '舊市集賣舊書的老人說：如果真想找無名客，去聽雨巷。'],
+    ch5_bf_hunt: ['黑羽盟在找玉佩的主人', '茶棚裡聽來的：黑羽盟不是在找東西，是在找一個人——手裡有一枚玉佩的人。'],
+    ch5_old_scroll: ['洛陽城舊卷・沈雲川', '無名客給的殘紙上只有幾個字：「洛陽城舊卷」「沈雲川」「十五年前」。他說，下一個要找的是沈雲川。'],
     ch4_wumingke: ['無名客', '白石老人說：如果想知道十五年前的事，去找一個叫「無名客」的人。沒有人知道他在哪。'],
   };
   S.ITEMS = {
@@ -54,6 +61,7 @@
     shen_hairpin: ['沈家舊簪', '一枚銀色髮簪，簪身極細。對著光看，裡面刻著一行小字：「洛水以北，白石橋。」', 'icon_shen_hairpin'],
     shen_coin: ['沈家舊錢', '一枚發綠的舊銅錢，背面刻著一個「沈」字。', 'icon_shen_coin'],
     bf_order: ['黑羽密令', '黑底細紙，只剩幾行字：「確認玉佩出現。」「目標已找到。」「立即通知洛陽。」', 'icon_bf_order'],
+    bf_warrant: ['黑羽追查令', '「目標確認。持有沈家玉佩。不得擅自處置。活捉。」末尾有一個看不清的印記。', 'icon_bf_warrant'],
     bracer: ['黑護腕', '從黑風嶺死者腕上取下的黑護腕。'],
   };
   S.GEAR = {
@@ -590,6 +598,7 @@
   N.ch2_su_more = {
     bg: 'scene_bookshop', place: '洛陽・舊書坊',
     pages: [{ t: '蘇晚棠把書合上。\n\n「知道得越多，麻煩越多。」\n\n她停了停，又補了半句：\n\n「今晚，別走大路。」', who: 'su' }],
+    e: { f: ['ch2_su_more'] },
     next: 'ch2_night',
   };
   N.ch2_night = {
@@ -668,7 +677,7 @@
     choices: [
       { label: '大門', next: 'ch3_gate', show: (c) => !c.f('ch3_gate') },
       { label: '破舊廳堂', next: 'ch3_hall', show: (c) => !c.f('ch3_hall') },
-      { label: '枯井', next: 'ch3_well', show: (c) => !c.f('ch3_well_seen') },
+      { label: '枯井', next: 'ch3_well', show: (c) => !c.f('ch3_well_mark') },
       { label: '後院', next: (c) => (c.f('ch3_hall') ? 'ch3_back' : 'ch3_hall_pass') },
     ],
   };
@@ -699,9 +708,11 @@
   };
   N.ch3_well = {
     bg: B3.yard, place: '沈家舊宅・枯井',
-    pages: ['井口長滿青苔，往下看只有黑。\n\n你丟了一顆小石子，很久才聽到一聲悶響。', '什麼都沒有。'],
-    e: { f: ['ch3_well_seen'] },
-    choices: [{ label: '仔細查看', next: 'ch3_well_look' }, { label: '離開', next: 'ch3_yard' }],
+    // ch3_well_seen 改在選項上設：節點 e 會在算 pages 前套用，放 e 會讓第一次就顯示重訪句
+    pages: (c) => (c.f('ch3_well_seen')
+      ? ['你又走回枯井邊。\n\n井口的青苔上，還留著你剛才的手印。']
+      : ['井口長滿青苔，往下看只有黑。\n\n你丟了一顆小石子，很久才聽到一聲悶響。', '什麼都沒有。']),
+    choices: [{ label: '仔細查看', next: 'ch3_well_look', e: { f: ['ch3_well_seen'] } }, { label: '離開', next: 'ch3_yard', e: { f: ['ch3_well_seen'] } }],
   };
   N.ch3_well_look = {
     bg: B3.yard, place: '沈家舊宅・枯井',
@@ -1174,7 +1185,418 @@
   };
   N.ch4_final = {
     bg: B4.dusk, place: '', center: true,
-    pages: ['【第四章・白石橋　完】\n\n【第五章・無名客】\n🔒 尚未解鎖\n\n「江湖上沒有人知道他的名字。」\n「但也許，他知道十五年前的真相。」'],
+    pages: ['【第四章・白石橋　完】\n\n【第五章・無名客】\n已解鎖\n\n「江湖上沒有人知道他的名字。」\n「但也許，他知道十五年前的真相。」'],
+    choices: [{ label: '繼續江湖', next: '__close' }],
+  };
+
+  // ===== 第五章・無名客（輕量：同一套節點、show、battle、e） =====
+  const B5 = {
+    city: 'scene_luoyang',
+    dock: 'scene_luoyang_dock',
+    market: 'scene_luoyang_oldmarket',
+    tea: 'scene_luoyang_teashed',
+    lane: 'scene_tingyu_lane',
+    inn: 'scene_wuming_teahouse',
+    night: 'scene_luoyang_night',
+  };
+  S.B5 = B5;
+  const WMK = (t) => ({ t, who: 'wumingke' });
+  const WMK_ANON = (t) => ({ t, who: 'wumingke_anon' });
+  N.ch5_title = {
+    bg: B5.city, place: '', center: true,
+    pages: ['【第五章・無名客】\n\n「江湖上沒有人知道他的名字，卻有人記得他的故事。」'],
+    e: { f: ['chapter5Started'], chapter: 5, phase: 'ch5' },
+    next: 'ch5_open',
+  };
+  N.ch5_open = {
+    bg: B4.dusk, place: '白石橋',
+    pages: [
+      '白石老人最後那幾句話，一直在你耳邊。',
+      '「去找一個叫『無名客』的人。」',
+      '「沒有人知道。」\n\n「因為他本來就沒有名字。」',
+      '你低頭看著懷裡的玉佩。\n\n沈青河把它塞進你手裡的那個雨夜，好像已經是很久以前的事了。',
+    ],
+    next: 'ch5_luoyang',
+  };
+  N.ch5_luoyang = {
+    bg: B5.city, place: '洛陽城',
+    pages: [
+      '你又回到了洛陽。',
+      '城還是一樣熱鬧。\n\n只是這一次，你知道人群裡，可能有人正看著你。',
+      '一個沒有名字的人。\n\n要去哪裡找？',
+    ],
+    next: 'ch5_city',
+  };
+
+  // ---- 尋人樞紐：三處都能去、都能跳過；拿到聽雨巷才出現前往 ----
+  N.ch5_city = {
+    bg: B5.city, place: '洛陽城',
+    pages: (c) => [c.has('ch5_tingyu') ? '聽雨巷。\n\n你記下了這個名字。' : '你站在街口，想了想該從哪裡問起。'],
+    choices: [
+      { label: '去城南碼頭', next: 'ch5_dock', show: (c) => !c.f('ch5_dock') },
+      { label: '去城北舊市集', next: 'ch5_market', show: (c) => !c.has('ch5_tingyu') },  // 沒拿到線索可以一直回去
+      { label: '去城中茶棚', next: 'ch5_tea', show: (c) => !c.f('ch5_tea') },
+      { label: '【前往聽雨巷】', next: 'ch5_lane', show: (c) => c.has('ch5_tingyu') },
+    ],
+  };
+
+  N.ch5_dock = {
+    bg: B5.dock, place: '洛陽・城南碼頭',
+    pages: [
+      '碼頭邊停著幾條貨船。\n\n一個老船夫蹲在船頭補網。',
+      '你問他，認不認得一個叫「無名客」的人。',
+      '「無名客？」',
+      '「這名字倒是聽過。」',
+      '「有人說他每天都來碼頭。」',
+      '「也有人說，那個人已經死了十幾年。」',
+    ],
+    e: { f: ['ch5_dock'] },
+    choices: [
+      { label: '繼續追問', next: 'ch5_dock_more' },
+      { label: '不再多問', next: 'ch5_dock_leave' },
+      { label: '詢問十五年前', next: 'ch5_dock_15' },
+    ],
+  };
+  N.ch5_dock_more = {
+    bg: B5.dock, place: '洛陽・城南碼頭',
+    pages: [
+      '「他長什麼樣子？」',
+      '船夫手上的梭子停了一下。',
+      '「沒看清楚過。」\n\n「只知道一下雨，他就不來碼頭。」',
+      '他低下頭，繼續補網，不再說話。',
+    ],
+    e: { f: ['ch5_dock_more'] },
+    next: 'ch5_city',
+  };
+  N.ch5_dock_leave = {
+    bg: B5.dock, place: '洛陽・城南碼頭',
+    pages: ['你道了聲謝。\n\n船夫沒抬頭，只揮了揮手。'],
+    next: 'ch5_city',
+  };
+  N.ch5_dock_15 = {
+    bg: B5.dock, place: '洛陽・城南碼頭',
+    pages: [
+      '「十五年前，這碼頭有沒有發生過什麼事？」',
+      '船夫的手停住了。\n\n他慢慢抬起頭，往左右看了一眼。',
+      '「客人，這種事情……別問。」',
+      '他把網一收，跳回船艙裡。\n\n可是你看見了——他剛才往碼頭最舊的那根木樁看了一眼。',
+      '【獲得線索：碼頭老人知道十五年前的事情】',
+    ],
+    e: { intel: ['ch5_dock15'] },
+    next: 'ch5_city',
+  };
+
+  N.ch5_market = {
+    bg: B5.market, place: '洛陽・城北舊市集',
+    pages: (c) => [c.f('ch5_market')
+      ? '賣舊書的老人還坐在那裡。\n\n那本舊冊已經不在桌上了。'
+      : '舊市集裡擺滿了破銅爛鐵、舊衣舊鞋。\n\n角落有個賣舊書的老人，正在整理一本殘破的舊冊。'],
+    // ch5_market 改在選項上設：節點 e 會在算 pages 前套用，放 e 會讓第一次就顯示「還坐在那裡」
+    choices: [
+      { label: '湊近看那本舊冊', next: 'ch5_market_peek', show: (c) => !c.f('ch5_market_peeked'), e: { f: ['ch5_market'] } },
+      { label: '開口詢問', next: 'ch5_market_ask', e: { f: ['ch5_market'] } },
+    ],
+  };
+  N.ch5_market_peek = {
+    bg: B5.market, place: '洛陽・城北舊市集',
+    pages: [
+      '你低頭一看。\n\n泛黃的書頁上，有兩個字：\n\n【沈家】',
+      '還沒看清下一行，老人已經把書合上，收進懷裡。',
+      '「年輕人。」',
+      '「有些書，翻開容易。」',
+      '「合上……就不一定了。」',
+    ],
+    e: { f: ['ch5_market_peeked'] },
+    next: 'ch5_market_ask',
+  };
+  N.ch5_market_ask = {
+    bg: B5.market, place: '洛陽・城北舊市集',
+    pages: ['老人看著你，等你開口。'],
+    choices: [
+      { label: '詢問沈家', next: 'ch5_market_shen', show: (c) => !c.f('ch5_market_shen') },
+      { label: '詢問無名客', next: 'ch5_market_wmk' },
+      { label: '不再追問', next: 'ch5_market_leave' },
+    ],
+  };
+  N.ch5_market_shen = {
+    bg: B5.market, place: '洛陽・城北舊市集',
+    pages: (c) => [
+      '「沈家？」',
+      '老人把懷裡的書按緊了一點。',
+      '「洛陽姓沈的人家很多。」\n\n「你要問的那一家……十五年來，早就沒人敢問了。」',
+    ].concat(c.f('ch2_clue_shen') ? ['他看了你一眼。\n\n「舊書坊那位掌櫃，跟你說過了吧？」\n\n「她說的，已經比我敢說的多。」'] : []),
+    e: { f: ['ch5_market_shen'] },
+    next: 'ch5_market_ask',
+  };
+  N.ch5_market_wmk = {
+    bg: B5.market, place: '洛陽・城北舊市集',
+    pages: [
+      '「我在找一個叫『無名客』的人。」',
+      '老人沉默了一會兒。',
+      '「他不喜歡別人找他。」',
+      '「但如果你真的想找……」',
+      '「去聽雨巷。」',
+      '【獲得線索：聽雨巷】',
+    ],
+    e: { intel: ['ch5_tingyu'] },
+    next: 'ch5_city',
+  };
+  N.ch5_market_leave = {
+    bg: B5.market, place: '洛陽・城北舊市集',
+    pages: ['你沒有再問。\n\n老人也沒有留你。'],
+    next: 'ch5_city',
+  };
+
+  N.ch5_tea = {
+    bg: B5.tea, place: '洛陽・城中茶棚',
+    pages: [
+      '你在茶棚坐下，要了一碗粗茶。',
+      '隔壁桌兩個佩刀的江湖人，聲音壓得很低。',
+      '「最近黑羽盟的人好像在找什麼。」',
+      '「不是找東西。」',
+      '「是在找一個人。」',
+    ],
+    e: { f: ['ch5_tea'] },
+    choices: [
+      { label: '繼續聽', next: 'ch5_tea_listen' },
+      { label: '起身離開', next: 'ch5_city' },
+    ],
+  };
+  N.ch5_tea_listen = {
+    bg: B5.tea, place: '洛陽・城中茶棚',
+    pages: (c) => [
+      '「什麼人？」',
+      '「不知道長相，也不知道名字。」',
+      '「聽說那人手裡，有一枚玉佩。」',
+      '你端著茶碗的手，停在半空。',
+    ].concat(c.f('obtainedBlackFeatherOrder') ? ['你想起黑羽密令上那一行字。\n\n「目標已找到。」'] : [])
+      .concat(['兩人付了錢，起身走了。\n\n你低頭看著碗裡的茶，一口也沒喝。', '【獲得線索：黑羽盟在找玉佩的主人】']),
+    e: { intel: ['ch5_bf_hunt'] },
+    next: 'ch5_city',
+  };
+
+  N.ch5_lane = {
+    bg: B5.lane, place: '洛陽・聽雨巷',
+    pages: (c) => [
+      '聽雨巷很窄。\n\n雨剛停，石板上還積著水。',
+      '兩旁的舊屋門窗都關著，看起來已經很多年沒人住了。',
+    ].concat(c.f('ch5_dock_more') ? ['你想起船夫的話——\n\n「一下雨，他就不來碼頭。」'] : [])
+      .concat(['巷子盡頭，有一間很小的茶館。\n\n招牌上只有兩個字：\n\n【無名】', '你推門進去。', '店裡沒有客人。\n\n只有一個穿灰色長衫的中年人，坐在角落。']),
+    next: 'ch5_meet',
+  };
+  N.ch5_meet = {
+    bg: B5.inn, place: '無名茶館',
+    pages: [
+      WMK_ANON('他沒有抬頭。\n\n「找我的人，通常有兩種。」'),
+      WMK_ANON('「一種是想知道我知道什麼。」'),
+      WMK_ANON('「另一種，是想知道我為什麼還活著。」'),
+    ],
+    choices: [
+      { label: '「我來問十五年前的事。」', next: 'ch5_ans_15' },
+      { label: '「白石老人叫我來。」', next: 'ch5_ans_baishi' },
+      { label: '「我只是想知道玉佩的秘密。」', next: 'ch5_ans_jade' },
+      { label: '「我不知道自己為什麼來。」', next: 'ch5_ans_unsure' },
+    ],
+  };
+  N.ch5_ans_15 = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['男子第一次抬起頭。', WMK_ANON('「十五年。」\n\n「這兩個字，洛陽很久沒人敢在我面前說了。」'), '他的目光落在你身上的玉佩。', WMK('「……你真的帶著它。」')],
+    e: { f: ['ch5_ans_15'], people: ['wumingke'] },
+    next: 'ch5_reveal',
+  };
+  N.ch5_ans_baishi = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['男子第一次抬起頭。', '他停了一下。', WMK_ANON('「原來是他。」'), '他的目光落在你身上的玉佩。', WMK('「……你真的帶著它。」')],
+    e: { f: ['ch5_ans_baishi'], people: ['wumingke'] },
+    next: 'ch5_reveal',
+  };
+  N.ch5_ans_jade = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['男子第一次抬起頭。', '他看向你身上的玉佩。', WMK('「你真的帶著它。」')],
+    e: { f: ['ch5_ans_jade'], people: ['wumingke'] },
+    next: 'ch5_reveal',
+  };
+  N.ch5_ans_unsure = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['男子第一次抬起頭。', WMK_ANON('「不知道為什麼來，卻還是走到了這裡。」'), '他的目光落在你身上的玉佩。', WMK('「……那就是它帶你來的。」')],
+    e: { f: ['ch5_ans_unsure'], people: ['wumingke'] },
+    next: 'ch5_reveal',
+  };
+  N.ch5_reveal = {
+    bg: B5.inn, place: '無名茶館',
+    pages: (c) => ['【無名客】']
+      .concat(c.f('ch3_gave_jade') ? ['他看見玉佩缺了一角。\n\n他沒有問是誰拿走的。\n\n好像他早就知道。'] : [])
+      .concat(c.f('obtainedShenOldCoin') ? ['你把那枚發綠的舊銅錢放在桌上。\n\n他看了一眼，推回你面前。', WMK('「收著。這種錢，在洛陽已經花不出去了。」')] : [])
+      .concat([
+        WMK('「十五年前，我曾經見過沈家。」'),
+        WMK('「那一夜之後，沈家消失。」'),
+        WMK('「但不是所有人都死了。」'),
+        '你想起白石老人的話。\n\n三個人走過白石橋，第三個活了下來。',
+      ]),
+    next: 'ch5_q_hub',
+  };
+
+  // ---- 四個追問：至少問一個，之後可以停 ----
+  N.ch5_q_hub = {
+    bg: B5.inn, place: '無名茶館',
+    pages: (c) => [(c.f('ch5_q_who') || c.f('ch5_q_what') || c.f('ch5_q_jade') || c.f('ch5_q_bf')) ? '無名客替自己倒了一杯茶。\n\n他在等你下一個問題。' : '你要問什麼？'],
+    choices: [
+      { label: '「誰活下來？」', next: 'ch5_q_who', show: (c) => !c.f('ch5_q_who') },
+      { label: '「沈家到底發生了什麼？」', next: 'ch5_q_what', show: (c) => !c.f('ch5_q_what') },
+      { label: '「玉佩到底是什麼？」', next: 'ch5_q_jade', show: (c) => !c.f('ch5_q_jade') },
+      { label: '「黑羽盟為什麼一直追查？」', next: 'ch5_q_bf', show: (c) => !c.f('ch5_q_bf') },
+      { label: '沒有別的要問了', next: 'ch5_choice', show: (c) => c.f('ch5_q_who') || c.f('ch5_q_what') || c.f('ch5_q_jade') || c.f('ch5_q_bf') },
+    ],
+  };
+  N.ch5_q_who = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['「誰活下來？」', WMK('「一個人。」'), '他停了很久。', WMK('「也可能是兩個。」'), '他沒有再說下去。'],
+    e: { f: ['ch5_q_who'] },
+    next: 'ch5_q_hub',
+  };
+  N.ch5_q_what = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['「沈家到底發生了什麼？」', WMK('「你以為那是一場滅門。」'), WMK('「其實不是。」'), WMK('「真正可怕的，是有人希望所有人都相信那是一場滅門。」')],
+    e: { f: ['ch5_q_what'] },
+    next: 'ch5_q_hub',
+  };
+  N.ch5_q_jade = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['「玉佩到底是什麼？」', WMK('「它不是寶物。」'), WMK('「也不是武林秘籍。」'), WMK('「它只是一把鑰匙。」'), '「開什麼？」', WMK('「一個十五年前就應該被埋掉的秘密。」')],
+    e: { f: ['ch5_q_jade'] },
+    next: 'ch5_q_hub',
+  };
+  N.ch5_q_bf = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['「黑羽盟為什麼一直追查？」', WMK('「因為他們怕有人想起來。」'), WMK('「而你……」'), WMK('「已經讓他們想起來了。」')],
+    e: { f: ['ch5_q_bf'] },
+    next: 'ch5_q_hub',
+  };
+
+  // ---- 重要選擇（三個隱藏標記，不顯示） ----
+  N.ch5_choice = {
+    bg: B5.inn, place: '無名茶館',
+    pages: [
+      '無名客放下茶杯。',
+      WMK('「你現在還想繼續查嗎？」'),
+      '這句話，你好像在哪裡聽過。\n\n白石橋上，沈若蘭背對著你，也問過差不多的話。',
+    ],
+    choices: [
+      { label: '「我要查到底。」', next: 'ch5_c_shen', nohist: true },
+      { label: '「我只想知道自己的玉佩。」', next: 'ch5_c_jade', nohist: true },
+      { label: '「我想知道你隱瞞了什麼。」', next: 'ch5_c_doubt', nohist: true },
+    ],
+  };
+  N.ch5_c_shen = {
+    bg: B5.inn, place: '無名茶館',
+    pages: [WMK('「那你最好做好失去一些東西的準備。」')],
+    e: { f: ['ch5_trace_shen'] },
+    next: 'ch5_bf',
+  };
+  N.ch5_c_jade = {
+    bg: B5.inn, place: '無名茶館',
+    pages: [WMK('「那就只查玉佩。」'), WMK('「不要碰沈家。」')],
+    e: { f: ['ch5_trace_jade'] },
+    next: 'ch5_bf',
+  };
+  N.ch5_c_doubt = {
+    bg: B5.inn, place: '無名茶館',
+    pages: ['無名客第一次露出笑容。', WMK('「很好。」'), WMK('「至少你不是個只會問問題的人。」')],
+    e: { f: ['ch5_doubt_wumingke'] },
+    next: 'ch5_bf',
+  };
+
+  // ---- 黑羽追兵×3（沿用現有戰鬥；贏輸都拿追查令） ----
+  N.ch5_bf = {
+    bg: B5.lane, place: '洛陽・聽雨巷',
+    pages: [
+      '你起身要走。\n\n門外的積水裡，傳來很輕的腳步聲。',
+      WMK('「他們來了。」'),
+      '「誰？」',
+      WMK('「找你的。」'),
+      '三個左手戴黑護腕的人，堵在巷口。',
+      { t: '「人在這裡。」', who: 'bf' },
+    ],
+    battle: { count: 3, name: '黑羽追兵', win: 'ch5_after', lose: 'ch5_after_lose', label: '戰鬥開始' },
+  };
+  N.ch5_after = {
+    bg: B5.lane, place: '洛陽・聽雨巷',
+    pages: [
+      '最後一個黑衣人倒在積水裡。',
+      '他的懷裡露出一張摺好的紙，紙角壓著黑羽的印。',
+      { t: '【獲得：黑羽追查令】', icon: 'icon_bf_warrant' },
+    ],
+    e: { f: ['ch5_fought_bf', 'obtainedBlackFeatherWarrant'], item: ['bf_warrant'] },
+    next: 'ch5_warrant',
+  };
+  N.ch5_after_lose = {
+    bg: B5.lane, place: '洛陽・聽雨巷',
+    pages: [
+      '你被逼到牆邊，刀鋒已經到了眼前。',
+      '一隻茶杯從茶館裡飛出來，正好打在那人的手腕上。',
+      '三個黑衣人互看一眼，沒有再上前，退出了巷子。\n\n其中一人走得太急，掉了一張摺好的紙。',
+      { t: '【獲得：黑羽追查令】', icon: 'icon_bf_warrant' },
+    ],
+    e: { f: ['ch5_fought_bf', 'obtainedBlackFeatherWarrant'], item: ['bf_warrant'] },
+    next: 'ch5_warrant',
+  };
+  N.ch5_warrant = {
+    bg: B5.lane, place: '洛陽・聽雨巷',
+    pages: [
+      '你把紙攤開。',
+      '「目標確認。」',
+      '「持有沈家玉佩。」',
+      '「不得擅自處置。」',
+      '「活捉。」',
+      '最後有一個模糊的印記，看不出是什麼。',
+      '你又看了一遍。\n\n不是「奪回玉佩」。\n\n是「活捉」。',
+      '他們要的，不是玉佩。\n\n是你。',
+    ],
+    next: 'ch5_last',
+  };
+  N.ch5_last = {
+    bg: B5.inn, place: '無名茶館',
+    pages: (c) => [
+      '你回到茶館。\n\n無名客還坐在原來的位置，好像什麼都沒發生過。',
+      WMK('「你現在知道了。」'),
+      WMK('「他們不是想要你的玉佩。」'),
+      WMK('「他們想知道……」'),
+      WMK('「玉佩為什麼會選你。」'),
+      '「什麼意思？」',
+      '他沒有回答。\n\n只從桌下拿出一張殘破的紙，推到你面前。',
+      '紙上只有幾個字：\n\n【洛陽城舊卷】\n\n【沈雲川】\n\n【十五年前】',
+    ].concat(c.has('ch3_name_yunchuan')
+        ? ['沈雲川。\n\n你想起沈家舊宅廳堂那幅畫像——唯一沒被刮掉臉的那個年輕人。']
+        : ['沈雲川。\n\n這個名字，你好像在哪裡見過。'])
+      .concat([
+        WMK('「如果你真的想知道真相。」'),
+        WMK('「下一個要找的，不是我。」'),
+        WMK('「是沈雲川。」'),
+        '【獲得線索：洛陽城舊卷・沈雲川】',
+      ]),
+    e: { intel: ['ch5_old_scroll'] },
+    next: 'ch5_end',
+  };
+  N.ch5_end = {
+    bg: B5.night, place: '洛陽・夜',
+    pages: [
+      '你走出聽雨巷的時候，天已經黑了。',
+      '十五年前。',
+      '沈家消失。',
+      '有人活了下來。',
+      '有人選擇沉默。',
+      '也有人，從未放棄尋找真相。',
+      '而現在。',
+      '黑羽盟已經知道你是誰。',
+      '沈家舊案，也再次被人翻開。',
+      '【沈雲川……究竟是誰？】',
+    ],
+    e: { f: ['chapter5Completed'], phase: 'done_ch5', complete: 'ch5' },
+    choices: [{ label: '完', next: 'ch5_final' }],
+  };
+  N.ch5_final = {
+    bg: B5.night, place: '', center: true,
+    pages: ['【第五章・無名客　完】\n\n【第六章・沈雲川】\n🔒 尚未解鎖\n\n「一個已經死去十五年的人，為什麼還有人在找他？」'],
     choices: [{ label: '繼續江湖', next: '__close' }],
   };
 
@@ -1194,7 +1616,7 @@
   // ===== 卷宗（任務清單） =====
   S.QUESTS = [
     { id: 'q_meet', text: '遇見沈青河', done: (c) => c.f('qh_leave_done') || c.f('met_qinghe') && c.f('bf_met') },
-    { id: 'q_bf', text: '黑羽追兵', done: (c) => c.f('bf_met') },
+    { id: 'q_bf', text: '黑羽追兵', done: (c) => c.f('bf_met') || c.f('qh_leave_done') },
     { id: 'q_zx', text: '前往醉仙樓（三日之期）', show: (c) => c.f('qh_leave_done'), done: (c) => c.f('zx_entered') },
     { id: 'q_qh', text: '沈青河的請託', show: (c) => c.f('accepted_qinghe_request'), done: (c) => c.f('heifeng_done') },
     { id: 'q_bfinv', text: '黑羽盟的邀請', show: (c) => c.f('joined_bf_invite'), done: (c) => c.f('heifeng_done') },
@@ -1202,7 +1624,8 @@
     { id: 'q_jade', text: '找出染血玉佩的秘密', show: (c) => c.f('qh_leave_done'), done: (c) => c.f('chapter1_done') },
     { id: 'q_ch2', ch: 2, text: (c) => (c.f('chapter2Completed') ? '第二章・洛陽舊事　完' : '第二章・洛陽舊事：查玉佩背後的十五年前'), show: (c) => c.f('chapter1_done'), done: (c) => c.f('chapter2Completed') },
     { id: 'q_ch3', ch: 3, text: (c) => (c.f('chapter3Completed') ? '第三章・沈家舊門　完' : '第三章・沈家舊門：到洛水邊找沈家舊宅'), show: (c) => c.f('chapter2Completed'), done: (c) => c.f('chapter3Completed') },
-    { id: 'q_ch4', ch: 4, text: (c) => (c.f('chapter4Completed') ? '第四章・白石橋　完（第五章・無名客 鎖定）' : '第四章・白石橋：到洛水以北找白石橋'), show: (c) => c.f('chapter3Completed'), done: (c) => c.f('chapter4Completed') },
+    { id: 'q_ch4', ch: 4, text: (c) => (c.f('chapter4Completed') ? '第四章・白石橋　完' : '第四章・白石橋：到洛水以北找白石橋'), show: (c) => c.f('chapter3Completed'), done: (c) => c.f('chapter4Completed') },
+    { id: 'q_ch5', ch: 5, text: (c) => (c.f('chapter5Completed') ? '第五章・無名客　完（第六章・沈雲川 鎖定）' : '第五章・無名客：在洛陽城裡找到無名客'), show: (c) => c.f('chapter4Completed'), done: (c) => c.f('chapter5Completed') },
   ];
 
   // ===== 掛機江湖事件（低機率，不連續彈窗） =====

@@ -3870,7 +3870,7 @@
   }
   // ===================== 章回劇情系統（資料見 story-data.js） =====================
   const ST = window.JH_STORY || null;
-  const WHO_NAME = { qinghe: '沈青河', old: '獨臂老人', woman: '白衣女子', bf: '黑衣人', su: '蘇晚棠', ruolan: '沈若蘭', ruolan_anon: '女子', baishi: '白石老人', baishi_anon: '？？？' };
+  const WHO_NAME = { qinghe: '沈青河', old: '獨臂老人', woman: '白衣女子', bf: '黑衣人', su: '蘇晚棠', ruolan: '沈若蘭', ruolan_anon: '女子', baishi: '白石老人', baishi_anon: '？？？', wumingke: '無名客', wumingke_anon: '？？？' };
   function stNorm(s) {
     if (!s || typeof s !== 'object') s = {};
     ['flags', 'rel', 'did', 'traits', 'evDone'].forEach((k) => { if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = {}; });
@@ -3880,6 +3880,9 @@
     if ((s.completed.indexOf('ch1') >= 0 || (s.flags && s.flags.chapter1_done)) && s.unlocked.indexOf(2) < 0) s.unlocked.push(2);
     if ((s.completed.indexOf('ch2') >= 0 || (s.flags && s.flags.chapter2Completed)) && s.unlocked.indexOf(3) < 0) s.unlocked.push(3);
     if ((s.completed.indexOf('ch3') >= 0 || (s.flags && s.flags.chapter3Completed)) && s.unlocked.indexOf(4) < 0) s.unlocked.push(4);
+    if ((s.completed.indexOf('ch4') >= 0 || (s.flags && s.flags.chapter4Completed)) && s.unlocked.indexOf(5) < 0) s.unlocked.push(5);
+    // 舊檔補旗標：第二章「追問下去」以前沒設 ch2_su_more，從抉擇紀錄補回
+    if (s.flags && !s.flags.ch2_su_more && s.history.some((h) => h && typeof h.text === 'string' && h.text.indexOf('舊書坊：追問下去') >= 0)) s.flags.ch2_su_more = true;
     if (typeof s.cur !== 'string') s.cur = null;
     if (typeof s.entered !== 'string') s.entered = '';
     if (typeof s.phase !== 'string') s.phase = '';
@@ -4030,6 +4033,7 @@
     if (!n) { s.cur = null; stClose(); return; }
     if (s.entered !== id) { stApply(n.e); s.entered = id; }
     save();
+    renderLore(); // 劇情彈窗後面的「正在發生」即時更新
     const c = stCtx();
     const pages = (typeof n.pages === 'function' ? n.pages(c) : n.pages).concat(n.tail || []);
     let buttons;
@@ -4049,7 +4053,7 @@
     const e = ch.eFn ? ch.eFn(c0) : ch.e;
     const res = ch.resFn ? ch.resFn(c0) : stRes(ch.res, c0);
     stApply(e);
-    stHist(n.place, n.place ? n.place + '：' + ch.label : ch.label);
+    if (!ch.nohist) stHist(n.place, n.place ? n.place + '：' + ch.label : ch.label); // nohist：隱藏抉擇不進履歷
     const c = stCtx();
     const nx = ch.next !== undefined ? (typeof ch.next === 'function' ? ch.next(c) : ch.next) : (typeof n.next === 'function' ? n.next(c) : n.next);
     s.cur = (!nx || nx === '__close') ? null : nx;
@@ -4238,7 +4242,9 @@
     else if (!s.started && !s.flags.qh_leave_done) { status = '一段江湖故事正等著你。'; act = '<button type="button" class="btn primary full" data-st="begin">踏入江湖（序章）</button>'; }
     else if (s.phase === 'waiting') status = '「三日後，醉仙樓。」還需擊敗 ' + stLeftKills() + ' 名對手，約定之日就到了。';
     else if (s.phase === 'heifeng') { status = '黑風嶺就在鎮外，隨時能去看看。'; act = '<button type="button" class="btn primary full" data-st="hf">前往黑風嶺</button>'; }
-    else if (s.phase === 'done_ch4' || s.flags.chapter4Completed) status = '第四章已完。白石老人說：去找一個叫『無名客』的人。第五章尚未揭開。';
+    else if (s.phase === 'done_ch5' || s.flags.chapter5Completed) status = '第五章已完。無名客說：下一個要找的，是沈雲川。第六章尚未揭開。';
+    else if (s.flags.chapter5Started || s.phase === 'ch5') { status = '洛陽城裡，還有一個人沒找到。'; act = '<button type="button" class="btn primary full" data-st="ch5back">回到洛陽</button>'; }
+    else if (s.phase === 'done_ch4' || s.flags.chapter4Completed) { status = '第四章已完。白石老人說：去找一個叫『無名客』的人。'; act = '<button type="button" class="btn primary full" data-st="ch5">前往洛陽尋人</button>'; }
     else if (s.flags.chapter4Started || s.phase === 'ch4') { status = '白石橋上的事，還沒有了結。'; act = '<button type="button" class="btn primary full" data-st="ch4back">回到白石橋</button>'; }
     else if (s.phase === 'done_ch3' || s.flags.chapter3Completed) { status = '第三章已完。舊簪裡的小字寫著：洛水以北，白石橋。'; act = '<button type="button" class="btn primary full" data-st="ch4">前往白石橋</button>'; }
     else if (s.flags.chapter3Started || s.phase === 'ch3') { status = '沈家舊宅的事，還沒弄清楚。'; act = '<button type="button" class="btn primary full" data-st="ch3back">回到沈家舊宅</button>'; }
@@ -4276,7 +4282,7 @@
       const ch = ST.CHAPTERS[k];
       const done = s.completed.indexOf('ch' + k) >= 0;
       const open = s.unlocked.indexOf(+k) >= 0 && !ch.locked;
-      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? ((k === '4' ? s.flags.chapter4Started : k === '3' ? s.flags.chapter3Started : k === '2' ? s.flags.ch2_started : (s.started || s.flags.qh_leave_done)) ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
+      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? ((k === '5' ? s.flags.chapter5Started : k === '4' ? s.flags.chapter4Started : k === '3' ? s.flags.chapter3Started : k === '2' ? s.flags.ch2_started : (s.started || s.flags.qh_leave_done)) ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
     }).join('');
   }
   function stResumeHtml() {
@@ -4295,7 +4301,7 @@
     if (!el || !state) return;
     const s = stEnsure();
     const tab = $('tab-lore');
-    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng' || (s.flags.chapter1_done && !s.flags.ch2_started) || (s.flags.chapter2Completed && !s.flags.chapter3Started) || (s.flags.chapter3Completed && !s.flags.chapter4Started));
+    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng' || (s.flags.chapter1_done && !s.flags.ch2_started) || (s.flags.chapter2Completed && !s.flags.chapter3Started) || (s.flags.chapter3Completed && !s.flags.chapter4Started) || (s.flags.chapter4Completed && !s.flags.chapter5Started));
     const subs = [['now', '正在發生'], ['ppl', '人物'], ['rum', '傳聞'], ['ch', '章回'], ['res', '履歷']];
     let body;
     if (loreSub === 'ppl') body = stPeopleHtml();
@@ -4312,6 +4318,8 @@
       const k = b.getAttribute('data-st');
       if (k === 'begin') stBegin();
       else if (k === 'resume') { s.open = true; stResume(); }
+      else if (k === 'ch5') { s.cur = 'ch5_title'; s.open = true; s.entered = ''; save(); stResume(); }
+      else if (k === 'ch5back') { s.cur = s.flags.obtainedBlackFeatherWarrant ? 'ch5_warrant' : (s.flags.ch5_trace_shen || s.flags.ch5_trace_jade || s.flags.ch5_doubt_wumingke) ? 'ch5_bf' : s.people.indexOf('wumingke') >= 0 ? 'ch5_q_hub' : 'ch5_city'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch4') { s.cur = 'ch4_title'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch4back') { s.cur = s.flags.obtainedBlackFeatherOrder ? 'ch4_order' : s.intel.indexOf('ch4_three') >= 0 ? 'ch4_ruolan' : s.people.indexOf('baishiOld') >= 0 ? 'ch4_wait' : 'ch4_bridge'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch3') { s.cur = 'ch3_title'; s.open = true; s.entered = ''; save(); stResume(); }
@@ -4496,6 +4504,7 @@
     });
   }
 
+  let stUnlockGrew = false; // 舊檔補開新章回時，載入後寫回一次
   function migrateSave(saved) {
     if (!saved || typeof saved !== 'object') return null;
     if (!saved.name) return null;
@@ -4503,7 +4512,9 @@
       saved.equip = { weapon: null, armor: null, boots: null, ring: null };
     }
     if (!Array.isArray(saved.bag)) saved.bag = [];
+    const _ul0 = saved.story && Array.isArray(saved.story.unlocked) ? saved.story.unlocked.length : 0;
     saved.story = stNorm(saved.story);
+    stUnlockGrew = saved.story.unlocked.length > _ul0;
     const _fix = (it) => { if (it && typeof it === 'object') { if (typeof it.enh !== 'number') it.enh = 0; if (!Array.isArray(it.affixes)) it.affixes = []; } };
     saved.bag.forEach(_fix);
     Object.keys(saved.equip).forEach((k) => _fix(saved.equip[k]));
@@ -4744,6 +4755,7 @@
         }
         startHunt();
       }
+      if (stUnlockGrew) { stUnlockGrew = false; save(); }
       stCheck();
     } else {
       showCreate();
