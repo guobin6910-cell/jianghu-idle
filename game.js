@@ -3886,6 +3886,7 @@
     if ((s.completed.indexOf('ch2') >= 0 || (s.flags && s.flags.chapter2Completed)) && s.unlocked.indexOf(3) < 0) s.unlocked.push(3);
     if ((s.completed.indexOf('ch3') >= 0 || (s.flags && s.flags.chapter3Completed)) && s.unlocked.indexOf(4) < 0) s.unlocked.push(4);
     if ((s.completed.indexOf('ch4') >= 0 || (s.flags && s.flags.chapter4Completed)) && s.unlocked.indexOf(5) < 0) s.unlocked.push(5);
+    if ((s.completed.indexOf('ch5') >= 0 || (s.flags && s.flags.chapter5Completed)) && s.unlocked.indexOf(6) < 0) s.unlocked.push(6);
     // 舊檔補旗標：第二章「追問下去」以前沒設 ch2_su_more，從抉擇紀錄補回
     if (s.flags && !s.flags.ch2_su_more && s.history.some((h) => h && typeof h.text === 'string' && h.text.indexOf('舊書坊：追問下去') >= 0)) s.flags.ch2_su_more = true;
     if (typeof s.cur !== 'string') s.cur = null;
@@ -3981,10 +3982,16 @@
     const card = root.querySelector('.st-card');
     if (bind) bind(card);
   }
+  // 美術未到：ST.ART_FALLBACK 指定的舊圖墊在底下／圖示載入失敗時換舊圖
+  const stFb = (n) => (ST && ST.ART_FALLBACK && ST.ART_FALLBACK[n]) || '';
+  function stIco(n, cls) {
+    const fb = stFb(n);
+    return '<img class="' + cls + '" src="assets/story/' + n + '.webp" alt=""' + (fb ? ' data-fb="assets/story/' + fb + '.webp"' : '') + ' onerror="var f=this.getAttribute(\'data-fb\');if(f){this.removeAttribute(\'data-fb\');this.src=f}else this.remove()">';
+  }
   function stSceneHtml(bg, place, img) {
     if (!bg && !place && !img) return '';
     return '<div class="st-scene' + (bg ? '' : ' st-nobg') + '">' +
-      (bg ? '<div class="st-bg" style="background-image:url(assets/story/' + bg + '.webp)"></div>' : '') +
+      (bg ? '<div class="st-bg" style="background-image:url(assets/story/' + bg + '.webp)' + (stFb(bg) ? ',url(assets/story/' + stFb(bg) + '.webp)' : '') + '"></div>' : '') +
       (place ? '<span class="st-place">' + escapeHtml(place) + '</span>' : '') +
       (img ? '<img class="st-portrait" src="assets/story/' + img + '.webp" alt="" onerror="this.remove()">' : '') + '</div>';
   }
@@ -4004,7 +4011,7 @@
     const btns = last ? m.buttons : [{ label: '繼續', fn: () => stDraw(m, i + 1) }];
     const inner = stSceneHtml(m.bg, m.place, img) +
       '<div class="st-body">' + (p.who && WHO_NAME[p.who] ? '<div class="st-who">' + WHO_NAME[p.who] + '</div>' : '') +
-      '<div class="st-text' + (m.center ? ' st-center' : '') + '">' + (p.icon ? '<img class="st-got-ico" src="assets/story/' + p.icon + '.webp" alt="" onerror="this.remove()">' : '') + escapeHtml(p.t || '') + '</div></div>' +
+      '<div class="st-text' + (m.center ? ' st-center' : '') + '">' + (p.icon ? stIco(p.icon, 'st-got-ico') : '') + escapeHtml(p.t || '') + '</div></div>' +
       '<div class="st-foot">' + (m.pages.length > 1 ? '<span class="st-pg">' + (i + 1) + ' / ' + m.pages.length + '</span>' : '') + stBtns(btns) + '</div>';
     stPaint(inner, (card) => stBindBtns(card, btns));
   }
@@ -4247,7 +4254,9 @@
     else if (!s.started && !s.flags.qh_leave_done) { status = '一段江湖故事正等著你。'; act = '<button type="button" class="btn primary full" data-st="begin">踏入江湖（序章）</button>'; }
     else if (s.phase === 'waiting') status = '「三日後，醉仙樓。」還需擊敗 ' + stLeftKills() + ' 名對手，約定之日就到了。';
     else if (s.phase === 'heifeng') { status = '黑風嶺就在鎮外，隨時能去看看。'; act = '<button type="button" class="btn primary full" data-st="hf">前往黑風嶺</button>'; }
-    else if (s.phase === 'done_ch5' || s.flags.chapter5Completed) status = '第五章已完。無名客說：下一個要找的，是沈雲川。第六章尚未揭開。';
+    else if (s.phase === 'done_ch6' || s.flags.chapter6Completed) status = '第六章已完。沈若蘭說：去洛陽城外的聽風渡。第七章尚未揭開。';
+    else if (s.flags.chapter6Started || s.phase === 'ch6') { status = '沈雲川的下落，還沒有頭緒。'; act = '<button type="button" class="btn primary full" data-st="ch6back">繼續追查沈雲川</button>'; }
+    else if (s.phase === 'done_ch5' || s.flags.chapter5Completed) { status = '第五章已完。無名客說：下一個要找的，是沈雲川。'; act = '<button type="button" class="btn primary full" data-st="ch6">追查沈雲川</button>'; }
     else if (s.flags.chapter5Started || s.phase === 'ch5') { status = '洛陽城裡，還有一個人沒找到。'; act = '<button type="button" class="btn primary full" data-st="ch5back">回到洛陽</button>'; }
     else if (s.phase === 'done_ch4' || s.flags.chapter4Completed) { status = '第四章已完。白石老人說：去找一個叫『無名客』的人。'; act = '<button type="button" class="btn primary full" data-st="ch5">前往洛陽尋人</button>'; }
     else if (s.flags.chapter4Started || s.phase === 'ch4') { status = '白石橋上的事，還沒有了結。'; act = '<button type="button" class="btn primary full" data-st="ch4back">回到白石橋</button>'; }
@@ -4287,14 +4296,14 @@
       const ch = ST.CHAPTERS[k];
       const done = s.completed.indexOf('ch' + k) >= 0;
       const open = s.unlocked.indexOf(+k) >= 0 && !ch.locked;
-      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? ((k === '5' ? s.flags.chapter5Started : k === '4' ? s.flags.chapter4Started : k === '3' ? s.flags.chapter3Started : k === '2' ? s.flags.ch2_started : (s.started || s.flags.qh_leave_done)) ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
+      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? ((k === '6' ? s.flags.chapter6Started : k === '5' ? s.flags.chapter5Started : k === '4' ? s.flags.chapter4Started : k === '3' ? s.flags.chapter3Started : k === '2' ? s.flags.ch2_started : (s.started || s.flags.qh_leave_done)) ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
     }).join('');
   }
   function stResumeHtml() {
     const s = stEnsure();
     const rows = ST.RESUME.filter((r) => s.flags[r[0]]).map((r) => '<li>' + escapeHtml(r[1]) + '</li>').join('');
     const pend = ST.RESUME_PENDING.filter((r) => !s.flags[r[0]]).map((r) => '<li class="muted">？？？（' + escapeHtml(r[1]) + '）</li>').join('');
-    const items = s.items.map((k) => { const it = ST.ITEMS[k]; return it ? '<li>' + (it[2] ? '<img class="st-item-ico" src="assets/story/' + it[2] + '.webp" alt="" onerror="this.remove()">' : '') + escapeHtml(it[0]) + '：<span class="muted">' + escapeHtml(it[1]) + '</span></li>' : ''; }).join('');
+    const items = s.items.map((k) => { const it = ST.ITEMS[k]; return it ? '<li>' + (it[2] ? stIco(it[2], 'st-item-ico') : '') + escapeHtml(it[0]) + '：<span class="muted">' + escapeHtml(it[1]) + '</span></li>' : ''; }).join('');
     const hist = s.history.slice(-12).reverse().map((h) => '<li>' + escapeHtml(h.text) + '</li>').join('');
     return '<p class="muted">這裡只記下你做過的事，不評對錯。</p>' +
       '<h4 class="st-h">江湖履歷</h4><ul class="st-list">' + (rows || '<li class="muted">尚無。</li>') + pend + '</ul>' +
@@ -4306,7 +4315,7 @@
     if (!el || !state) return;
     const s = stEnsure();
     const tab = $('tab-lore');
-    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng' || (s.flags.chapter1_done && !s.flags.ch2_started) || (s.flags.chapter2Completed && !s.flags.chapter3Started) || (s.flags.chapter3Completed && !s.flags.chapter4Started) || (s.flags.chapter4Completed && !s.flags.chapter5Started));
+    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng' || (s.flags.chapter1_done && !s.flags.ch2_started) || (s.flags.chapter2Completed && !s.flags.chapter3Started) || (s.flags.chapter3Completed && !s.flags.chapter4Started) || (s.flags.chapter4Completed && !s.flags.chapter5Started) || (s.flags.chapter5Completed && !s.flags.chapter6Started));
     const subs = [['now', '正在發生'], ['ppl', '人物'], ['rum', '傳聞'], ['ch', '章回'], ['res', '履歷']];
     let body;
     if (loreSub === 'ppl') body = stPeopleHtml();
@@ -4325,6 +4334,13 @@
       else if (k === 'resume') { s.open = true; stResume(); }
       else if (k === 'ch5') { s.cur = 'ch5_title'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch5back') { s.cur = s.flags.obtainedBlackFeatherWarrant ? 'ch5_warrant' : (s.flags.ch5_trace_shen || s.flags.ch5_trace_jade || s.flags.ch5_doubt_wumingke) ? 'ch5_bf' : s.people.indexOf('wumingke') >= 0 ? 'ch5_q_hub' : 'ch5_city'; s.open = true; s.entered = ''; save(); stResume(); }
+      else if (k === 'ch6') { s.cur = 'ch6_title'; s.open = true; s.entered = ''; save(); stResume(); }
+      else if (k === 'ch6back') {
+        const F = s.flags, I = (x) => s.intel.indexOf(x) >= 0;
+        // 接續點照文件；另外兩處（若蘭三選一／四選一已選過）直接往下接，避免重選隱藏旗標
+        s.cur = F.obtainedBlackFeatherLetter ? ((F.ch6_told_lan_well || F.ch6_asked_lan_who || F.ch6_hid_tablet) ? 'ch6_tingfeng' : 'ch6_letter') : F.obtainedShenHalfTablet ? 'ch6_bf' : I('ch6_backyard') ? 'ch6_well' : (F.ch6_lan_call || F.ch6_lan_follow || F.ch6_lan_ignore) ? 'ch6_lan_hint' : F.ch6_book ? 'ch6_out' : 'ch6_city';
+        s.open = true; s.entered = ''; save(); stResume();
+      }
       else if (k === 'ch4') { s.cur = 'ch4_title'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch4back') { s.cur = s.flags.obtainedBlackFeatherOrder ? 'ch4_order' : s.intel.indexOf('ch4_three') >= 0 ? 'ch4_ruolan' : s.people.indexOf('baishiOld') >= 0 ? 'ch4_wait' : 'ch4_bridge'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch3') { s.cur = 'ch3_title'; s.open = true; s.entered = ''; save(); stResume(); }

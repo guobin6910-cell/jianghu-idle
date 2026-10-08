@@ -12,7 +12,8 @@
     3: { id: 3, title: '第三章・沈家舊門', sub: '有些門，十五年來從未真正關上。' },
     4: { id: 4, title: '第四章・白石橋', sub: '橋下流水依舊，橋上的人卻早已不在。' },
     5: { id: 5, title: '第五章・無名客', sub: '江湖上沒有人知道他的名字，卻有人記得他的故事。' },
-    6: { id: 6, title: '第六章・沈雲川', sub: '', locked: true },
+    6: { id: 6, title: '第六章・沈雲川', sub: '一個已經死去十五年的人，為什麼還有人在找他？' },
+    7: { id: 7, title: '第七章・聽風渡', sub: '十五年前最後見過沈雲川的人，還活著嗎？', locked: true },
   };
   S.PORTRAIT = {
     qinghe: 'portrait_shen_qinghe', old: 'portrait_old_swordsman', woman: 'portrait_white_lady', bf: 'portrait_blackfeather', su: 'portrait_su_wantang', ruolan: 'portrait_shen_ruolan', ruolan_anon: 'portrait_shen_ruolan',
@@ -49,6 +50,14 @@
     ch5_tingyu: ['聽雨巷', '舊市集賣舊書的老人說：如果真想找無名客，去聽雨巷。'],
     ch5_bf_hunt: ['黑羽盟在找玉佩的主人', '茶棚裡聽來的：黑羽盟不是在找東西，是在找一個人——手裡有一枚玉佩的人。'],
     ch5_old_scroll: ['洛陽城舊卷・沈雲川', '無名客給的殘紙上只有幾個字：「洛陽城舊卷」「沈雲川」「十五年前」。他說，下一個要找的是沈雲川。'],
+    ch6_seeker: ['有人也在找沈雲川', '舊城門的守門老人說：前幾天，有個戴斗笠的人來問過同樣的名字。'],
+    ch6_record: ['沈雲川死亡記錄疑點', '舊冊上寫著「十五年前失蹤」，旁邊「後確認死亡」四個字，筆跡和其他字完全不同，是後來才加上去的。'],
+    ch6_alive: ['沈雲川可能還活著', '城西舊書坊書櫃後面找到的小紙條：「沈雲川沒有死。」不知道是誰留的。'],
+    ch6_watched: ['黑羽盟在盯著你', '書坊外那個戴斗笠的人，袖口有黑羽盟的印記。'],
+    ch6_street: ['老街的舊事', '老街賣糖的老婦人說：沈家大公子小時候常來，後來就再沒見過。前些日子，有人在沈家舊鋪子門口站了很久。'],
+    ch6_backyard: ['井底', '沈若蘭說：沈家舊宅後院，你漏了一樣東西——不是枯井，是井底。'],
+    ch6_linked: ['此人與十五年前之事有關', '黑羽密函的最後一句。你不知道，這句話說的為什麼會是你。'],
+    ch6_tingfeng: ['聽風渡', '沈若蘭說：洛陽城外有一座叫「聽風渡」的渡口，十五年前最後見過沈雲川的人，就在那裡。'],
     ch4_wumingke: ['無名客', '白石老人說：如果想知道十五年前的事，去找一個叫「無名客」的人。沒有人知道他在哪。'],
   };
   S.ITEMS = {
@@ -62,6 +71,9 @@
     shen_coin: ['沈家舊錢', '一枚發綠的舊銅錢，背面刻著一個「沈」字。', 'icon_shen_coin'],
     bf_order: ['黑羽密令', '黑底細紙，只剩幾行字：「確認玉佩出現。」「目標已找到。」「立即通知洛陽。」', 'icon_bf_order'],
     bf_warrant: ['黑羽追查令', '「目標確認。持有沈家玉佩。不得擅自處置。活捉。」末尾有一個看不清的印記。', 'icon_bf_warrant'],
+    shen_half_tablet: ['沈家半枚玉牌', '從沈家舊宅井底暗格找到的半枚玉牌，背面刻著「雲川」。靠近染血玉佩時，兩者會微微發熱。', 'icon_shen_half_tablet'],
+    bf_letter: ['黑羽密函', '「沈雲川若現身，立即回報。若玉佩出現，不得搶奪，確認持有人身分。此人與十五年前之事有關。」', 'icon_bf_letter'],
+    bf_cloth: ['黑羽衣角', '巷口撿到的一小塊黑布，旁邊落著一根黑色羽毛。', 'icon_bf_cloth'],
     bracer: ['黑護腕', '從黑風嶺死者腕上取下的黑護腕。'],
   };
   S.GEAR = {
@@ -1596,8 +1608,463 @@
   };
   N.ch5_final = {
     bg: B5.night, place: '', center: true,
-    pages: ['【第五章・無名客　完】\n\n【第六章・沈雲川】\n🔒 尚未解鎖\n\n「一個已經死去十五年的人，為什麼還有人在找他？」'],
+    pages: ['【第五章・無名客　完】\n\n【第六章・沈雲川】\n已解鎖\n\n「一個已經死去十五年的人，為什麼還有人在找他？」'],
     choices: [{ label: '繼續江湖', next: '__close' }],
+  };
+
+  // ===== 第六章・沈雲川（同一套節點、show、battle、e；不加新系統） =====
+  // 背景用最終檔名；美術還沒到的，由 S.ART_FALLBACK 自動退回舊圖（檔案放進 assets/story/ 就會換上）
+  const B6 = {
+    city: 'scene_luoyang',
+    gate: 'scene_luoyang_oldgate',
+    street: 'scene_luoyang_teashed',
+    book: 'scene_luoyang_westbook',
+    alley: 'scene_tingyu_lane',
+    yard: 'scene_shen_backyard',
+    well: 'scene_shen_well_bottom',
+    night: 'scene_luoyang_night',
+  };
+  S.B6 = B6;
+  N.ch6_title = {
+    bg: B6.city, place: '', center: true,
+    pages: ['【第六章・沈雲川】\n\n「一個已經死去十五年的人，為什麼還有人在找他？」'],
+    e: { f: ['chapter6Started'], chapter: 6, phase: 'ch6' },
+    next: 'ch6_open',
+  };
+  N.ch6_open = {
+    bg: B6.city, place: '洛陽城',
+    pages: (c) => [
+      '你攤開無名客給的那張殘紙。\n\n【洛陽城舊卷】\n【沈雲川】\n【十五年前】',
+      '沈雲川。',
+      '這個名字，十五年前就應該消失。',
+      '可是現在，卻有三個不同的人，都曾經提過這個名字。',
+    ].concat(c.f('ch5_trace_jade') ? ['你答應過無名客，只查玉佩，不碰沈家。\n\n可是玉佩的另一頭，偏偏連著沈家。'] : [])
+      .concat(c.f('ch5_trace_shen') ? ['你說過要查到底。\n\n現在，是時候了。'] : [])
+      .concat(c.f('ch5_doubt_wumingke') ? ['你想起無名客那一笑。\n\n他把這張紙交給你，真的只是好意嗎？'] : [])
+      .concat(['你往城中舊衙門的方向走去。']),
+    next: 'ch6_city',
+  };
+  N.ch6_city = {
+    bg: B6.city, place: '洛陽・舊衙門附近',
+    pages: (c) => [(c.f('ch6_gate') || c.f('ch6_street')) ? '你回到舊衙門前的街口。' : '舊衙門早就廢了，門前的石獅缺了半張臉。\n\n要從哪裡問起？'],
+    choices: [
+      { label: '舊城門', next: 'ch6_gate', show: (c) => !c.f('ch6_gate') },
+      { label: '城中老街', next: 'ch6_street', show: (c) => !c.f('ch6_street') },
+      { label: '城西舊書坊', next: 'ch6_book' },
+    ],
+  };
+  N.ch6_gate = {
+    bg: B6.gate, place: '洛陽・舊城門',
+    pages: [
+      '舊城門下，一個守門老人靠著牆打盹。',
+      '「沈雲川。」\n\n你說出這個名字。',
+      '老人睜開眼，沉默了很久。',
+      '「十五年前？」\n\n「那個人不是早就死了嗎？」',
+      '「你見過他？」',
+      '「見過。」\n\n「但不是十五年前。」',
+      '你一愣。',
+      '老人立刻別過頭。\n\n「我年紀大了，記錯了。」',
+    ],
+    e: { f: ['ch6_gate'] },
+    choices: [
+      { label: '繼續追問', next: 'ch6_gate_press' },
+      { label: '暫時離開', next: 'ch6_city' },
+      { label: '問他最近有沒有人提過沈雲川', next: 'ch6_gate_recent' },
+    ],
+  };
+  N.ch6_gate_press = {
+    bg: B6.gate, place: '洛陽・舊城門',
+    pages: ['「不是十五年前，那是什麼時候？」', '老人把帽子拉低，蓋住了眼睛。\n\n「城門要關了，客人請回吧。」', '天色還早。\n\n城門不會關。'],
+    next: 'ch6_city',
+  };
+  N.ch6_gate_recent = {
+    bg: B6.gate, place: '洛陽・舊城門',
+    pages: (c) => [
+      '「最近有沒有人，也來問過這個名字？」',
+      '老人往左右看了一眼，壓低聲音：',
+      '「前幾天，有個戴斗笠的人來問過同樣的名字。」',
+    ].concat(c.f('helped_mysterious_woman') || c.f('seen_woman') ? ['戴斗笠。\n\n你想起青石鎮醉仙樓窗邊，那個看雨的白衣女子。\n\n——是她嗎？還是別人？'] : [])
+      .concat(['【獲得線索：有人也在找沈雲川】']),
+    e: { intel: ['ch6_seeker'] },
+    next: 'ch6_city',
+  };
+  N.ch6_street = {
+    bg: B6.street, place: '洛陽・城中老街',
+    pages: [
+      '老街很窄，兩旁是賣糖、賣燈籠的小攤。',
+      '你問賣糖的老婦人，記不記得沈家。',
+      '「沈家大公子？」\n\n她手裡的糖勺停了一下。',
+      '「小時候常來，總是買兩支，一支給自己，一支帶回去。」',
+      '「後來沈家出事，就再沒見過了。」',
+      '她想了想，又低聲補了一句：\n\n「前些日子，倒是有個人，在沈家舊鋪子門口站了很久。我沒看清臉。」',
+      '【獲得線索：老街的舊事】',
+    ],
+    e: { f: ['ch6_street'], intel: ['ch6_street'] },
+    next: 'ch6_city',
+  };
+  N.ch6_book = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: (c) => []
+      .concat(c.f('ch2_clue_shen') ? ['你想過去找蘇晚棠。\n\n可她說過：「知道得越多，麻煩越多。」\n\n你不想再把她扯進來。'] : [])
+      .concat([
+        '城西這間書坊比你想的還破，門板斜著，屋裡一股霉味。',
+        '店主是個中年男子，正在補一本書的封皮。',
+        '你把那張殘紙放在櫃檯上。',
+        '他看了一眼，臉色變了。',
+        '「沈雲川？」',
+        '「你從哪裡拿到這東西？」',
+      ]),
+    e: { f: ['ch6_book'] },
+    // 這四句會留下之後章節用的隱藏旗標，不進履歷
+    choices: [
+      { label: '「無名客給我的。」', next: 'ch6_book_wmk', nohist: true },
+      { label: '「在沈家舊宅找到的。」', next: 'ch6_book_lie', nohist: true },
+      { label: '「不告訴你。」', next: 'ch6_book_no', nohist: true },
+      { label: '「我只想知道沈雲川是誰。」', next: 'ch6_book_who', nohist: true },
+    ],
+  };
+  N.ch6_book_wmk = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: ['店主的手停住了。\n\n他很久沒有說話。', '「原來……是他。」', '他沒有再問，起身把門閂上。'],
+    e: { f: ['ch6_said_wmk'] },
+    next: 'ch6_record',
+  };
+  N.ch6_book_lie = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: ['店主盯著你看了一會兒。', '「沈家舊宅裡，可找不到這種紙。」', '他沒有拆穿，只是起身把門閂上。'],
+    next: 'ch6_record',
+  };
+  N.ch6_book_no = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: ['「不告訴我也好。」', '「知道的人越少，活得越久。」', '他起身把門閂上。'],
+    next: 'ch6_record',
+  };
+  N.ch6_book_who = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: ['「是誰？」\n\n店主苦笑了一下。', '「這個問題，十五年來沒有人敢大聲問。」', '他起身把門閂上。'],
+    next: 'ch6_record',
+  };
+  N.ch6_record = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: [
+      '店主從書架最底層，抽出一本殘破的舊冊。',
+      '他翻到其中一頁，推到你面前。',
+      '【沈雲川】\n【洛陽沈家長子】\n【十五年前失蹤】',
+      '旁邊卻還有一行字：\n\n【後確認死亡】',
+      '你湊近看。\n\n「確認死亡」這四個字，筆跡和其他字完全不同。',
+      '「誰改的？」',
+      '「不知道。」\n\n「但這幾個字，是後來才加上去的。」',
+      '【獲得線索：沈雲川死亡記錄疑點】',
+    ],
+    e: { intel: ['ch6_record'] },
+    next: 'ch6_torn',
+  };
+  N.ch6_torn = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: (c) => [c.f('ch6_book_asked')
+      ? '你又看了一眼那半句殘字。'
+      : '你翻到下一頁。\n\n原本應該記著沈家其他人的地方，整頁被撕掉了。\n\n只剩下半句：\n\n「沈家當夜……」'],
+    choices: [
+      { label: '仔細找找缺掉的那頁', next: 'ch6_search' },
+      { label: '詢問店主', next: 'ch6_ask_owner', show: (c) => !c.f('ch6_book_asked') },
+      { label: '先記下內容', next: 'ch6_note' },
+    ],
+  };
+  N.ch6_ask_owner = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: ['「這頁是誰撕的？」', '店主搖頭。', '「這本冊子到我手上的時候，就已經是這樣了。」\n\n「撕掉它的人，比你我都早來。」'],
+    e: { f: ['ch6_book_asked'] },
+    next: 'ch6_torn',
+  };
+  N.ch6_search = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: [
+      '你把書架一層一層看過去。',
+      '最後在書櫃和牆的縫隙裡，摸到一小張摺得很緊的紙。',
+      '紙上只有一句：\n\n「沈雲川沒有死。」',
+      '你抬頭看店主。\n\n他看起來比你還驚訝。',
+      '【獲得線索：沈雲川可能還活著】',
+    ],
+    e: { intel: ['ch6_alive'] },
+    next: 'ch6_leave_book',
+  };
+  N.ch6_note = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: ['你把「沈家當夜……」這半句，和那行改過的字，一起記在心裡。'],
+    next: 'ch6_leave_book',
+  };
+  N.ch6_leave_book = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: ['店主把舊冊收回去，拉開門閂。', '「出去的時候，走慢一點。」\n\n「走太快，像是在逃。」'],
+    next: 'ch6_out',
+  };
+  N.ch6_out = {
+    bg: B6.city, place: '洛陽・城西街口',
+    pages: ['你走出書坊。', '街的另一頭，站著一個戴斗笠的人。', '你往前走了兩步。\n\n他轉身就走。'],
+    choices: [
+      { label: '追上去', next: 'ch6_chase' },
+      { label: '留在原地觀察', next: 'ch6_watch' },
+      { label: '返回書坊', next: 'ch6_back' },
+    ],
+  };
+  N.ch6_chase = {
+    bg: B6.alley, place: '洛陽・窄巷',
+    pages: ['你追進巷子。\n\n斗笠在前面一晃，轉進了岔路。'],
+    e: { f: ['ch6_out_chase'] },
+    choices: [
+      { label: '往左邊追', next: 'ch6_chase_end' },
+      { label: '往右邊追', next: 'ch6_chase_end' },
+    ],
+  };
+  N.ch6_chase_end = {
+    bg: B6.alley, place: '洛陽・窄巷',
+    pages: [
+      '你繞過兩個轉角，眼前只剩一堵牆。',
+      '人不見了。',
+      '巷口的地上，落著一根黑色羽毛。\n\n旁邊還有一小塊被牆釘勾破的黑布。',
+      { t: '【獲得：黑羽衣角】', icon: 'icon_bf_cloth' },
+    ],
+    e: { item: ['bf_cloth'] },
+    next: 'ch6_lan',
+  };
+  N.ch6_watch = {
+    bg: B6.city, place: '洛陽・城西街口',
+    pages: [
+      '你沒有動。',
+      '那人走到街角，抬手壓了壓斗笠。\n\n袖口翻起來的那一瞬間，你看見了——黑羽的印記。',
+      '他好像也知道你看見了。\n\n下一刻，人已經不在街角。',
+      '【獲得線索：黑羽盟在盯著你】',
+    ],
+    e: { f: ['ch6_out_watch'], intel: ['ch6_watched'] },
+    next: 'ch6_lan',
+  };
+  N.ch6_back = {
+    bg: B6.book, place: '洛陽・城西舊書坊',
+    pages: ['你退回書坊。', '店主看見你，沒有一點意外。', '「你已經被盯上了。」', '「誰？」', '「你心裡應該已經有答案。」', '他把門關上了。'],
+    e: { f: ['ch6_out_back'] },
+    next: 'ch6_lan',
+  };
+  N.ch6_lan = {
+    bg: B6.city, place: '洛陽・街角',
+    pages: ['你再走出來的時候，街角站著一個人。', '是沈若蘭。', '她看見你，卻沒有走過來。'],
+    choices: [
+      { label: '叫住沈若蘭', next: 'ch6_lan_call', nohist: true },
+      { label: '跟上她', next: 'ch6_lan_follow', nohist: true },
+      { label: '假裝沒看到她', next: 'ch6_lan_ignore', nohist: true },
+    ],
+  };
+  N.ch6_lan_call = {
+    bg: B6.city, place: '洛陽・街角',
+    pages: ['「沈姑娘。」\n\n她停下。', '「你知道沈雲川嗎？」', '她沉默了很久。', LAN('「知道。」'), '「他死了嗎？」', LAN('「你真的想知道？」'), '「是。」', LAN('「那就不要再相信你看到的死亡。」')],
+    e: { f: ['ch6_lan_call'] },
+    next: 'ch6_lan_hint',
+  };
+  N.ch6_lan_follow = {
+    bg: B6.city, place: '洛陽・廢院',
+    pages: ['你遠遠跟在她後面。', '她走進一間廢棄的院子，從懷裡拿出一張舊紙。', '紙上畫的，看起來像是一座宅子的格局——\n\n沈家舊宅。', '她忽然轉身。', LAN('「你跟著我做什麼？」')],
+    e: { f: ['ch6_lan_follow'] },
+    choices: [
+      { label: '「我在找沈雲川。」', next: 'ch6_lan_f1', nohist: true },
+      { label: '「我想知道你是誰。」', next: 'ch6_lan_f2', nohist: true },
+      { label: '「我只是路過。」', next: 'ch6_lan_f3', nohist: true },
+    ],
+  };
+  N.ch6_lan_f1 = { bg: B6.city, place: '洛陽・廢院', pages: [LAN('「那你找錯方向了。」'), '她把紙收起來。'], next: 'ch6_lan_hint' };
+  N.ch6_lan_f2 = { bg: B6.city, place: '洛陽・廢院', pages: [LAN('「我說過我的名字。」'), LAN('「其他的，你還不需要知道。」')], next: 'ch6_lan_hint' };
+  N.ch6_lan_f3 = { bg: B6.city, place: '洛陽・廢院', pages: [LAN('「路過到廢院裡來？」'), '她居然笑了一下。'], next: 'ch6_lan_hint' };
+  N.ch6_lan_ignore = {
+    bg: B6.city, place: '洛陽・街角',
+    pages: ['你移開目光，從她身邊走過去。', '走出十幾步，身後傳來她的聲音。', LAN('「你變聰明了。」'), LAN('「知道什麼事情不該追。」'), '「但你還是跟著我。」', LAN('「因為有些事情。」'), LAN('「不是你想不追，就能不追。」')],
+    e: { f: ['ch6_lan_ignore'] },
+    next: 'ch6_lan_hint',
+  };
+  N.ch6_lan_hint = {
+    bg: B6.city, place: '洛陽・街角',
+    pages: [
+      LAN('「你上次在沈家舊宅後院看到的那個地方。」'),
+      LAN('「你漏了一樣東西。」'),
+      '「什麼？」',
+      LAN('「井。」'),
+      LAN('「不是枯井。」'),
+      LAN('「是井底。」'),
+      '她說完就走了。',
+      '【獲得線索：井底】',
+    ],
+    e: { intel: ['ch6_backyard'] },
+    next: 'ch6_return',
+  };
+  N.ch6_return = {
+    bg: B6.yard, place: '沈家舊宅・後院',
+    pages: (c) => ['你又一次走進沈家舊宅。', '後院還是老樣子。\n\n那口枯井就在角落。']
+      .concat(c.f('ch3_well_mark') ? ['井壁上「洛水不忘」那四個字，你還記得。'] : []),
+    next: 'ch6_well',
+  };
+  N.ch6_well = {
+    bg: B6.yard, place: '沈家舊宅・枯井',
+    pages: ['你站在井邊。'],
+    choices: [
+      // 節點的 e 會在算頁面之前生效，所以「有沒有洛水不忘」要在選項這裡先看（ch6_well_luoshui＝這次才補給）
+      { label: '查看井口', next: 'ch6_well_top', show: (c) => !c.f('ch6_well_top'), eFn: (c) => (c.has('ch3_luoshui') ? { f: ['ch6_well_top'] } : { f: ['ch6_well_top', 'ch6_well_luoshui'], intel: ['ch3_luoshui'] }) },
+      { label: '下井', next: 'ch6_down' },
+      { label: '離開', next: 'ch6_well_leave' },
+    ],
+  };
+  N.ch6_well_top = {
+    bg: B6.yard, place: '沈家舊宅・枯井',
+    pages: (c) => (c.f('ch6_well_luoshui')
+      ? ['井壁上刻著四個字，刻得很深：\n\n「洛水不忘」', '【獲得線索：洛水不忘】']
+      : ['井口的青苔被人踩過。\n\n不是你。'])
+      .concat(['井邊的石頭上，綁著一條舊繩，看起來還結實。']),
+    next: 'ch6_well',
+  };
+  N.ch6_well_leave = {
+    bg: B6.yard, place: '沈家舊宅・後院',
+    pages: ['你走到後院門口，又停了下來。', '若蘭那句話還在耳邊——「是井底。」', '你轉身走回井邊。'],
+    next: 'ch6_well',
+  };
+  N.ch6_down = {
+    bg: B6.well, place: '沈家舊宅・井底',
+    pages: [
+      '你抓著繩子，一點一點往下。',
+      '井底沒有水。\n\n只有乾掉的泥，和一股很久沒見過天日的氣味。',
+      '你蹲下來，用手撥開泥土。',
+      '下面是一塊石板。\n\n石板中央，刻著一個「沈」字。',
+      '石板邊緣有一道細縫。你用刀尖一撬，翻開了一個很小的暗格。',
+    ],
+    next: 'ch6_tablet',
+  };
+  N.ch6_tablet = {
+    bg: B6.well, place: '沈家舊宅・井底',
+    pages: (c) => [
+      '暗格裡放著半枚玉牌。',
+      '你剛把它拿起來，懷裡的染血玉佩，忽然微微發熱。',
+    ].concat(c.f('ch3_gave_jade') ? ['玉佩缺掉的那一角，熱得最厲害。'] : [])
+      .concat([
+        '你把兩樣東西拿近。',
+        '兩枚玉牌彼此呼應。',
+        { t: '【獲得：沈家半枚玉牌】', icon: 'icon_shen_half_tablet' },
+        '你翻過玉牌。\n\n背面刻著兩個字：\n\n「雲川。」',
+        '你的手停在半空。',
+        '沈雲川。\n\n這枚玉牌，和你身上的玉佩，是同一個人的東西。',
+      ]),
+    e: { f: ['obtainedShenHalfTablet'], item: ['shen_half_tablet'] },
+    choices: [
+      { label: '沈雲川到底留下了什麼？', next: 'ch6_t1' },
+      { label: '玉佩為什麼會選中我？', next: 'ch6_t2' },
+      { label: '沈若蘭知道多少？', next: 'ch6_t3' },
+      { label: '黑羽盟為什麼害怕這東西？', next: 'ch6_t4' },
+    ],
+  };
+  N.ch6_t1 = { bg: B6.well, place: '沈家舊宅・井底', pages: ['你把半枚玉牌翻來覆去地看。', '它只有一半。\n\n有些答案，需要另一半玉牌。'], next: 'ch6_bf' };
+  N.ch6_t2 = { bg: B6.well, place: '沈家舊宅・井底', pages: ['玉佩還在發熱，像在回答你。', '可是你聽不懂。\n\n你現在知道得還不夠。'], next: 'ch6_bf' };
+  N.ch6_t3 = { bg: B6.well, place: '沈家舊宅・井底', pages: ['她知道井底有東西。\n\n她卻沒有自己下來拿。', '為什麼？'], next: 'ch6_bf' };
+  N.ch6_t4 = { bg: B6.well, place: '沈家舊宅・井底', pages: ['一枚玉牌，能讓人怕成什麼樣子？', '你很快就會知道了。'], next: 'ch6_bf' };
+  N.ch6_bf = {
+    bg: B6.yard, place: '沈家舊宅・後院',
+    pages: [
+      '井口上方，傳來一個聲音。',
+      { t: '「下面的人。」\n\n「把東西交出來。」', who: 'bf' },
+      '你爬上井口。',
+      '後院四周，已經站滿了左手戴黑護腕的人。',
+      '為首的那個，腰間掛的不是黑羽令，而是一塊刻字的木牌——旁人叫他「執事」。',
+      { t: '「黑羽執事有令，拿下。」', who: 'bf' },
+    ],
+    battle: { count: 3, name: '黑羽追兵', win: 'ch6_after', lose: 'ch6_after_lose', label: '戰鬥開始' },
+  };
+  N.ch6_after = {
+    bg: B6.yard, place: '沈家舊宅・後院',
+    pages: [
+      '最後一個黑衣人倒下。',
+      '黑羽執事見勢不對，翻牆走了。\n\n倉皇之間，從他懷裡掉出一封封了黑蠟的信。',
+      { t: '【獲得：黑羽密函】', icon: 'icon_bf_letter' },
+    ],
+    e: { f: ['ch6_fought_bf', 'obtainedBlackFeatherLetter'], item: ['bf_letter'] },
+    next: 'ch6_letter',
+  };
+  N.ch6_after_lose = {
+    bg: B6.yard, place: '沈家舊宅・後院',
+    pages: [
+      '你被逼到井邊，退無可退。',
+      '一道細細的銀光從牆頭飛來，釘在黑羽執事腳前——\n\n是一枚銀簪。',
+      '執事臉色一變，揮手帶人撤了。\n\n走得太急，懷裡掉出一封封了黑蠟的信。',
+      { t: '【獲得：黑羽密函】', icon: 'icon_bf_letter' },
+    ],
+    e: { f: ['ch6_fought_bf', 'obtainedBlackFeatherLetter'], item: ['bf_letter'] },
+    next: 'ch6_letter',
+  };
+  N.ch6_letter = {
+    bg: B6.yard, place: '沈家舊宅・後院',
+    pages: [
+      '你拆開黑蠟。',
+      '「沈雲川若現身。」\n\n「立即回報。」',
+      '「若玉佩出現。」\n\n「不得搶奪。」',
+      '「確認持有人身分。」',
+      '最後一句：\n\n「此人與十五年前之事有關。」',
+      '你把信看了三遍。',
+      '十五年前，你在哪裡？\n\n你記得的，只有很小很小的時候。',
+      '為什麼……會跟沈家有關？',
+      '【獲得線索：此人與十五年前之事有關】',
+    ],
+    e: { intel: ['ch6_linked'] },
+    next: 'ch6_lan_last',
+  };
+  N.ch6_lan_last = {
+    bg: B6.yard, place: '沈家舊宅・後院',
+    pages: ['沈若蘭從牆頭落下來。', '她的目光，落在你手裡的半枚玉牌上。', '你第一次看見，她的神情變了。', LAN('「你在哪裡找到的？」')],
+    choices: [
+      { label: '「井底。」', next: 'ch6_l1', nohist: true },
+      { label: '「沈雲川留下的。」', next: 'ch6_l2', nohist: true },
+      { label: '「你先告訴我你是誰。」', next: 'ch6_l3', nohist: true },
+      { label: '「不告訴你。」', next: 'ch6_l4', nohist: true },
+    ],
+  };
+  N.ch6_l1 = { bg: B6.yard, place: '沈家舊宅・後院', pages: ['「井底。」', '她看著那口井，很久沒有說話。'], e: { f: ['ch6_told_lan_well'] }, next: 'ch6_tingfeng' };
+  N.ch6_l2 = { bg: B6.yard, place: '沈家舊宅・後院', pages: ['「沈雲川留下的。」', LAN('「……你知道自己在說什麼嗎？」'), '她的聲音很輕，輕得幾乎在發抖。'], next: 'ch6_tingfeng' };
+  N.ch6_l3 = { bg: B6.yard, place: '沈家舊宅・後院', pages: ['「你先告訴我，你是誰。」', '沈若蘭沉默了。', LAN('「我的名字，是真的。」'), LAN('「但我的身分，不一定。」')], e: { f: ['ch6_asked_lan_who'] }, next: 'ch6_tingfeng' };
+  N.ch6_l4 = { bg: B6.yard, place: '沈家舊宅・後院', pages: ['「不告訴你。」', LAN('「也好。」'), LAN('「這種東西，知道它在哪裡的人越少越好。」')], e: { f: ['ch6_hid_tablet'] }, next: 'ch6_tingfeng' };
+  N.ch6_tingfeng = {
+    bg: B6.yard, place: '沈家舊宅・後院',
+    pages: [
+      LAN('「你想找沈雲川。」'),
+      LAN('「那就去洛陽城外。」'),
+      LAN('「找一座叫『聽風渡』的渡口。」'),
+      '「那裡有沈雲川？」',
+      LAN('「不知道。」'),
+      '她停了一下。',
+      LAN('「但十五年前最後見過他的人。」'),
+      LAN('「就在那裡。」'),
+      '【獲得線索：聽風渡】',
+    ],
+    e: { intel: ['ch6_tingfeng'] },
+    next: 'ch6_end',
+  };
+  N.ch6_end = {
+    bg: B6.night, place: '洛陽・夜',
+    pages: [
+      '沈雲川沒有死？',
+      '沈家當年的死亡記錄，有人改過。',
+      '黑羽盟害怕玉佩出現。',
+      '而玉佩……似乎正在回應你。',
+      '【如果沈雲川真的活著。】',
+      '【那麼十五年前，他究竟去了哪裡？】',
+    ],
+    e: { f: ['chapter6Completed'], phase: 'done_ch6', complete: 'ch6' },
+    choices: [{ label: '完', next: 'ch6_final' }],
+  };
+  N.ch6_final = {
+    bg: B6.night, place: '', center: true,
+    pages: ['【第六章・沈雲川　完】\n\n【第七章・聽風渡】\n🔒 尚未解鎖\n\n「十五年前最後見過沈雲川的人，還活著嗎？」'],
+    choices: [{ label: '繼續江湖', next: '__close' }],
+  };
+
+  // ===== 美術未到時自動退回的舊圖（新檔放進 assets/story/ 就會蓋過去；到齊後可刪掉對應這行） =====
+  S.ART_FALLBACK = {
+    scene_luoyang_oldgate: 'scene_luoyang',
+    scene_luoyang_westbook: 'scene_bookshop',
+    scene_shen_well_bottom: 'scene_shen_backyard',
+    icon_shen_half_tablet: 'icon_jade_pendant',
+    icon_bf_letter: 'icon_bf_order',
+    icon_bf_cloth: 'icon_blackfeather',
   };
 
   // ===== 履歷（只記錄做過什麼，不評斷） =====
@@ -1625,7 +2092,8 @@
     { id: 'q_ch2', ch: 2, text: (c) => (c.f('chapter2Completed') ? '第二章・洛陽舊事　完' : '第二章・洛陽舊事：查玉佩背後的十五年前'), show: (c) => c.f('chapter1_done'), done: (c) => c.f('chapter2Completed') },
     { id: 'q_ch3', ch: 3, text: (c) => (c.f('chapter3Completed') ? '第三章・沈家舊門　完' : '第三章・沈家舊門：到洛水邊找沈家舊宅'), show: (c) => c.f('chapter2Completed'), done: (c) => c.f('chapter3Completed') },
     { id: 'q_ch4', ch: 4, text: (c) => (c.f('chapter4Completed') ? '第四章・白石橋　完' : '第四章・白石橋：到洛水以北找白石橋'), show: (c) => c.f('chapter3Completed'), done: (c) => c.f('chapter4Completed') },
-    { id: 'q_ch5', ch: 5, text: (c) => (c.f('chapter5Completed') ? '第五章・無名客　完（第六章・沈雲川 鎖定）' : '第五章・無名客：在洛陽城裡找到無名客'), show: (c) => c.f('chapter4Completed'), done: (c) => c.f('chapter5Completed') },
+    { id: 'q_ch5', ch: 5, text: (c) => (c.f('chapter5Completed') ? '第五章・無名客　完' : '第五章・無名客：在洛陽城裡找到無名客'), show: (c) => c.f('chapter4Completed'), done: (c) => c.f('chapter5Completed') },
+    { id: 'q_ch6', ch: 6, text: (c) => (c.f('chapter6Completed') ? '第六章・沈雲川　完（第七章・聽風渡 鎖定）' : '第六章・沈雲川：查出沈雲川的下落'), show: (c) => c.f('chapter5Completed'), done: (c) => c.f('chapter6Completed') },
   ];
 
   // ===== 掛機江湖事件（低機率，不連續彈窗） =====
