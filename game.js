@@ -560,6 +560,8 @@
     '守殿棍僧': 'temple_monk', '石獅精': 'temple_lion', '遊魂': 'temple_ghost',
     '潮汐劍客': 'mist_tide', '海妖': 'mist_kraken', '霧鮫': 'mist_shark',
     '雲棧護法': 'sky_guard', '雷鳥': 'sky_thunderbird', '雲蛟': 'sky_wyvern',
+    '毒蟾': 'miasma_toad', '瘴林蠱師': 'miasma_gu', '沼澤老鱷': 'miasma_croc',
+    '火紋蜥': 'ember_lizard', '熔岩傀儡': 'ember_golem', '焚爐刀匠': 'ember_smith',
   };
   const RIVAL_KIND = {
     rival_inn: 'boss_inn', rival_river: 'boss_river', rival_desert: 'boss_desert', rival_bamboo: 'boss_bamboo',
