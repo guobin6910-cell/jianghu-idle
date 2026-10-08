@@ -1553,8 +1553,9 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 }
 
 /* iso-scene-dim：場景 webp 僅作遠景色調，降低側視權重 */
+/* 原本 multiply 會循環套到底圖，使底圖乘上深色底色而只剩約 25% 亮度；改為一般疊加 */
 .battle-stage[class*="zone-"] {
-  background-blend-mode: multiply, normal;
+  background-blend-mode: normal;
 }
 
 

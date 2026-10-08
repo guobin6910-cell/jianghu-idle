@@ -2149,13 +2149,14 @@
       tryAutoSkills(stats);
     }
 
+    // 普攻打倒：若尚未被技能結算（仍在陣列中），在此結算；最後一隻也要走 finishMobKill
+    if (mob.hp <= 0) {
+      if (Array.isArray(state.mobs) && state.mobs.some((m) => m && m.uid === mob.uid)) finishMobKill(mob, bonusExp);
+      return;
+    }
     // 技能可能已結算擊殺
     const still = syncPrimaryMob();
     if (!still) return;
-    if (mob.hp <= 0) {
-      finishMobKill(mob, bonusExp);
-      return;
-    }
 
     // 場上存活敵人輪流／主目標反擊
     const attackers = aliveMobs();
@@ -2222,7 +2223,9 @@
     const lootGot = tryDrop(wasRival);
     // 掛機自動打：普通掉寶只進背包＋日誌，不彈窗要確認；名號稀有掉落仍可彈
     if (lootGot && lootGot.length) {
-      if (wasRival || !state.hunting) openLootModal(lootGot);
+      // 名號掉落延後 1.4 秒再彈，先讓倒地圖播完
+      if (wasRival && state.hunting) setTimeout(() => openLootModal(lootGot), 1400);
+      else if (wasRival || !state.hunting) openLootModal(lootGot);
     }
     consumeFightBuff();
     fxMobDefeat(mobSlotIndex(mob));
