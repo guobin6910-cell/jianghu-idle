@@ -1517,6 +1517,7 @@
   }
 
   let modalOpen = false;
+  let respawnHoldUntil = 0; // 名號倒地後到此時間前不補怪、不交戰（不存檔）
 
   function applyCombatBuff(buff) {
     if (!buff) return;
@@ -1873,6 +1874,7 @@
       syncPrimaryMob();
       return;
     }
+    if (Date.now() < respawnHoldUntil) { state.mobs = []; state.mob = null; return; }
     if (stBattleOn() && stSpawnBattleMobs()) return;
     const zone = currentZone();
     const scale = 1 + Math.max(0, state.lv - zone.minLv) * 0.05;
@@ -2248,13 +2250,16 @@
 
     state.mobs = [];
     state.mob = null;
+    // 名號倒地：1.4 秒內戰鬥真正暫停（不補怪、不攻擊），讓倒地圖與擊破停頓完整呈現
+    const holdMs = wasRival ? 1400 : 280;
+    if (wasRival) respawnHoldUntil = Date.now() + holdMs;
     setTimeout(() => {
       if (!state || !state.hunting) return;
       resetFightMarks();
       ensureMobs();
       renderAll();
       save();
-    }, wasRival ? 1450 : 280); // 名號倒地圖播完（1.4 秒）再補下一波，避免新怪蓋住
+    }, holdMs + 20);
   }
 
   function skillReady(idx) {
@@ -2716,6 +2721,7 @@
       Audio().playBgm(want);
     }
     state.hunting = true;
+    respawnHoldUntil = 0;
     resetFightMarks();
     ensureMobs();
     pushLog(`在「${zone.name}」開始掛機…（自動戰鬥中）`);
@@ -2980,6 +2986,7 @@
       const spr = slot.querySelector('[data-sprite]');
       if (!mob || mob.hp <= 0) {
         slot.classList.add('empty');
+        if (slot.querySelector('.ghost-down')) slot.classList.add('ghosting');
         if (spr) {
           const keepKind = spr.dataset.kind && spr.dataset.kind !== 'hero' ? spr.dataset.kind : ENEMY_SPRITES[i % ENEMY_SPRITES.length];
           const dp = slotPoseNow(i);
@@ -4262,6 +4269,7 @@
     save();
     closeModal();
     state.mobs = []; state.mob = null;
+    respawnHoldUntil = 0;
     if (!was) {
       startHunt();
       if (!state.hunting) { state.zoneId = 'inn'; startHunt(); }
