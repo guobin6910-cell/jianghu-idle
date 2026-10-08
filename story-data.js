@@ -628,7 +628,7 @@
   };
   N.ch2_final = {
     bg: 'scene_luoyang_night', place: '', center: true,
-    pages: ['【第二章・洛陽舊事　完】\n\n【第三章・沈家舊門】\n已解鎖\n\n「沈家舊宅，洛水之畔。」'],
+    pages: ['【第二章・洛陽舊事　完】\n\n【第三章・沈家舊門】\n已解鎖\n\n「有些門，十五年來從未真正關上。」'],
     choices: [{ label: '繼續江湖', next: '__close' }],
   };
 
