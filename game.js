@@ -562,6 +562,9 @@
     '雲棧護法': 'sky_guard', '雷鳥': 'sky_thunderbird', '雲蛟': 'sky_wyvern',
     '毒蟾': 'miasma_toad', '瘴林蠱師': 'miasma_gu', '沼澤老鱷': 'miasma_croc',
     '火紋蜥': 'ember_lizard', '熔岩傀儡': 'ember_golem', '焚爐刀匠': 'ember_smith',
+    '斷戟殘兵': 'bone_soldier', '骨鴉': 'bone_crow', '陣魂': 'bone_wraith',
+    '鏡影刺客': 'mirror_assassin', '水月幻姬': 'mirror_phantom', '湖底石龜': 'mirror_turtle',
+    '天闕守將': 'skygate_general', '金翅鵬': 'skygate_roc', '雷音法相': 'skygate_thunder',
   };
   const RIVAL_KIND = {
     rival_inn: 'boss_inn', rival_river: 'boss_river', rival_desert: 'boss_desert', rival_bamboo: 'boss_bamboo',
