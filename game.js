@@ -2254,7 +2254,7 @@
       ensureMobs();
       renderAll();
       save();
-    }, 280);
+    }, wasRival ? 1450 : 280); // 名號倒地圖播完（1.4 秒）再補下一波，避免新怪蓋住
   }
 
   function skillReady(idx) {
