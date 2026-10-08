@@ -2107,6 +2107,7 @@
   function tickCombat() {
     if (!state || !state.hunting) return;
     if (modalOpen) return;
+    if (Date.now() < respawnHoldUntil) return; // 名號擊破停頓：不交戰、也不觸發隨機事件
     ensureVitals();
     if (isExhausted()) return;
     tryTriggerEvent(Date.now());
@@ -2226,7 +2227,7 @@
     // 掛機自動打：普通掉寶只進背包＋日誌，不彈窗要確認；名號稀有掉落仍可彈
     if (lootGot && lootGot.length) {
       // 名號掉落延後 1.4 秒再彈，先讓倒地圖播完
-      if (wasRival && state.hunting) setTimeout(() => openLootModal(lootGot), 1400);
+      if (wasRival && state.hunting) setTimeout(() => openLootModal(lootGot), 1150);
       else if (wasRival || !state.hunting) openLootModal(lootGot);
     }
     consumeFightBuff();
@@ -2250,8 +2251,8 @@
 
     state.mobs = [];
     state.mob = null;
-    // 名號倒地：1.4 秒內戰鬥真正暫停（不補怪、不攻擊），讓倒地圖與擊破停頓完整呈現
-    const holdMs = wasRival ? 1400 : 280;
+    // 名號倒地：1.15 秒內戰鬥真正暫停（不補怪、不攻擊），讓倒地圖與擊破停頓完整呈現
+    const holdMs = wasRival ? 1150 : 280;
     if (wasRival) respawnHoldUntil = Date.now() + holdMs;
     setTimeout(() => {
       if (!state || !state.hunting) return;
@@ -3110,7 +3111,10 @@
       (spr.parentElement || enemyF).appendChild(ghost);
       const isBoss = /^boss_/.test(spr.dataset.kind);
       if (isBoss) ghost.classList.add('ghost-boss');
-      setTimeout(() => ghost.remove(), isBoss ? 1450 : 700);
+      setTimeout(() => {
+        ghost.remove();
+        if (!enemyF.querySelector('.ghost-down')) enemyF.classList.remove('ghosting');
+      }, isBoss ? 1200 : 700);
     }
     spawnFloat('破！', 'kill', s);
   }

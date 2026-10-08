@@ -1571,7 +1571,8 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
 .enemy-slot .combat-sprite[data-sized="1"], #fighter-hero .combat-sprite[data-sized="1"] { max-width: none; }
 .enemy-slot .ghost-down { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); animation: down-fade 0.65s ease forwards; z-index: 2; }
 @keyframes down-fade { 0%,55% { opacity: 1; } 100% { opacity: 0; } }
-.enemy-slot .ghost-down.ghost-boss { animation-duration: 1.4s; }
+.enemy-slot .ghost-down.ghost-boss { animation: down-fade-boss 1.2s ease forwards; }
+@keyframes down-fade-boss { 0%,75% { opacity: 1; } 100% { opacity: 0; } }
 
 
 /* —— 歡迎回來（離線收益）—— */
