@@ -2059,12 +2059,7 @@
 
   // ===== 美術未到時自動退回的舊圖（新檔放進 assets/story/ 就會蓋過去；到齊後可刪掉對應這行） =====
   S.ART_FALLBACK = {
-    scene_luoyang_oldgate: 'scene_luoyang',
-    scene_luoyang_westbook: 'scene_bookshop',
-    scene_shen_well_bottom: 'scene_shen_backyard',
-    icon_shen_half_tablet: 'icon_jade_pendant',
-    icon_bf_letter: 'icon_bf_order',
-    icon_bf_cloth: 'icon_blackfeather',
+    // 第六章新圖已全數到位（b783480）；之後有新圖未到時再加在這裡
   };
 
   // ===== 履歷（只記錄做過什麼，不評斷） =====

@@ -343,7 +343,9 @@
     const lv = enhLv(it);
     return '<span class="' + (lv >= 10 ? 'enh-glow enh-10' : lv >= 5 ? 'enh-glow' : '') + '">' + escapeHtml(itemDisplayName(it)) + '</span>';
   }
-  const NEW_ICON_IDS = ['rusty_cleaver', 'straw_shoes', 'copper_coin_ring', 'camel_boots', 'camelbell_ring', 'bamboo_armor', 'bamboo_shoes', 'cliff_hook', 'cliffwind_coat', 'tide_boots', 'conch_ring', 'cloud_ring', 'wire_ring', 'fish_trident', 'straw_raincape', 'lantern_market_boots', 'night_ring', 'coldiron_chest', 'frost_ring', 'xiangmo_staff', 'ascetic_shoes', 'bamboo_sword', 'bamboo_ring', 'cliff_boots', 'ring', 'tide_sword', 'mist_cloak', 'ridge_blade', 'cloud_armor', 'sky_boots', 'cloth', 'sand_blade', 'scarf', 'venom_hook', 'mire_armor', 'reed_boots', 'toad_ring', 'miasma_fang', 'ember_saber', 'slag_armor', 'ash_boots', 'cinder_ring', 'thousand_hammer_blade', 'broken_halberd', 'oldbanner_armor', 'march_boots', 'tally_ring', 'warbanner_spear', 'mirror_sword', 'ripple_robe', 'lotus_boots', 'moon_ring', 'twin_mirror_blade', 'heaven_blade', 'thunder_armor', 'cloudstep_boots', 'gold_feather_ring', 'gatekeeper_sword'];
+  const NEW_ICON_IDS = ['rusty_cleaver', 'straw_shoes', 'copper_coin_ring', 'camel_boots', 'camelbell_ring', 'bamboo_armor', 'bamboo_shoes', 'cliff_hook', 'cliffwind_coat', 'tide_boots', 'conch_ring', 'cloud_ring', 'wire_ring', 'fish_trident', 'straw_raincape', 'lantern_market_boots', 'night_ring', 'coldiron_chest', 'frost_ring', 'xiangmo_staff', 'ascetic_shoes', 'bamboo_sword', 'bamboo_ring', 'cliff_boots', 'ring', 'tide_sword', 'mist_cloak', 'ridge_blade', 'cloud_armor', 'sky_boots', 'cloth', 'sand_blade', 'scarf', 'venom_hook', 'mire_armor', 'reed_boots', 'toad_ring', 'miasma_fang', 'ember_saber', 'slag_armor', 'ash_boots', 'cinder_ring', 'thousand_hammer_blade', 'broken_halberd', 'oldbanner_armor', 'march_boots', 'tally_ring', 'warbanner_spear', 'mirror_sword', 'ripple_robe', 'lotus_boots', 'moon_ring', 'twin_mirror_blade', 'heaven_blade', 'thunder_armor', 'cloudstep_boots', 'gold_feather_ring', 'gatekeeper_sword',
+    // zones_v3（圖未到時自動顯示空格）
+    'tomb_sword', 'rust_mail', 'graveyard_boots', 'hilt_ring', 'unsheathed_blade', 'ferry_hook', 'lantern_robe', 'oar_boots', 'oblivion_ring', 'last_ferry_oar', 'dusk_glaive', 'rampart_armor', 'cavalry_boots', 'garrison_ring', 'last_banner_spear', 'starshard_sword', 'meteor_armor', 'nightfox_boots', 'astral_ring', 'falling_star_blade', 'tide_blade', 'abyss_armor', 'wave_boots', 'returning_ring', 'myriad_waters_sword'];
   const ICON_ITEMS = ['lantern_cloak', 'boots', 'pearl_ring', 'frost_blade', 'temple_armor', 'snow_boots', 'bell_ring'];
   const ICON_WEAPONS = ['broken_inn_blade', 'liu_short_spike', 'sandstorm_scimitar', 'bamboo_slim_sword', 'cliff_rope_hook', 'umbrella_bone_spike', 'frost_pass_blade', 'broken_bell_staff', 'isle_tide_blade', 'skywind_sword'];
   function iconHtml(it) {
@@ -353,7 +355,7 @@
     else if (it.id === 'umbrella_bone_spike' && ICON_WEAPONS.indexOf(it.id) >= 0) f = 'weapon_' + it.id;
     if (!f && NEW_ICON_IDS.indexOf(it.id) >= 0) f = (it.slot === 'weapon' ? 'weapon_' : 'item_') + it.id;
     if (!f) return '<span class="item-ico-ph"></span>';
-    return '<span class="item-ico"><img src="assets/icons/' + f + '.webp" alt="" onerror="var p=this.parentNode;if(p)p.remove()"><img class="frame" src="assets/icons/frame_' + (it.quality || 'fan') + '.webp" alt="" onerror="this.remove()"></span>';
+    return '<span class="item-ico"><img src="assets/icons/' + f + '.webp" alt="" onerror="var p=this.parentNode;if(p){p.className=\'item-ico-ph\';p.innerHTML=\'\'}"><img class="frame" src="assets/icons/frame_' + (it.quality || 'fan') + '.webp" alt="" onerror="this.remove()"></span>';
   }
   function rollAffixes(q) {
     const n = AFFIX_COUNT[q] || 0;
@@ -515,6 +517,7 @@
     inn: 'bandit', river: 'water', desert: 'sand', bamboo: 'bamboo', cliff: 'cliff',
     nightmarket: 'night', snowpass: 'snow', oldtemple: 'temple', mistisle: 'mist', skyridge: 'sky',
     miasma: 'mist', emberpit: 'sand', boneplain: 'cliff', mirrorlake: 'water', skygate: 'sky',
+    swordtomb: 'cliff', netherford: 'mist', duskcity: 'sand', starfall: 'sky', guixu: 'water',
   };
 
   const MOB_GLYPH = [
@@ -565,15 +568,23 @@
     '斷戟殘兵': 'bone_soldier', '骨鴉': 'bone_crow', '陣魂': 'bone_wraith',
     '鏡影刺客': 'mirror_assassin', '水月幻姬': 'mirror_phantom', '湖底石龜': 'mirror_turtle',
     '天闕守將': 'skygate_general', '金翅鵬': 'skygate_roc', '雷音法相': 'skygate_thunder',
+    '鏽甲劍奴': 'swordtomb_slave', '噬鐵蝠': 'swordtomb_bat', '劍塚守靈': 'swordtomb_spirit',
+    '渡口船鬼': 'nether_ghost', '忘川水蛇': 'nether_snake', '提燈引魂人': 'nether_lantern',
+    '孤城叛卒': 'dusk_rebel', '城頭弩手': 'dusk_archer', '落霞鐵騎': 'dusk_cavalry',
+    '星紋石像': 'star_statue', '古墟盜客': 'star_thief', '九尾夜狐': 'star_fox',
+    '潮汐鮫人': 'guixu_shark', '歸墟巨蟹': 'guixu_crab', '無底漩靈': 'guixu_vortex',
   };
   const RIVAL_KIND = {
     rival_inn: 'boss_inn', rival_river: 'boss_river', rival_desert: 'boss_desert', rival_bamboo: 'boss_bamboo',
     rival_cliff: 'boss_cliff', rival_night: 'boss_night', rival_snow: 'boss_snow', rival_temple: 'boss_temple',
     rival_mist: 'boss_mist', rival_sky: 'boss_sky',
     rival_miasma: 'boss_miasma', rival_ember: 'boss_ember', rival_bone: 'boss_bone', rival_mirror: 'boss_mirror', rival_skygate: 'boss_skygate',
+    rival_swordtomb: 'boss_swordtomb', rival_nether: 'boss_nether', rival_dusk: 'boss_dusk', rival_star: 'boss_star', rival_guixu: 'boss_guixu',
   };
   const SPRITE_READY = {};
   const KIND_SCALE = {}; // 專屬圖：以待機圖高度定出統一縮放，四幀共用，腳底對齊
+  const POSE_SIZE = {}; // 預載完成的各幀實際尺寸：kind_pose -> [w,h]，倒地殘影一出現就有尺寸
+  const POSE_IMG = []; // 留住預載圖，避免被回收
   function probeSprites() {
     const kinds = Object.keys(MOB_KIND).map((k) => MOB_KIND[k]).concat(Object.keys(RIVAL_KIND).map((k) => RIVAL_KIND[k]));
     kinds.forEach((kind) => {
@@ -582,7 +593,8 @@
         SPRITE_READY[kind] = true;
         const targetH = /^boss_/.test(kind) ? 122 : 100;
         KIND_SCALE[kind] = Math.min(targetH / Math.max(1, im.naturalHeight), 150 / Math.max(1, im.naturalWidth));
-        ['attack', 'hurt', 'down'].forEach((po) => { const p = new Image(); p.src = spriteUrl(kind, po); });
+        POSE_SIZE[kind + '_idle'] = [im.naturalWidth, im.naturalHeight];
+        ['attack', 'hurt', 'down'].forEach((po) => { const p = new Image(); p.onload = () => { POSE_SIZE[kind + '_' + po] = [p.naturalWidth, p.naturalHeight]; }; p.src = spriteUrl(kind, po); POSE_IMG.push(p); });
         if (state && !$('screen-game').classList.contains('hidden')) { try { renderStage(); } catch (e) { /* ignore */ } }
       };
       im.src = spriteUrl(kind, 'idle');
@@ -625,6 +637,13 @@
         img.style.height = Math.round(img.naturalHeight * k) + 'px';
         if (kind !== 'hero' && pose === 'idle') setHpGap(img, Math.round(img.naturalHeight * k));
       };
+      const known = POSE_SIZE[kind + '_' + pose];
+      if (known) {
+        const k0 = KIND_SCALE[kind] || sc;
+        img.style.maxWidth = 'none';
+        img.style.width = Math.round(known[0] * k0) + 'px';
+        img.style.height = Math.round(known[1] * k0) + 'px';
+      }
       img.src = spriteUrl(kind, pose);
     }
   }
@@ -962,6 +981,102 @@
         { id: 'gate_inscription', name: '門楣拓本', type: 'junk', chivalry: 40, rare: 0.07 },
       ],
     },
+    // ===== 掛機地圖第二批（zones_v3，接在九霄天闕後） =====
+    {
+      id: 'swordtomb',
+      name: '斷劍塚',
+      flavor: '滿山插著斷劍。據說每一柄，都曾經有過主人。',
+      minLv: 95,
+      mobs: [
+        { name: '鏽甲劍奴', hp: 3700, atk: 430, def: 130, exp: 1950, silver: [1270, 1630] },
+        { name: '噬鐵蝠', hp: 3550, atk: 450, def: 122, exp: 1990, silver: [1290, 1660] },
+        { name: '劍塚守靈', hp: 3900, atk: 440, def: 136, exp: 2040, silver: [1330, 1700] },
+      ],
+      drops: [
+        { id: 'tomb_sword', name: '塚中劍', slot: 'weapon', atk: 47, def: 4, spd: 3, rare: 0.045 },
+        { id: 'rust_mail', name: '鏽鱗甲', slot: 'armor', def: 39, atk: 9, rare: 0.045 },
+        { id: 'graveyard_boots', name: '踏塚靴', slot: 'boots', spd: 12, def: 8, rare: 0.045 },
+        { id: 'hilt_ring', name: '劍鐔戒', slot: 'ring', atk: 21, def: 8, spd: 2, rare: 0.045 },
+        { id: 'broken_tip', name: '斷劍尖', type: 'junk', silver: 600, rare: 0.12 },
+        { id: 'sword_epitaph', name: '劍主碑文', type: 'junk', chivalry: 48, rare: 0.07 },
+      ],
+    },
+    {
+      id: 'netherford',
+      name: '黃泉渡',
+      flavor: '渡口只有一盞燈。船來的時候沒有聲音，走的時候也沒有。',
+      minLv: 105,
+      mobs: [
+        { name: '渡口船鬼', hp: 4250, atk: 475, def: 144, exp: 2400, silver: [1560, 2000] },
+        { name: '忘川水蛇', hp: 4080, atk: 497, def: 136, exp: 2450, silver: [1590, 2040] },
+        { name: '提燈引魂人', hp: 4480, atk: 485, def: 150, exp: 2510, silver: [1640, 2090] },
+      ],
+      drops: [
+        { id: 'ferry_hook', name: '渡魂鉤', slot: 'weapon', atk: 54, def: 4, spd: 3, rare: 0.045 },
+        { id: 'lantern_robe', name: '引燈袍', slot: 'armor', def: 45, atk: 10, rare: 0.045 },
+        { id: 'oar_boots', name: '無聲履', slot: 'boots', spd: 13, def: 9, rare: 0.045 },
+        { id: 'oblivion_ring', name: '忘川戒', slot: 'ring', atk: 24, def: 9, spd: 2, rare: 0.045 },
+        { id: 'ferry_coin', name: '渡船銅板', type: 'junk', silver: 750, rare: 0.12 },
+        { id: 'ferry_ledger', name: '渡口名冊', type: 'junk', chivalry: 56, rare: 0.07 },
+      ],
+    },
+    {
+      id: 'duskcity',
+      name: '落霞孤城',
+      flavor: '城牆還在，旗也還在。只是城門開了很多年，再也沒人進出。',
+      minLv: 115,
+      mobs: [
+        { name: '孤城叛卒', hp: 4900, atk: 520, def: 158, exp: 2950, silver: [1920, 2460] },
+        { name: '城頭弩手', hp: 4700, atk: 545, def: 150, exp: 3010, silver: [1960, 2510] },
+        { name: '落霞鐵騎', hp: 5150, atk: 530, def: 164, exp: 3090, silver: [2010, 2570] },
+      ],
+      drops: [
+        { id: 'dusk_glaive', name: '落霞偃月刀', slot: 'weapon', atk: 61, def: 5, spd: 3, rare: 0.04 },
+        { id: 'rampart_armor', name: '城垛甲', slot: 'armor', def: 51, atk: 11, rare: 0.04 },
+        { id: 'cavalry_boots', name: '鐵騎靴', slot: 'boots', spd: 14, def: 10, rare: 0.04 },
+        { id: 'garrison_ring', name: '戍邊戒', slot: 'ring', atk: 27, def: 10, spd: 2, rare: 0.04 },
+        { id: 'city_seal', name: '殘缺城印', type: 'junk', silver: 940, rare: 0.12 },
+        { id: 'garrison_roll', name: '戍卒名簿', type: 'junk', chivalry: 64, rare: 0.07 },
+      ],
+    },
+    {
+      id: 'starfall',
+      name: '星落古墟',
+      flavor: '很久以前有一顆星落在這裡，砸出了一座城。後來城沒了，星還在發光。',
+      minLv: 125,
+      mobs: [
+        { name: '星紋石像', hp: 5600, atk: 565, def: 172, exp: 3630, silver: [2360, 3030] },
+        { name: '古墟盜客', hp: 5380, atk: 590, def: 164, exp: 3700, silver: [2410, 3090] },
+        { name: '九尾夜狐', hp: 5900, atk: 575, def: 178, exp: 3800, silver: [2470, 3160] },
+      ],
+      drops: [
+        { id: 'starshard_sword', name: '星屑劍', slot: 'weapon', atk: 68, def: 5, spd: 4, rare: 0.04 },
+        { id: 'meteor_armor', name: '隕鐵甲', slot: 'armor', def: 57, atk: 12, rare: 0.04 },
+        { id: 'nightfox_boots', name: '夜狐履', slot: 'boots', spd: 15, def: 11, rare: 0.04 },
+        { id: 'astral_ring', name: '星宿戒', slot: 'ring', atk: 30, def: 11, spd: 3, rare: 0.04 },
+        { id: 'glow_stone', name: '微光星石', type: 'junk', silver: 1170, rare: 0.12 },
+        { id: 'star_chart', name: '殘缺星圖', type: 'junk', chivalry: 72, rare: 0.07 },
+      ],
+    },
+    {
+      id: 'guixu',
+      name: '歸墟',
+      flavor: '天下的水最後都流到這裡。站在岸邊，聽得見很遠很遠以前的浪聲。',
+      minLv: 135,
+      mobs: [
+        { name: '潮汐鮫人', hp: 6450, atk: 610, def: 186, exp: 4460, silver: [2900, 3730] },
+        { name: '歸墟巨蟹', hp: 6200, atk: 640, def: 178, exp: 4550, silver: [2960, 3800] },
+        { name: '無底漩靈', hp: 6800, atk: 620, def: 192, exp: 4670, silver: [3040, 3890] },
+      ],
+      drops: [
+        { id: 'tide_blade', name: '歸潮刀', slot: 'weapon', atk: 75, def: 6, spd: 4, rare: 0.035 },
+        { id: 'abyss_armor', name: '淵鱗甲', slot: 'armor', def: 63, atk: 13, rare: 0.035 },
+        { id: 'wave_boots', name: '踏浪履', slot: 'boots', spd: 16, def: 12, rare: 0.035 },
+        { id: 'returning_ring', name: '萬水戒', slot: 'ring', atk: 33, def: 12, spd: 3, rare: 0.035 },
+        { id: 'abyss_pearl', name: '歸墟明珠', type: 'junk', silver: 1460, rare: 0.12 },
+        { id: 'tide_stele', name: '潮痕石碑拓片', type: 'junk', chivalry: 80, rare: 0.07 },
+      ],
+    },
   ];
 
   const LORE = [
@@ -1164,6 +1279,61 @@
       loreTitle: '他守的到底是哪一邊',
       loreBody: '他一直背對著門外的人。有人問他守的是門裡還是門外，他想了很久才說：「守著不讓人回頭。」',
       glyph: '🚪',
+    },
+    swordtomb: {
+      id: 'rival_swordtomb',
+      name: '「劍不出鞘」葬劍人',
+      desc: '背負十二柄劍，從不拔劍',
+      mult: { hp: 3.4, atk: 1.95, def: 1.85, exp: 4.4, silver: 3.35 },
+      bestDrop: { id: 'unsheathed_blade', name: '不鞘劍', slot: 'weapon', atk: 58, spd: 4, rare: 0.5, bossWeapon: true, affix: { k: 'atk', v: 13 } },
+      loreId: 'rival_swordtomb',
+      loreTitle: '十二柄劍',
+      loreBody: '他替死在江湖的人收劍，一柄一柄埋進山裡。背上那十二柄，是還沒找到地方埋的。有人問他自己的劍在哪，他說：「早就埋了。」',
+      glyph: '🗡️',
+    },
+    netherford: {
+      id: 'rival_nether',
+      name: '「只渡一回」老艄公',
+      desc: '披蓑衣、提一盞不滅的燈',
+      mult: { hp: 3.5, atk: 1.95, def: 1.85, exp: 4.6, silver: 3.45 },
+      bestDrop: { id: 'last_ferry_oar', name: '末渡槳', slot: 'weapon', atk: 66, def: 5, rare: 0.5, bossWeapon: true, affix: { k: 'def', v: 13 } },
+      loreId: 'rival_nether',
+      loreTitle: '每個人只能坐一次',
+      loreBody: '他的船每個人只渡一回。有人想回頭，他就把燈舉高一點：「看清楚了，這岸已經沒有你要等的人。」',
+      glyph: '🏮',
+    },
+    duskcity: {
+      id: 'rival_dusk',
+      name: '「城在人在」孤城守將',
+      desc: '甲冑殘破、守著一座空城',
+      mult: { hp: 3.6, atk: 1.95, def: 1.85, exp: 4.8, silver: 3.55 },
+      bestDrop: { id: 'last_banner_spear', name: '孤城旗槍', slot: 'weapon', atk: 74, def: 5, rare: 0.5, bossWeapon: true, affix: { k: 'silver', v: 14 } },
+      loreId: 'rival_dusk',
+      loreTitle: '沒有人來換防',
+      loreBody: '朝廷早忘了這座城，援兵沒來，換防的人也沒來。他每天黃昏還是上城頭點一次兵，點完了，自己應一聲「到」。',
+      glyph: '🏯',
+    },
+    starfall: {
+      id: 'rival_star',
+      name: '「看星的人」觀星客',
+      desc: '雙眼蒙布、懷抱渾天儀',
+      mult: { hp: 3.7, atk: 1.95, def: 1.85, exp: 5.0, silver: 3.65 },
+      bestDrop: { id: 'falling_star_blade', name: '墜星刃', slot: 'weapon', atk: 82, spd: 5, rare: 0.5, bossWeapon: true, affix: { k: 'spd', v: 12 } },
+      loreId: 'rival_star',
+      loreTitle: '看不見的人才看得清',
+      loreBody: '他把眼睛蒙起來，說這樣才不會被星光騙。問他看到了什麼，他只說：「下一顆，快落了。」',
+      glyph: '🌠',
+    },
+    guixu: {
+      id: 'rival_guixu',
+      name: '「水歸何處」歸墟主',
+      desc: '赤足立在漩渦中央，衣角不濕',
+      mult: { hp: 3.8, atk: 1.95, def: 1.85, exp: 5.2, silver: 3.75 },
+      bestDrop: { id: 'myriad_waters_sword', name: '萬川歸一劍', slot: 'weapon', atk: 90, def: 6, spd: 5, rare: 0.5, bossWeapon: true, affix: { k: 'exp', v: 15 } },
+      loreId: 'rival_guixu',
+      loreTitle: '最後一個問題',
+      loreBody: '走到這裡的人，都會問她同一件事：江湖的盡頭是什麼。她從來不答，只把一捧水放回海裡：「你看，它不是到了，它是回來了。」',
+      glyph: '🌊',
     },
   };
 
@@ -1685,11 +1855,13 @@
     inn: 'world', river: 'calm', desert: 'road', bamboo: 'calm', cliff: 'road',
     nightmarket: 'world', snowpass: 'road', oldtemple: 'calm', mistisle: 'calm', skyridge: 'peak',
     miasma: 'calm', emberpit: 'road', boneplain: 'road', mirrorlake: 'calm', skygate: 'peak',
+    swordtomb: 'road', netherford: 'calm', duskcity: 'road', starfall: 'peak', guixu: 'calm',
   };
   const ZONE_BATTLE_BGM = {
     inn: 'battle', river: 'battle2', desert: 'battle', bamboo: 'battle2', cliff: 'battle',
     nightmarket: 'battle2', snowpass: 'battle', oldtemple: 'battle2', mistisle: 'battle', skyridge: 'battle2',
     miasma: 'battle', emberpit: 'battle2', boneplain: 'battle', mirrorlake: 'calm', skygate: 'peak',
+    swordtomb: 'battle', netherford: 'battle2', duskcity: 'battle', starfall: 'battle2', guixu: 'peak',
   };
   function worldBgm(zid) { return ZONE_WORLD_BGM[zid || (state && state.zoneId)] || 'world'; }
   function battleBgm(zid) { return ZONE_BATTLE_BGM[zid || (state && state.zoneId)] || 'battle'; }
@@ -2926,7 +3098,9 @@
       ghost.draggable = false;
       applySprite(ghost, spr.dataset.kind, 'down');
       (spr.parentElement || enemyF).appendChild(ghost);
-      setTimeout(() => ghost.remove(), 700);
+      const isBoss = /^boss_/.test(spr.dataset.kind);
+      if (isBoss) ghost.classList.add('ghost-boss');
+      setTimeout(() => ghost.remove(), isBoss ? 1450 : 700);
     }
     spawnFloat('破！', 'kill', s);
   }
