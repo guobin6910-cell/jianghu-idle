@@ -514,6 +514,7 @@
   const ZONE_LOOK = {
     inn: 'bandit', river: 'water', desert: 'sand', bamboo: 'bamboo', cliff: 'cliff',
     nightmarket: 'night', snowpass: 'snow', oldtemple: 'temple', mistisle: 'mist', skyridge: 'sky',
+    miasma: 'mist', emberpit: 'sand', boneplain: 'cliff', mirrorlake: 'water', skygate: 'sky',
   };
 
   const MOB_GLYPH = [
@@ -564,6 +565,7 @@
     rival_inn: 'boss_inn', rival_river: 'boss_river', rival_desert: 'boss_desert', rival_bamboo: 'boss_bamboo',
     rival_cliff: 'boss_cliff', rival_night: 'boss_night', rival_snow: 'boss_snow', rival_temple: 'boss_temple',
     rival_mist: 'boss_mist', rival_sky: 'boss_sky',
+    rival_miasma: 'boss_miasma', rival_ember: 'boss_ember', rival_bone: 'boss_bone', rival_mirror: 'boss_mirror', rival_skygate: 'boss_skygate',
   };
   const SPRITE_READY = {};
   const KIND_SCALE = {}; // 專屬圖：以待機圖高度定出統一縮放，四幀共用，腳底對齊
@@ -859,6 +861,102 @@
         { id: 'cloud_ring', name: '雲海戒', slot: 'ring', atk: 7, def: 3, spd: 1, rare: 0.07 },
       ],
     },
+    // ===== 掛機地圖再開 5 張（zones_v2，接在天脊雲棧後） =====
+    {
+      id: 'miasma',
+      name: '瘴霧毒沼',
+      flavor: '霧是綠的，水是黑的，蛙聲停下來的地方，最好別走。',
+      minLv: 50,
+      mobs: [
+        { name: '毒蟾', hp: 1150, atk: 140, def: 44, exp: 560, silver: [370, 480] },
+        { name: '瘴林蠱師', hp: 1080, atk: 152, def: 40, exp: 580, silver: [380, 500] },
+        { name: '沼澤老鱷', hp: 1260, atk: 146, def: 48, exp: 600, silver: [400, 520] },
+      ],
+      drops: [
+        { id: 'venom_hook', name: '碧鱗鉤', slot: 'weapon', atk: 18, def: 2, rare: 0.07 },
+        { id: 'mire_armor', name: '沼紋皮甲', slot: 'armor', def: 15, atk: 3, rare: 0.07 },
+        { id: 'reed_boots', name: '踏蘆靴', slot: 'boots', spd: 6, def: 3, rare: 0.07 },
+        { id: 'toad_ring', name: '蟾眼戒', slot: 'ring', atk: 8, def: 3, spd: 1, rare: 0.07 },
+        { id: 'gu_jar', name: '空蠱罐', type: 'junk', silver: 170, rare: 0.12 },
+        { id: 'herb_note', name: '解毒方殘頁', type: 'junk', chivalry: 17, rare: 0.07 },
+      ],
+    },
+    {
+      id: 'emberpit',
+      name: '赤焰火窟',
+      flavor: '洞口吹出來的風是燙的，裡頭有人在鑄刀，也有東西在等刀。',
+      minLv: 58,
+      mobs: [
+        { name: '火紋蜥', hp: 1480, atk: 182, def: 56, exp: 720, silver: [480, 620] },
+        { name: '熔岩傀儡', hp: 1640, atk: 176, def: 62, exp: 750, silver: [500, 640] },
+        { name: '焚爐刀匠', hp: 1420, atk: 194, def: 52, exp: 740, silver: [490, 650] },
+      ],
+      drops: [
+        { id: 'ember_saber', name: '赤焰刀', slot: 'weapon', atk: 22, spd: 2, rare: 0.065 },
+        { id: 'slag_armor', name: '爐渣鎧', slot: 'armor', def: 18, atk: 4, rare: 0.065 },
+        { id: 'ash_boots', name: '灰燼履', slot: 'boots', spd: 7, def: 4, rare: 0.065 },
+        { id: 'cinder_ring', name: '火種戒', slot: 'ring', atk: 10, def: 4, rare: 0.065 },
+        { id: 'molten_ingot', name: '熔鐵錠', type: 'junk', silver: 220, rare: 0.12 },
+        { id: 'forge_record', name: '鑄刀手札', type: 'junk', chivalry: 21, rare: 0.07 },
+      ],
+    },
+    {
+      id: 'boneplain',
+      name: '枯骨古戰場',
+      flavor: '草長得很高，因為底下埋的人很多。夜裡偶爾還聽得到鼓。',
+      minLv: 66,
+      mobs: [
+        { name: '斷戟殘兵', hp: 1900, atk: 236, def: 70, exp: 940, silver: [620, 800] },
+        { name: '骨鴉', hp: 1780, atk: 250, def: 64, exp: 960, silver: [630, 820] },
+        { name: '陣魂', hp: 2080, atk: 240, def: 76, exp: 990, silver: [650, 840] },
+      ],
+      drops: [
+        { id: 'broken_halberd', name: '殘陣戟', slot: 'weapon', atk: 27, def: 3, rare: 0.06 },
+        { id: 'oldbanner_armor', name: '舊旗甲', slot: 'armor', def: 22, atk: 5, rare: 0.06 },
+        { id: 'march_boots', name: '行軍靴', slot: 'boots', spd: 8, def: 5, rare: 0.06 },
+        { id: 'tally_ring', name: '虎符戒', slot: 'ring', atk: 12, def: 5, spd: 1, rare: 0.06 },
+        { id: 'rusty_badge', name: '鏽蝕腰牌', type: 'junk', silver: 285, rare: 0.12 },
+        { id: 'war_letter', name: '未寄家書', type: 'junk', chivalry: 26, rare: 0.07 },
+      ],
+    },
+    {
+      id: 'mirrorlake',
+      name: '鏡湖水榭',
+      flavor: '湖面平得像一面鏡子，照出來的人，不一定是你。',
+      minLv: 75,
+      mobs: [
+        { name: '鏡影刺客', hp: 2420, atk: 310, def: 86, exp: 1220, silver: [800, 1030] },
+        { name: '水月幻姬', hp: 2300, atk: 322, def: 82, exp: 1240, silver: [810, 1050] },
+        { name: '湖底石龜', hp: 2700, atk: 296, def: 98, exp: 1270, silver: [830, 1070] },
+      ],
+      drops: [
+        { id: 'mirror_sword', name: '照影劍', slot: 'weapon', atk: 33, spd: 3, rare: 0.055 },
+        { id: 'ripple_robe', name: '漣漪袍', slot: 'armor', def: 27, atk: 6, rare: 0.055 },
+        { id: 'lotus_boots', name: '踏荷履', slot: 'boots', spd: 9, def: 6, rare: 0.055 },
+        { id: 'moon_ring', name: '水月戒', slot: 'ring', atk: 15, def: 5, spd: 2, rare: 0.055 },
+        { id: 'lake_pearl', name: '鏡湖珠', type: 'junk', silver: 370, rare: 0.12 },
+        { id: 'pavilion_poem', name: '水榭題詩', type: 'junk', chivalry: 32, rare: 0.07 },
+      ],
+    },
+    {
+      id: 'skygate',
+      name: '九霄天闕',
+      flavor: '雲棧盡頭還有一道門。門開著，只是沒有人說得清自己是怎麼走進去的。',
+      minLv: 85,
+      mobs: [
+        { name: '天闕守將', hp: 3200, atk: 384, def: 116, exp: 1580, silver: [1030, 1320] },
+        { name: '金翅鵬', hp: 3020, atk: 404, def: 106, exp: 1610, silver: [1050, 1350] },
+        { name: '雷音法相', hp: 3400, atk: 392, def: 122, exp: 1650, silver: [1080, 1380] },
+      ],
+      drops: [
+        { id: 'heaven_blade', name: '天闕刀', slot: 'weapon', atk: 40, def: 4, spd: 3, rare: 0.05 },
+        { id: 'thunder_armor', name: '雷紋甲', slot: 'armor', def: 33, atk: 8, rare: 0.05 },
+        { id: 'cloudstep_boots', name: '九霄履', slot: 'boots', spd: 11, def: 7, rare: 0.05 },
+        { id: 'gold_feather_ring', name: '金羽戒', slot: 'ring', atk: 18, def: 7, spd: 2, rare: 0.05 },
+        { id: 'gate_tile', name: '天闕碎瓦', type: 'junk', silver: 480, rare: 0.12 },
+        { id: 'gate_inscription', name: '門楣拓本', type: 'junk', chivalry: 40, rare: 0.07 },
+      ],
+    },
   ];
 
   const LORE = [
@@ -1006,6 +1104,61 @@
       loreTitle: '雲棧盡頭有沒有路',
       loreBody: '棧盡處雲厚如牆。有人退了，有人笑著進去；出來的人少，帶話回來的更少——只說：路在腳下，也在回頭。',
       glyph: '🧙',
+    },
+    miasma: {
+      id: 'rival_miasma',
+      name: '「一壺不解」蠱婆',
+      desc: '腰繫葫蘆、笑時不露齒',
+      mult: { hp: 2.7, atk: 1.76, def: 1.6, exp: 3.4, silver: 2.65 },
+      bestDrop: { id: 'miasma_fang', name: '瘴牙短劍', slot: 'weapon', atk: 23, spd: 3, rare: 0.5, bossWeapon: true, affix: { k: 'silver', v: 12 } },
+      loreId: 'rival_miasma',
+      loreTitle: '葫蘆裡裝的是藥還是毒',
+      loreBody: '她替人解過毒，也替人下過毒。問她哪一種比較多，她只把葫蘆搖一搖：「聽，還剩半壺。」',
+      glyph: '🐸',
+    },
+    emberpit: {
+      id: 'rival_ember',
+      name: '「千錘不語」鐵匠石伯',
+      desc: '赤膊、單手提錘',
+      mult: { hp: 2.85, atk: 1.8, def: 1.7, exp: 3.6, silver: 2.8 },
+      bestDrop: { id: 'thousand_hammer_blade', name: '千錘刀', slot: 'weapon', atk: 28, def: 3, rare: 0.5, bossWeapon: true, affix: { k: 'atk', v: 12 } },
+      loreId: 'rival_ember',
+      loreTitle: '他只鑄刀，不說刀給誰',
+      loreBody: '火窟裡的錘聲三十年沒停過。有人來求刀，他不問名字，只問：「你拿了它，打算先砍誰？」答得不好的人，空手下山。',
+      glyph: '🔨',
+    },
+    boneplain: {
+      id: 'rival_bone',
+      name: '「鼓聲未歇」無頭校尉',
+      desc: '披破旗、背戰鼓',
+      mult: { hp: 3.0, atk: 1.85, def: 1.8, exp: 3.8, silver: 2.95 },
+      bestDrop: { id: 'warbanner_spear', name: '鎮陣長槍', slot: 'weapon', atk: 34, def: 4, rare: 0.5, bossWeapon: true, affix: { k: 'def', v: 12 } },
+      loreId: 'rival_bone',
+      loreTitle: '那面鼓為什麼還在響',
+      loreBody: '仗早就打完了，輸贏也沒人記得。只有那面鼓，每逢起風就自己響三下——像在點名，點到的人，一個都沒回答。',
+      glyph: '🥁',
+    },
+    mirrorlake: {
+      id: 'rival_mirror',
+      name: '「兩個自己」鏡娘',
+      desc: '素紗遮面、手持銅鏡',
+      mult: { hp: 3.15, atk: 1.9, def: 1.9, exp: 4.0, silver: 3.1 },
+      bestDrop: { id: 'twin_mirror_blade', name: '雙影刃', slot: 'weapon', atk: 41, spd: 4, rare: 0.5, bossWeapon: true, affix: { k: 'spd', v: 10 } },
+      loreId: 'rival_mirror',
+      loreTitle: '鏡子裡先動的是誰',
+      loreBody: '和她交手的人都說，她出手前，鏡子裡的她已經先出了一招。也有人說，是鏡子外的那個在學鏡子裡的。',
+      glyph: '🪞',
+    },
+    skygate: {
+      id: 'rival_skygate',
+      name: '「門內無人」守門客',
+      desc: '布衣、背對來者、腳下無影',
+      mult: { hp: 3.3, atk: 1.95, def: 2.0, exp: 4.2, silver: 3.25 },
+      bestDrop: { id: 'gatekeeper_sword', name: '守門劍', slot: 'weapon', atk: 50, def: 4, spd: 4, rare: 0.5, bossWeapon: true, affix: { k: 'exp', v: 12 } },
+      loreId: 'rival_skygate',
+      loreTitle: '他守的到底是哪一邊',
+      loreBody: '他一直背對著門外的人。有人問他守的是門裡還是門外，他想了很久才說：「守著不讓人回頭。」',
+      glyph: '🚪',
     },
   };
 
@@ -1526,10 +1679,12 @@
   const ZONE_WORLD_BGM = {
     inn: 'world', river: 'calm', desert: 'road', bamboo: 'calm', cliff: 'road',
     nightmarket: 'world', snowpass: 'road', oldtemple: 'calm', mistisle: 'calm', skyridge: 'peak',
+    miasma: 'calm', emberpit: 'road', boneplain: 'road', mirrorlake: 'calm', skygate: 'peak',
   };
   const ZONE_BATTLE_BGM = {
     inn: 'battle', river: 'battle2', desert: 'battle', bamboo: 'battle2', cliff: 'battle',
     nightmarket: 'battle2', snowpass: 'battle', oldtemple: 'battle2', mistisle: 'battle', skyridge: 'battle2',
+    miasma: 'battle', emberpit: 'battle2', boneplain: 'battle', mirrorlake: 'calm', skygate: 'peak',
   };
   function worldBgm(zid) { return ZONE_WORLD_BGM[zid || (state && state.zoneId)] || 'world'; }
   function battleBgm(zid) { return ZONE_BATTLE_BGM[zid || (state && state.zoneId)] || 'battle'; }
@@ -3558,7 +3713,7 @@
   const RUMOR_HINT = {
     enh1: '強化成功一次後聞得', enh5: '把裝備強化到 +5 後聞得', enh10: '把裝備強化到 +10 後聞得', pity: '強化連敗後觸發保底聞得',
     zhen: '首次得到「珍」品後聞得', jue: '首次得到「絕」品後聞得', exhaust: '首次力竭後聞得', rival1: '擊敗第 1 個名號後聞得',
-    rival5: '擊敗 5 個名號後聞得', rival10: '十個名號全部擊敗後聞得', set: '湊齊套裝 2 件效果後聞得', lv50: '突破 Lv.50 後聞得',
+    rival5: '擊敗 5 個名號後聞得', rival10: '擊敗 10 個名號後聞得', set: '湊齊套裝 2 件效果後聞得', lv50: '突破 Lv.50 後聞得',
   };
   function addRumor(id) {
     if (!state || !RUMORS[id]) return;
@@ -3609,7 +3764,7 @@
     { id: 'a6', cat: '擊殺', name: '萬人敵', desc: '累計擊殺 10000 隻', goal: 10000, val: () => state.kills, title: '萬人敵' },
     { id: 'a7', cat: '名號', name: '討債人', desc: '擊敗第 1 個名號', goal: 1, val: rivalCount, silver: 2000 },
     { id: 'a8', cat: '名號', name: '半壁江湖', desc: '擊敗 5 個名號', goal: 5, val: rivalCount, title: '半壁' },
-    { id: 'a9', cat: '名號', name: '十地俱服', desc: '十個區域名號全部擊敗', goal: 10, val: rivalCount, title: '十地俱服' },
+    { id: 'a9', cat: '名號', name: '十地俱服', desc: '擊敗 10 個區域名號', goal: 10, val: rivalCount, title: '十地俱服' },
     { id: 'a10', cat: '強化', name: '試試手氣', desc: '強化成功 1 次', goal: 1, val: () => achStats().enhOk, silver: 300 },
     { id: 'a11', cat: '強化', name: '鐵杵成針', desc: '強化到 +5', goal: 5, val: () => achStats().maxEnh, title: '鐵杵' },
     { id: 'a12', cat: '強化', name: '刃上光華', desc: '強化到 +10', goal: 10, val: () => achStats().maxEnh, title: '光華' },
@@ -3715,7 +3870,7 @@
   }
   // ===================== 章回劇情系統（資料見 story-data.js） =====================
   const ST = window.JH_STORY || null;
-  const WHO_NAME = { qinghe: '沈青河', old: '獨臂老人', woman: '白衣女子', bf: '黑衣人', su: '蘇晚棠', ruolan: '沈若蘭', ruolan_anon: '女子' };
+  const WHO_NAME = { qinghe: '沈青河', old: '獨臂老人', woman: '白衣女子', bf: '黑衣人', su: '蘇晚棠', ruolan: '沈若蘭', ruolan_anon: '女子', baishi: '白石老人', baishi_anon: '？？？' };
   function stNorm(s) {
     if (!s || typeof s !== 'object') s = {};
     ['flags', 'rel', 'did', 'traits', 'evDone'].forEach((k) => { if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = {}; });
@@ -3724,6 +3879,7 @@
     if (!s.unlocked.length) s.unlocked = [1];
     if ((s.completed.indexOf('ch1') >= 0 || (s.flags && s.flags.chapter1_done)) && s.unlocked.indexOf(2) < 0) s.unlocked.push(2);
     if ((s.completed.indexOf('ch2') >= 0 || (s.flags && s.flags.chapter2Completed)) && s.unlocked.indexOf(3) < 0) s.unlocked.push(3);
+    if ((s.completed.indexOf('ch3') >= 0 || (s.flags && s.flags.chapter3Completed)) && s.unlocked.indexOf(4) < 0) s.unlocked.push(4);
     if (typeof s.cur !== 'string') s.cur = null;
     if (typeof s.entered !== 'string') s.entered = '';
     if (typeof s.phase !== 'string') s.phase = '';
@@ -4082,7 +4238,9 @@
     else if (!s.started && !s.flags.qh_leave_done) { status = '一段江湖故事正等著你。'; act = '<button type="button" class="btn primary full" data-st="begin">踏入江湖（序章）</button>'; }
     else if (s.phase === 'waiting') status = '「三日後，醉仙樓。」還需擊敗 ' + stLeftKills() + ' 名對手，約定之日就到了。';
     else if (s.phase === 'heifeng') { status = '黑風嶺就在鎮外，隨時能去看看。'; act = '<button type="button" class="btn primary full" data-st="hf">前往黑風嶺</button>'; }
-    else if (s.phase === 'done_ch3' || s.flags.chapter3Completed) status = '第三章已完。舊簪裡藏著一行字：洛水以北，白石橋。第四章尚未揭開。';
+    else if (s.phase === 'done_ch4' || s.flags.chapter4Completed) status = '第四章已完。白石老人說：去找一個叫『無名客』的人。第五章尚未揭開。';
+    else if (s.flags.chapter4Started || s.phase === 'ch4') { status = '白石橋上的事，還沒有了結。'; act = '<button type="button" class="btn primary full" data-st="ch4back">回到白石橋</button>'; }
+    else if (s.phase === 'done_ch3' || s.flags.chapter3Completed) { status = '第三章已完。舊簪裡的小字寫著：洛水以北，白石橋。'; act = '<button type="button" class="btn primary full" data-st="ch4">前往白石橋</button>'; }
     else if (s.flags.chapter3Started || s.phase === 'ch3') { status = '沈家舊宅的事，還沒弄清楚。'; act = '<button type="button" class="btn primary full" data-st="ch3back">回到沈家舊宅</button>'; }
     else if (s.phase === 'done_ch2' || s.flags.chapter2Completed) { status = '第二章已完。紙條上寫著：沈家舊宅，洛水之畔。'; act = '<button type="button" class="btn primary full" data-st="ch3">前往洛水</button>'; }
     else if (s.flags.ch2_started || s.phase === 'ch2') { status = '洛陽城裡，十五年前的事還沒查完。'; act = '<button type="button" class="btn primary full" data-st="ch2">回到洛陽</button>'; }
@@ -4118,7 +4276,7 @@
       const ch = ST.CHAPTERS[k];
       const done = s.completed.indexOf('ch' + k) >= 0;
       const open = s.unlocked.indexOf(+k) >= 0 && !ch.locked;
-      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? ((k === '3' ? s.flags.chapter3Started : k === '2' ? s.flags.ch2_started : (s.started || s.flags.qh_leave_done)) ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
+      return '<div class="st-ch' + (open ? '' : ' locked') + '"><strong>' + escapeHtml(ch.title) + '</strong> <span class="muted">' + (done ? '已完' : open ? ((k === '4' ? s.flags.chapter4Started : k === '3' ? s.flags.chapter3Started : k === '2' ? s.flags.ch2_started : (s.started || s.flags.qh_leave_done)) ? '進行中' : '未開始') : '敬請期待') + '</span><br/><span class="muted">' + (open ? escapeHtml(ch.sub) : '？？？') + '</span></div>';
     }).join('');
   }
   function stResumeHtml() {
@@ -4137,7 +4295,7 @@
     if (!el || !state) return;
     const s = stEnsure();
     const tab = $('tab-lore');
-    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng' || (s.flags.chapter1_done && !s.flags.ch2_started) || (s.flags.chapter2Completed && !s.flags.chapter3Started));
+    if (tab) tab.classList.toggle('has-dot', !!(s.cur && !s.battle) || (!s.started && !s.flags.qh_leave_done && !s.cur) || s.phase === 'heifeng' || (s.flags.chapter1_done && !s.flags.ch2_started) || (s.flags.chapter2Completed && !s.flags.chapter3Started) || (s.flags.chapter3Completed && !s.flags.chapter4Started));
     const subs = [['now', '正在發生'], ['ppl', '人物'], ['rum', '傳聞'], ['ch', '章回'], ['res', '履歷']];
     let body;
     if (loreSub === 'ppl') body = stPeopleHtml();
@@ -4154,6 +4312,8 @@
       const k = b.getAttribute('data-st');
       if (k === 'begin') stBegin();
       else if (k === 'resume') { s.open = true; stResume(); }
+      else if (k === 'ch4') { s.cur = 'ch4_title'; s.open = true; s.entered = ''; save(); stResume(); }
+      else if (k === 'ch4back') { s.cur = s.flags.obtainedBlackFeatherOrder ? 'ch4_order' : s.intel.indexOf('ch4_three') >= 0 ? 'ch4_ruolan' : s.people.indexOf('baishiOld') >= 0 ? 'ch4_wait' : 'ch4_bridge'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch3') { s.cur = 'ch3_title'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch3back') { s.cur = s.items.indexOf('shen_hairpin') >= 0 ? 'ch3_pin_look' : s.flags.ch3_letter ? 'ch3_meet' : 'ch3_yard'; s.open = true; s.entered = ''; save(); stResume(); }
       else if (k === 'ch2') { s.cur = 'ch2_open'; s.open = true; s.entered = ''; save(); stResume(); }

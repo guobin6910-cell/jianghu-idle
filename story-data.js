@@ -10,10 +10,12 @@
     1: { id: 1, title: '第一章・青石風雲', sub: '雨落青石，少年入局。' },
     2: { id: 2, title: '第二章・洛陽舊事', sub: '十五年前，有些事情不該被忘記。' },
     3: { id: 3, title: '第三章・沈家舊門', sub: '有些門，十五年來從未真正關上。' },
-    4: { id: 4, title: '第四章・白石橋', sub: '', locked: true },
+    4: { id: 4, title: '第四章・白石橋', sub: '橋下流水依舊，橋上的人卻早已不在。' },
+    5: { id: 5, title: '第五章・無名客', sub: '', locked: true },
   };
   S.PORTRAIT = {
     qinghe: 'portrait_shen_qinghe', old: 'portrait_old_swordsman', woman: 'portrait_white_lady', bf: 'portrait_blackfeather', su: 'portrait_su_wantang', ruolan: 'portrait_shen_ruolan', ruolan_anon: 'portrait_shen_ruolan',
+    baishi: 'portrait_baishi_old',
   };
   S.PEOPLE = {
     qinghe: { name: '沈青河', img: 'portrait_shen_qinghe', desc: '雨夜撞上你的少年。身世只透露了一半。' },
@@ -21,6 +23,7 @@
     mysteriousWoman: { name: '戴斗笠的白衣女子', img: 'portrait_white_lady', desc: '倚窗看雨的女子，似乎也在等一個人。' },
     suWantang: { name: '蘇晚棠', img: 'portrait_su_wantang', norel: true, desc: '洛陽舊書坊的掌櫃。安靜、話少，看見玉佩時神色變了。' },
     shenRuolan: { name: '沈若蘭', img: 'portrait_shen_ruolan', norel: true, desc: '在沈家舊宅後院遇見的女子。自稱來替故人收拾東西，別的什麼都沒說。' },
+    baishiOld: { name: '白石老人', img: 'portrait_baishi_old', norel: true, desc: '在白石橋等你的老人。' },
     blackfeather: { name: '黑羽盟', img: 'portrait_blackfeather', desc: '左手戴黑護腕、以黑羽為記的神秘勢力。' },
   };
   S.INTEL = {
@@ -37,6 +40,9 @@
     ch3_luoshui: ['洛水不忘', '沈家枯井井壁上刻得很深的四個字。意思不明。'],
     ch3_true_killer: ['真正的兇手……', '後院暗格裡殘信的最後半行。後面被撕掉了。'],
     ch3_baishi: ['白石橋', '沈家舊簪內側刻著：「洛水以北，白石橋。」'],
+    ch4_mark: ['奇怪的刻痕', '白石橋正中央一塊白石上，有一道很淡的刀痕，旁邊刻著「十五」。'],
+    ch4_three: ['三個人走過白石橋', '白石老人說：十五年前那天晚上，有三個人從橋上走過。其中兩個再也沒有回來，第三個活了下來。'],
+    ch4_wumingke: ['無名客', '白石老人說：如果想知道十五年前的事，去找一個叫「無名客」的人。沒有人知道他在哪。'],
   };
   S.ITEMS = {
     jade: ['染血玉佩', '沈青河留下的玉佩，血跡未乾。', 'icon_jade_pendant'],
@@ -46,6 +52,8 @@
     shen_note: ['沈家舊宅紙條', '「沈家舊宅，洛水之畔。」', 'icon_old_note'],
     broken_letter: ['殘信', '「若有人看到這封信……不要相信當晚留下來的人。沈家並沒有……真正的兇手……」後半被撕掉了。', 'icon_broken_letter'],
     shen_hairpin: ['沈家舊簪', '一枚銀色髮簪，簪身極細。對著光看，裡面刻著一行小字：「洛水以北，白石橋。」', 'icon_shen_hairpin'],
+    shen_coin: ['沈家舊錢', '一枚發綠的舊銅錢，背面刻著一個「沈」字。', 'icon_shen_coin'],
+    bf_order: ['黑羽密令', '黑底細紙，只剩幾行字：「確認玉佩出現。」「目標已找到。」「立即通知洛陽。」', 'icon_bf_order'],
     bracer: ['黑護腕', '從黑風嶺死者腕上取下的黑護腕。'],
   };
   S.GEAR = {
@@ -897,7 +905,276 @@
   };
   N.ch3_final = {
     bg: B3.rain, place: '', center: true,
-    pages: ['【第三章・沈家舊門　完】\n\n【第四章・白石橋】\n🔒 尚未解鎖\n\n「洛水以北，有一座白石橋。」\n「有人正在那裡等你。」'],
+    pages: ['【第三章・沈家舊門　完】\n\n【第四章・白石橋】\n已解鎖\n\n「橋下流水依舊，橋上的人卻早已不在。」'],
+    choices: [{ label: '繼續江湖', next: '__close' }],
+  };
+
+  // ===== 第四章・白石橋（輕量：同一套節點、show、battle、e） =====
+  const B4 = { bridge: 'scene_baishi_bridge', under: 'scene_baishi_under', dusk: 'scene_baishi_dusk' };
+  S.B4 = B4;
+  const BAI = (t) => ({ t, who: 'baishi' });
+  const LAN = (t) => ({ t, who: 'ruolan' });
+  N.ch4_title = {
+    bg: B4.bridge, place: '', center: true,
+    pages: ['【第四章・白石橋】\n\n「橋下流水依舊，橋上的人卻早已不在。」'],
+    e: { f: ['chapter4Started'], chapter: 4, phase: 'ch4' },
+    next: 'ch4_open',
+  };
+  N.ch4_open = {
+    bg: B4.bridge, place: '洛水以北',
+    pages: (c) => [
+      '第二日清晨。\n\n你沿著洛水往北。',
+      '遠遠看見一座白石砌成的古橋。\n\n橋不長。\n\n卻很舊。',
+      '橋下流水緩緩而過。',
+      '十五年前，沈家的人曾經走過這座橋。\n\n如今，只有風還記得。',
+    ].concat(c.f('ch3_letter') ? ['你摸了摸懷裡那封殘信。\n\n「不要相信當晚留下來的人。」\n\n你不知道，今天會在這裡遇見誰。'] : [])
+      .concat(['橋上沒有人。']),
+    next: 'ch4_bridge',
+  };
+  N.ch4_bridge = {
+    bg: B4.bridge, place: '白石橋',
+    pages: (c) => [(c.f('ch4_deck') || c.f('ch4_under')) ? '河面上起了一點風。' : '橋上空蕩蕩的，只有你自己的腳步聲。\n\n你要做什麼？'],
+    choices: [
+      { label: '查看橋面', next: 'ch4_deck', show: (c) => !c.f('ch4_deck') },
+      { label: '查看橋下', next: 'ch4_under', show: (c) => !c.f('ch4_under') },
+      { label: '等待', next: 'ch4_wait' },
+    ],
+  };
+  N.ch4_deck = {
+    bg: B4.bridge, place: '白石橋・橋面',
+    pages: [
+      '你沿著橋面慢慢走。\n\n正中央有一塊白石，比旁邊的顏色深一點。',
+      '石面上有一道很淡的刀痕，斜斜的，像是有人在這裡收過刀。',
+      '刀痕旁邊刻著兩個字：\n\n「十五。」',
+      '【獲得提示：奇怪的刻痕】',
+    ],
+    e: { f: ['ch4_deck'], intel: ['ch4_mark'] },
+    next: 'ch4_bridge',
+  };
+  N.ch4_under = {
+    bg: B4.under, place: '白石橋・橋下',
+    pages: [
+      '你順著石階走到橋下。\n\n水聲一下子變得很近。',
+      '橋墩旁卡著一個小木盒，木頭已經爛得發黑。',
+      '你打開它。\n\n裡面只有一枚舊銅錢。',
+      '你把銅錢翻過來。\n\n背面刻著一個字：\n\n「沈」。',
+      { t: '【獲得：沈家舊錢】', icon: 'icon_shen_coin' },
+    ],
+    e: { f: ['ch4_under', 'obtainedShenOldCoin'], item: ['shen_coin'] },
+    next: 'ch4_bridge',
+  };
+  N.ch4_wait = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [
+      '你沒有做任何事情。\n\n只是站在橋上。',
+      '太陽一點一點爬高。\n\n直到日上三竿。',
+      { t: '身後傳來一個聲音：\n\n「你比我想像中有耐心。」', who: 'baishi_anon' },
+      '你回頭。\n\n一個六十多歲的老人站在橋頭，衣著普通，手裡拄著一根舊竹杖。',
+      '他看起來就像隨處可見的老人家。\n\n只有那雙眼睛，亮得讓人不太敢直視。',
+      BAI('「你是來找沈家的人？」'),
+    ],
+    e: { people: ['baishiOld'] },
+    choices: [
+      { label: '「你知道沈家？」', next: 'ch4_ans_know' },
+      { label: '「你是誰？」', next: 'ch4_ans_who' },
+      { label: '「有人讓我來這裡。」', next: 'ch4_ans_sent' },
+      { label: '「我只是路過。」', next: 'ch4_ans_pass' },
+    ],
+  };
+  N.ch4_ans_know = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [BAI('「洛陽城裡，誰不知道沈家？」'), BAI('「只是知道的人，大多不願意說。」')],
+    e: { f: ['ch4_ask_know'] },
+    next: 'ch4_secret',
+  };
+  N.ch4_ans_who = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [BAI('「一個每天來橋上站一站的老頭子。」'), '他說得很輕鬆，好像這個問題他已經回答過很多次。'],
+    e: { f: ['ch4_ask_who'] },
+    next: 'ch4_secret',
+  };
+  N.ch4_ans_sent = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [BAI('「讓你來的人，」他的目光在你身上停了一下，「是不是沒告訴你，來了之後要做什麼？」'), '你沒有回答。他也不像在等你回答。'],
+    e: { f: ['ch4_ask_sent'] },
+    next: 'ch4_secret',
+  };
+  N.ch4_ans_pass = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [BAI('「路過的人，不會在橋上站一整個早上。」'), BAI('他用竹杖點了點地。\n\n「坐吧。反正你也不急著走。」')],
+    e: { f: ['ch4_ask_pass'] },
+    next: 'ch4_secret',
+  };
+  N.ch4_secret = {
+    bg: B4.bridge, place: '白石橋',
+    pages: (c) => (c.f('obtainedShenOldCoin') ? [BAI('他看了一眼你手上的銅錢。\n\n「那東西在橋下躺了很多年。你倒是撿得順手。」')] : []).concat([
+      '老人望著橋下的河水，很久沒有說話。',
+      BAI('「十五年前，我也站在這座橋上。」'),
+      BAI('「那天晚上，有三個人從橋上走過。」'),
+      BAI('「其中兩個，再也沒有回來。」'),
+    ]),
+    choices: [{ label: '「第三個呢？」', next: 'ch4_third' }],
+  };
+  N.ch4_third = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [
+      '老人沉默了。\n\n風從河面吹上來，把他的衣角吹得一動一動。',
+      BAI('「第三個人，活了下來。」'),
+      '你還想再問。\n\n他卻搖了搖頭。',
+      '【獲得線索：三個人走過白石橋】',
+    ],
+    e: { intel: ['ch4_three'] },
+    next: 'ch4_ruolan',
+  };
+  N.ch4_ruolan = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [
+      '橋的另一頭，傳來腳步聲。',
+      '你轉頭。\n\n沈若蘭站在那裡。',
+      '她沒有看你。\n\n她在看老人。',
+      LAN('「你果然還活著。」'),
+      BAI('「你也一樣。」'),
+      LAN('「十五年了。」'),
+      BAI('「你還是回來了。」'),
+      LAN('「有些事情，總要有個結果。」'),
+      BAI('「結果？」\n\n「你真的相信，十五年前的事情還能有結果？」'),
+      '沈若蘭沒有回答。\n\n橋上安靜得只剩下水聲。',
+    ],
+    choices: [
+      { label: '「你們到底在說什麼？」', next: 'ch4_q_talk' },
+      { label: '「沈家當年到底發生了什麼？」', next: 'ch4_q_what' },
+      { label: '「十五年前活下來的人是誰？」', next: 'ch4_q_who' },
+      { label: '「我只想知道玉佩的秘密。」', next: 'ch4_q_jade' },
+    ],
+  };
+  N.ch4_q_talk = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [LAN('「在說一些跟你無關的舊事。」'), BAI('「跟他有沒有關係，還很難說。」'), '老人說完，目光落在你腰間的玉佩上。'],
+    e: { f: ['ch4_q_talk'] },
+    next: 'ch4_jade',
+  };
+  N.ch4_q_what = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [BAI('「外面怎麼傳，你就怎麼聽吧。」'), LAN('「外面傳的都是錯的。」'), '兩個人說完，又同時不說話了。\n\n老人的目光，慢慢落到你腰間的玉佩上。'],
+    e: { f: ['ch4_q_what'] },
+    next: 'ch4_jade',
+  };
+  N.ch4_q_who = {
+    bg: B4.bridge, place: '白石橋',
+    pages: ['沈若蘭的肩膀微微一緊。', BAI('「這個問題，」老人說，「你最好別在別人面前問。」'), '他的目光往下，落在你腰間的玉佩上。'],
+    e: { f: ['ch4_q_who'] },
+    next: 'ch4_jade',
+  };
+  N.ch4_q_jade = {
+    bg: B4.bridge, place: '白石橋',
+    pages: ['你把玉佩拿了出來。'],
+    e: { f: ['ch4_q_jade'] },
+    next: 'ch4_jade',
+  };
+  N.ch4_jade = {
+    bg: B4.bridge, place: '白石橋',
+    pages: (c) => [
+      '老人看見玉佩的那一刻，臉色變了。',
+      '他握著竹杖的手，緊了一下。',
+      BAI('「原來它真的回來了。」'),
+      '「什麼叫回來？」',
+      BAI('「這東西十五年前就應該消失。」'),
+      BAI('「沒想到十五年後，又落到了另一個人手裡。」'),
+    ].concat(c.f('ch3_gave_jade') ? ['他的手指停在玉佩缺掉的那一角。\n\n他看了沈若蘭一眼。\n\n沈若蘭把臉轉開了。'] : [])
+      .concat(['你還想追問。\n\n遠處，傳來馬蹄聲。']),
+    next: 'ch4_bf',
+  };
+  N.ch4_bf = {
+    bg: B4.bridge, place: '白石橋',
+    pages: (c) => [BAI('「來得比我想的快。」')]
+      .concat(c.f('ch3_drew_sword') ? [LAN('沈若蘭低聲說：\n\n「又是他們。」')] : [])
+      .concat(['三名黑衣人從河岸的樹林裡走出來，翻身下馬。', { t: '「把玉佩交出來。」', who: 'bf' }, '你往前站了一步。']),
+    battle: { count: 3, name: '黑羽追兵', win: 'ch4_after', lose: 'ch4_after_lose', label: '戰鬥開始' },
+  };
+  N.ch4_after = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [
+      '最後一個黑衣人倒在橋欄邊。',
+      '他的袖口掉出一卷黑色的細紙，用一根黑羽毛綁著。',
+      { t: '【獲得：黑羽密令】', icon: 'icon_bf_order' },
+    ],
+    e: { f: ['ch4_fought_bf', 'obtainedBlackFeatherOrder'], item: ['bf_order'] },
+    next: 'ch4_order',
+  };
+  N.ch4_after_lose = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [
+      '你被逼到橋欄邊，手臂一陣發麻。',
+      '一根竹杖從旁邊伸過來，輕輕一點。\n\n黑衣人手腕一軟，刀掉進了河裡。',
+      '三個人互看一眼，上馬就走。\n\n跑在最後的那個人，掉了一卷黑色的細紙。',
+      { t: '【獲得：黑羽密令】', icon: 'icon_bf_order' },
+    ],
+    e: { f: ['ch4_fought_bf', 'obtainedBlackFeatherOrder'], item: ['bf_order'] },
+    next: 'ch4_order',
+  };
+  N.ch4_order = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [
+      '你把黑羽毛拆開。\n\n紙上只剩幾行字：',
+      '「確認玉佩出現。」',
+      '「目標已找到。」',
+      '「立即通知洛陽。」',
+      '目標。\n\n你又看了一遍這兩個字。',
+      '他們要找的，到底是玉佩……\n\n還是你？',
+    ],
+    next: 'ch4_old_hurt',
+  };
+  N.ch4_old_hurt = {
+    bg: B4.bridge, place: '白石橋',
+    pages: [
+      '老人靠著橋欄坐下。\n\n他的左臂多了一道口子，血滲進了袖子裡。',
+      BAI('你想替他包紮。\n\n他擺擺手。\n\n「老骨頭了，不值得浪費你的布。」'),
+      BAI('「如果你真的想知道十五年前的事情。」'),
+      BAI('「不要再查沈家。」'),
+      '他停了很久。',
+      BAI('「去找一個叫『無名客』的人。」'),
+      '「他在哪？」',
+      BAI('「沒有人知道。」\n\n「因為他本來就沒有名字。」'),
+      '【獲得線索：無名客】',
+    ],
+    e: { intel: ['ch4_wumingke'] },
+    next: 'ch4_ruolan_leave',
+  };
+  N.ch4_ruolan_leave = {
+    bg: B4.bridge, place: '白石橋',
+    pages: ['沈若蘭轉身往橋的另一頭走。'],
+    choices: [
+      { label: '「你到底是不是沈家的人？」', next: 'ch4_ruolan_ask', e: { f: ['ch4_asked_ruolan'] } },
+      { label: '看著她離開', next: 'ch4_ruolan_quiet' },
+    ],
+  };
+  N.ch4_ruolan_ask = {
+    bg: B4.bridge, place: '白石橋',
+    pages: ['沈若蘭停下。\n\n她沒有回頭。', LAN('「如果我是。」'), LAN('「你還敢繼續查嗎？」'), '她走了。\n\n你站在原地，沒有回答。'],
+    next: 'ch4_end',
+  };
+  N.ch4_ruolan_quiet = {
+    bg: B4.bridge, place: '白石橋',
+    pages: ['你沒有叫住她。\n\n她卻自己停了下來，背對著你。', LAN('「你想問我，是不是沈家的人。」'), LAN('「如果我是。」\n\n「你還敢繼續查嗎？」'), '她走了。\n\n你站在原地，沒有回答。'],
+    next: 'ch4_end',
+  };
+  N.ch4_end = {
+    bg: B4.dusk, place: '白石橋・黃昏',
+    pages: [
+      '你站在白石橋上。\n\n夕陽落下。',
+      '老人不知道什麼時候已經走了，橋頭只剩下一道竹杖點過的淺印。',
+      '橋下的水，仍然往洛陽的方向流。',
+      '你原本以為，自己只是找到了一座舊宅。',
+      '後來才發現。\n\n十五年前的事情，從來沒有真正結束。',
+      '沈家有人活了下來。\n\n黑羽盟也一直在尋找。',
+      '而現在……\n\n他們似乎找到了你。',
+    ],
+    e: { f: ['chapter4Completed'], phase: 'done_ch4', complete: 'ch4' },
+    choices: [{ label: '完', next: 'ch4_final' }],
+  };
+  N.ch4_final = {
+    bg: B4.dusk, place: '', center: true,
+    pages: ['【第四章・白石橋　完】\n\n【第五章・無名客】\n🔒 尚未解鎖\n\n「江湖上沒有人知道他的名字。」\n「但也許，他知道十五年前的真相。」'],
     choices: [{ label: '繼續江湖', next: '__close' }],
   };
 
@@ -924,7 +1201,8 @@
     { id: 'q_hf', text: '查探黑風嶺', show: (c) => c.f('meet_done'), done: (c) => c.f('heifeng_done') },
     { id: 'q_jade', text: '找出染血玉佩的秘密', show: (c) => c.f('qh_leave_done'), done: (c) => c.f('chapter1_done') },
     { id: 'q_ch2', ch: 2, text: (c) => (c.f('chapter2Completed') ? '第二章・洛陽舊事　完' : '第二章・洛陽舊事：查玉佩背後的十五年前'), show: (c) => c.f('chapter1_done'), done: (c) => c.f('chapter2Completed') },
-    { id: 'q_ch3', ch: 3, text: (c) => (c.f('chapter3Completed') ? '第三章・沈家舊門　完（第四章・白石橋 鎖定）' : '第三章・沈家舊門：到洛水邊找沈家舊宅'), show: (c) => c.f('chapter2Completed'), done: (c) => c.f('chapter3Completed') },
+    { id: 'q_ch3', ch: 3, text: (c) => (c.f('chapter3Completed') ? '第三章・沈家舊門　完' : '第三章・沈家舊門：到洛水邊找沈家舊宅'), show: (c) => c.f('chapter2Completed'), done: (c) => c.f('chapter3Completed') },
+    { id: 'q_ch4', ch: 4, text: (c) => (c.f('chapter4Completed') ? '第四章・白石橋　完（第五章・無名客 鎖定）' : '第四章・白石橋：到洛水以北找白石橋'), show: (c) => c.f('chapter3Completed'), done: (c) => c.f('chapter4Completed') },
   ];
 
   // ===== 掛機江湖事件（低機率，不連續彈窗） =====

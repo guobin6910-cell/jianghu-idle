@@ -769,6 +769,38 @@ legend { padding: 0 6px; color: var(--accent); font-size: 13px; }
     url("assets/combat/bg_skyridge.webp");
 }
 
+/* 新五區（zones_v2）專屬斜角底板 */
+.battle-stage.zone-miasma {
+  background-image:
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(4,10,4,0.55) 100%),
+    linear-gradient(160deg, rgba(25, 50, 20, 0.14), rgba(8, 18, 8, 0.22)),
+    url("assets/combat/bg_miasma.webp");
+}
+.battle-stage.zone-emberpit {
+  background-image:
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(14,4,2,0.55) 100%),
+    linear-gradient(160deg, rgba(60, 20, 8, 0.14), rgba(22, 8, 4, 0.22)),
+    url("assets/combat/bg_emberpit.webp");
+}
+.battle-stage.zone-boneplain {
+  background-image:
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(10,8,4,0.55) 100%),
+    linear-gradient(160deg, rgba(55, 42, 20, 0.15), rgba(20, 14, 8, 0.23)),
+    url("assets/combat/bg_boneplain.webp");
+}
+.battle-stage.zone-mirrorlake {
+  background-image:
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(4,10,14,0.55) 100%),
+    linear-gradient(160deg, rgba(30, 50, 65, 0.14), rgba(10, 20, 28, 0.22)),
+    url("assets/combat/bg_mirrorlake.webp");
+}
+.battle-stage.zone-skygate {
+  background-image:
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(6,10,16,0.55) 100%),
+    linear-gradient(160deg, rgba(35, 55, 85, 0.15), rgba(12, 22, 36, 0.23)),
+    url("assets/combat/bg_skygate.webp");
+}
+
 @keyframes lunge-iso-nw {
   /* 我方攻擊：朝左上斜衝 */
   0% { transform: translate(0, 0); }
