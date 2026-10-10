@@ -3445,9 +3445,12 @@
         state.zoneId = id;
         state.mob = null;
         state.mobs = [];
+        // 換圖時清掉上一張圖的倒地殘影，避免帶到新地圖跟新怪疊在一起
+        document.querySelectorAll('.enemy-slot .ghost-down').forEach((g) => g.remove());
+        document.querySelectorAll('.enemy-slot.ghosting').forEach((e) => e.classList.remove('ghosting'));
         if (Audio() && Audio().getCurrentBgm()) Audio().playBgm(worldBgm(id));
         pushLog('來到「' + z.name + '」');
-        if (wasHuntingHere && !modalOpen) startHunt();
+        if (wasHuntingHere) startHunt(); // 有彈窗時 tick 本來就會暫停，關窗後自動續打
         renderAll();
         save();
       });
