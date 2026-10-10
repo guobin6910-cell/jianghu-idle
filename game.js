@@ -3439,6 +3439,7 @@
         const id = btn.getAttribute('data-zone');
         const z = ZONES.find((x) => x.id === id);
         if (!z || (!DEBUG_BOSS && state.lv < z.minLv)) return;
+        const wasHuntingHere = !!state.hunting; // 換地圖前在掛機 → 到新地圖直接續打
         if (state.hunting) stopHunt();
         else if (Audio()) Audio().sfx('click');
         state.zoneId = id;
@@ -3446,6 +3447,7 @@
         state.mobs = [];
         if (Audio() && Audio().getCurrentBgm()) Audio().playBgm(worldBgm(id));
         pushLog('來到「' + z.name + '」');
+        if (wasHuntingHere && !modalOpen) startHunt();
         renderAll();
         save();
       });
